@@ -25,6 +25,16 @@ class BulletServer
 {
   ros::NodeHandle nh_;
 
+  btBroadphaseInterface* broadphase;
+
+        btDefaultCollisionConfiguration* collisionConfiguration;
+        
+        btCollisionDispatcher* dispatcher;
+
+        btSequentialImpulseConstraintSolver* solver;
+
+        btDiscreteDynamicsWorld* dynamicsWorld;
+
   #if 0
   // Build the broadphase
   btBroadphaseInterface* broadphase_;
@@ -121,15 +131,11 @@ int BulletServer::init()
 {
 
   // exact hello world
-        btBroadphaseInterface* broadphase = new btDbvtBroadphase();
-
-        btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
-        btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
-
-        btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
-
-        btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-
+        broadphase = new btDbvtBroadphase();
+        collisionConfiguration = new btDefaultCollisionConfiguration();
+        dispatcher = new btCollisionDispatcher(collisionConfiguration);
+        solver = new btSequentialImpulseConstraintSolver;
+        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
         dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
 

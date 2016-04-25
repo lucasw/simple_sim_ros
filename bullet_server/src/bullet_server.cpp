@@ -18,9 +18,8 @@
   gets more than 5 or 10 seconds behind current time).
 */
 
-#include <iostream>
 #include <bullet/btBulletDynamicsCommon.h>
-// #include <ros/ros.h>
+#include <ros/ros.h>
 
 class BulletServer
 {
@@ -45,6 +44,7 @@ public:
 
 BulletServer::BulletServer()
 {
+  #if 0
   // http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Hello_World
   btBroadphaseInterface* broadphase = new btDbvtBroadphase();
 
@@ -59,7 +59,6 @@ BulletServer::BulletServer()
   // TODO(lucasw) set this from param
   dynamics_world_->setGravity(btVector3(0, -10, 0));
 
-  #if 0
   {
     btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
 
@@ -88,7 +87,6 @@ BulletServer::BulletServer()
     fallRigidBody = new btRigidBody(fallRigidBodyCI);
     dynamics_world_->addRigidBody(fallRigidBody);
   }
-  #endif
 
   const float rate = 60.0;
   const float period = 1.0 / rate;
@@ -106,11 +104,12 @@ BulletServer::BulletServer()
 
     // ros::spinOnce();
   }
+  #endif
 }
 
 int main(int argc, char** argv)
 {
-  // ros::init(argc, argv, "bullet_server");
+  ros::init(argc, argv, "bullet_server");
   //  BulletServer bullet_server;
 
 
@@ -155,7 +154,8 @@ int main(int argc, char** argv)
                 btTransform trans;
                 fallRigidBody->getMotionState()->getWorldTransform(trans);
 
-                std::cout << "sphere height: " << trans.getOrigin().getY() << std::endl;
+                ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
+                ros::spinOnce();
         }
 
         dynamicsWorld->removeRigidBody(fallRigidBody);

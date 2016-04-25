@@ -23,8 +23,9 @@
 
 class BulletServer
 {
-  // ros::NodeHandle nh_;
+  ros::NodeHandle nh_;
 
+  #if 0
   // Build the broadphase
   btBroadphaseInterface* broadphase_;
 
@@ -37,13 +38,16 @@ class BulletServer
 
   // The world.
   btDiscreteDynamicsWorld* dynamics_world_;
+  #endif
 
+  int init();
 public:
   BulletServer();
 };
 
 BulletServer::BulletServer()
 {
+  init();
   #if 0
   // http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Hello_World
   btBroadphaseInterface* broadphase = new btDbvtBroadphase();
@@ -110,8 +114,11 @@ BulletServer::BulletServer()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "bullet_server");
-  //  BulletServer bullet_server;
+  BulletServer bullet_server;
+}
 
+int BulletServer::init()
+{
 
   // exact hello world
         btBroadphaseInterface* broadphase = new btDbvtBroadphase();
@@ -148,13 +155,14 @@ int main(int argc, char** argv)
         dynamicsWorld->addRigidBody(fallRigidBody);
 
 
-        for (int i = 0; i < 300; i++) {
+        // for (int i = 0; i < 300; i++) 
+        while (ros::ok()) {
                 dynamicsWorld->stepSimulation(1 / 60.f, 10);
 
                 btTransform trans;
                 fallRigidBody->getMotionState()->getWorldTransform(trans);
 
-                ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
+                // ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
                 ros::spinOnce();
         }
 

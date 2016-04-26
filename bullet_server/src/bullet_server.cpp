@@ -121,6 +121,49 @@ BulletServer::BulletServer()
   #endif
 }
 
+class Body
+{
+  btCollisionShape* shape_;
+  btRigidBody* rigid_body_;
+  btDefaultMotionState* motion_state_;
+  btDiscreteDynamicsWorld* dynamics_world_;
+public:
+  Body(btDiscreteDynamicsWorld* dynamics_world);
+  ~Body();
+
+  void update();
+};
+
+Body::Body(btDiscreteDynamicsWorld* dynamics_world) :
+  dynamics_world_(dynamics_world)
+{
+  shape_ = new btSphereShape(1);
+  motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+      btVector3(0, 50, 0)));
+  btScalar mass = 1;
+  btVector3 fallInertia(0, 0, 0);
+  shape_->calculateLocalInertia(mass, fallInertia);
+  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,
+      shape_, fallInertia);
+  rigid_body_ = new btRigidBody(fallRigidBodyCI);
+  dynamics_world_->addRigidBody(rigid_body_);
+}
+
+Body::~Body()
+{
+  dynamics_world_->removeRigidBody(rigid_body_);
+  delete rigid_body_->getMotionState();
+  delete rigid_body_;
+  delete shape_;
+}
+
+void Body::update()
+{
+  btTransform trans;
+  rigid_body_->getMotionState()->getWorldTransform(trans);
+  ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "bullet_server");
@@ -129,68 +172,43 @@ int main(int argc, char** argv)
 
 int BulletServer::init()
 {
-
-  // exact hello world
-        broadphase = new btDbvtBroadphase();
-        collisionConfiguration = new btDefaultCollisionConfiguration();
-        dispatcher = new btCollisionDispatcher(collisionConfiguration);
-        solver = new btSequentialImpulseConstraintSolver;
-        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-        dynamicsWorld->setGravity(btVector3(0, -10, 0));
+  broadphase = new btDbvtBroadphase();
+  collisionConfiguration = new btDefaultCollisionConfiguration();
+  dispatcher = new btCollisionDispatcher(collisionConfiguration);
+  solver = new btSequentialImpulseConstraintSolver;
+  dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+  dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
 
-        btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
+  btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
+  btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
+  btRigidBody::btRigidBodyConstructionInfo
+    groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
+  btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+  dynamicsWorld->addRigidBody(groundRigidBody);
 
-        btCollisionShape* fallShape = new btSphereShape(1);
+  Body* body = new Body(dynamicsWorld);
 
+  for (int i = 0; i < 250; i++)
+  // while (ros::ok())
+  {
+    dynamicsWorld->stepSimulation(1 / 60.f, 10);
+    body->update();
+    ros::spinOnce();
+  }
 
-        btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
-        btRigidBody::btRigidBodyConstructionInfo
-                groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
-        btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-        dynamicsWorld->addRigidBody(groundRigidBody);
+  delete body;
 
+  dynamicsWorld->removeRigidBody(groundRigidBody);
+  delete groundRigidBody->getMotionState();
+  delete groundRigidBody;
+  delete groundShape;
 
-        btDefaultMotionState* fallMotionState =
-                new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
-        btScalar mass = 1;
-        btVector3 fallInertia(0, 0, 0);
-        fallShape->calculateLocalInertia(mass, fallInertia);
-        btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, fallShape, fallInertia);
-        btRigidBody* fallRigidBody = new btRigidBody(fallRigidBodyCI);
-        dynamicsWorld->addRigidBody(fallRigidBody);
+  delete dynamicsWorld;
+  delete solver;
+  delete collisionConfiguration;
+  delete dispatcher;
+  delete broadphase;
 
-
-        // for (int i = 0; i < 300; i++) 
-        while (ros::ok()) {
-                dynamicsWorld->stepSimulation(1 / 60.f, 10);
-
-                btTransform trans;
-                fallRigidBody->getMotionState()->getWorldTransform(trans);
-
-                // ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
-                ros::spinOnce();
-        }
-
-        dynamicsWorld->removeRigidBody(fallRigidBody);
-        delete fallRigidBody->getMotionState();
-        delete fallRigidBody;
-
-        dynamicsWorld->removeRigidBody(groundRigidBody);
-        delete groundRigidBody->getMotionState();
-        delete groundRigidBody;
-
-
-        delete fallShape;
-
-        delete groundShape;
-
-
-        delete dynamicsWorld;
-        delete solver;
-        delete collisionConfiguration;
-        delete dispatcher;
-        delete broadphase;
-
-        return 0;
+  return 0;
 }

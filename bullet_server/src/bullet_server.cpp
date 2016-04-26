@@ -20,10 +20,12 @@
 
 #include <bullet/btBulletDynamicsCommon.h>
 #include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
 
 class BulletServer
 {
   ros::NodeHandle nh_;
+  tf::TransformBroadcaster br_;
 
   btBroadphaseInterface* broadphase;
 
@@ -123,23 +125,32 @@ BulletServer::BulletServer()
 
 class Body
 {
+  const std::string name_;
+  tf::TransformBroadcaster* br_;
+
   btCollisionShape* shape_;
   btRigidBody* rigid_body_;
   btDefaultMotionState* motion_state_;
   btDiscreteDynamicsWorld* dynamics_world_;
 public:
-  Body(btDiscreteDynamicsWorld* dynamics_world);
+  Body(const std::string name,
+      btDiscreteDynamicsWorld* dynamics_world,
+      tf::TransformBroadcaster* br);
   ~Body();
 
   void update();
 };
 
-Body::Body(btDiscreteDynamicsWorld* dynamics_world) :
-  dynamics_world_(dynamics_world)
+Body::Body(const std::string name,
+    btDiscreteDynamicsWorld* dynamics_world,
+    tf::TransformBroadcaster* br) :
+  name_(name),
+  dynamics_world_(dynamics_world),
+  br_(br)
 {
   shape_ = new btSphereShape(1);
   motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-      btVector3(0, 50, 0)));
+      btVector3(0, 0, 50)));
   btScalar mass = 1;
   btVector3 fallInertia(0, 0, 0);
   shape_->calculateLocalInertia(mass, fallInertia);
@@ -157,11 +168,23 @@ Body::~Body()
   delete shape_;
 }
 
+// TODO(lucasw) pass in current time
 void Body::update()
 {
   btTransform trans;
   rigid_body_->getMotionState()->getWorldTransform(trans);
-  ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
+
+  tf::Transform transform;
+  transform.setOrigin(tf::Vector3(trans.getOrigin().getX(),
+      trans.getOrigin().getY(),
+      trans.getOrigin().getZ()));
+  transform.setRotation(tf::Quaternion(trans.getRotation().getX(),
+      trans.getRotation().getY(),
+      trans.getRotation().getZ(),
+      trans.getRotation().getW()));
+  br_->sendTransform(tf::StampedTransform(transform, ros::Time::now(),
+    "map", name_));
+  // ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
 }
 
 int main(int argc, char** argv)
@@ -177,24 +200,25 @@ int BulletServer::init()
   dispatcher = new btCollisionDispatcher(collisionConfiguration);
   solver = new btSequentialImpulseConstraintSolver;
   dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-  dynamicsWorld->setGravity(btVector3(0, -10, 0));
+  dynamicsWorld->setGravity(btVector3(0, 0, -10));
 
 
-  btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
-  btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
+  btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
+  btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, -1)));
   btRigidBody::btRigidBodyConstructionInfo
     groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
   btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
   dynamicsWorld->addRigidBody(groundRigidBody);
 
-  Body* body = new Body(dynamicsWorld);
+  Body* body = new Body("falling_sphere1", dynamicsWorld, &br_);
 
-  for (int i = 0; i < 250; i++)
-  // while (ros::ok())
+  const float period = 1.0 / 60.0;
+  while (ros::ok())
   {
-    dynamicsWorld->stepSimulation(1 / 60.f, 10);
+    dynamicsWorld->stepSimulation(period, 10);
     body->update();
     ros::spinOnce();
+    ros::Duration(period).sleep();
   }
 
   delete body;

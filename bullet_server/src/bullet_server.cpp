@@ -98,6 +98,7 @@ int BulletServer::init()
 
   period_ = 1.0 / 60.0;
 
+  // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
 
   return 0;

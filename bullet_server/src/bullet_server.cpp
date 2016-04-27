@@ -21,6 +21,7 @@
 #include <bullet/btBulletDynamicsCommon.h>
 #include <map>
 #include <ros/ros.h>
+#include <string>
 #include <tf/transform_broadcaster.h>
 
 class Body;

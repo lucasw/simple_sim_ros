@@ -19,6 +19,7 @@
 */
 
 #include <bullet/btBulletDynamicsCommon.h>
+#include <bullet_server/Body.h>
 #include <map>
 #include <ros/ros.h>
 #include <string>
@@ -29,6 +30,8 @@ class Body;
 class BulletServer
 {
   ros::NodeHandle nh_;
+  ros::Subscriber body_sub_;
+  void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   tf::TransformBroadcaster br_;
   float period_;
 
@@ -95,7 +98,14 @@ int BulletServer::init()
 
   period_ = 1.0 / 60.0;
 
+  body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
+
   return 0;
+}
+
+void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
+{
+
 }
 
 void BulletServer::update()

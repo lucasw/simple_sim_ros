@@ -50,11 +50,10 @@ roslint_cpp()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  Body.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -71,10 +70,11 @@ roslint_cpp()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -108,7 +108,7 @@ roslint_cpp()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bullet_server
-#  CATKIN_DEPENDS bullet roscpp roslint rospy tf
+   CATKIN_DEPENDS roscpp roslint rospy tf message_runtime
 #  DEPENDS system_lib
 )
 
@@ -139,6 +139,7 @@ add_executable(bullet_server src/bullet_server.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(bullet_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(bullet_server bullet_server_gencpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(bullet_server

@@ -45,7 +45,7 @@ class BulletServer
   btDefaultMotionState* ground_motion_state_;
   btRigidBody* ground_rigid_body_;
 
-  Body* body_;
+  std::map<std::string, Body*> bodies_;
 
   int init();
 public:
@@ -94,8 +94,6 @@ int BulletServer::init()
   ground_rigid_body_ = new btRigidBody(ground_rigid_body_CI);
   dynamics_world_->addRigidBody(ground_rigid_body_);
 
-  body_ = new Body("falling_sphere1", dynamics_world_, &br_);
-
   period_ = 1.0 / 60.0;
 
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
@@ -105,20 +103,31 @@ int BulletServer::init()
 
 void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
 {
+  if (bodies_.count(msg->name) > 0)
+    delete bodies_[msg->name];
 
+  bodies_[msg->name] = new Body(msg->name, dynamics_world_, &br_);
 }
 
 void BulletServer::update()
 {
   dynamics_world_->stepSimulation(period_, 10);
-  body_->update();
+  for (std::map<std::string, Body*>::iterator it = bodies_.begin();
+      it != bodies_.end(); ++it)
+  {
+    it->second->update();
+  }
   ros::spinOnce();
   ros::Duration(period_).sleep();
 }
 
 BulletServer::~BulletServer()
 {
-  delete body_;
+  for (std::map<std::string, Body*>::iterator it = bodies_.begin();
+      it != bodies_.end(); ++it)
+  {
+    delete it->second;
+  }
 
   dynamics_world_->removeRigidBody(ground_rigid_body_);
   delete ground_rigid_body_->getMotionState();

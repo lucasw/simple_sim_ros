@@ -20,6 +20,7 @@
 
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet_server/Body.h>
+#include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
 #include <string>
@@ -65,6 +66,7 @@ class Body
   btDiscreteDynamicsWorld* dynamics_world_;
 public:
   Body(const std::string name,
+      geometry_msgs::Pose pose,
       btDiscreteDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br);
   ~Body();
@@ -106,7 +108,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
   if (bodies_.count(msg->name) > 0)
     delete bodies_[msg->name];
 
-  bodies_[msg->name] = new Body(msg->name, dynamics_world_, &br_);
+  bodies_[msg->name] = new Body(msg->name, msg->pose, dynamics_world_, &br_);
 }
 
 void BulletServer::update()
@@ -144,15 +146,18 @@ BulletServer::~BulletServer()
 ///////////////////////////////////////////////////////////////////////////////
 
 Body::Body(const std::string name,
+    geometry_msgs::Pose pose,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br) :
   name_(name),
   dynamics_world_(dynamics_world),
   br_(br)
 {
+  ROS_INFO_STREAM(name << " " << pose);
   shape_ = new btSphereShape(1);
-  motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-      btVector3(0, 0, 20)));
+  motion_state_ = new btDefaultMotionState(btTransform(
+      btQuaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w),
+      btVector3(pose.position.x, pose.position.y, pose.position.z)));
   btScalar mass = 1;
   btVector3 fallInertia(0, 0, 0);
   shape_->calculateLocalInertia(mass, fallInertia);

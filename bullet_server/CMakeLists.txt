@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
   rospy
   tf
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions

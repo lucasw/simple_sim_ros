@@ -25,6 +25,7 @@
 #include <ros/ros.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
+#include <visualization_msgs/Marker.h>
 
 class Body;
 
@@ -35,6 +36,7 @@ class BulletServer
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   tf::TransformBroadcaster br_;
   float period_;
+  ros::Publisher marker_pub_;
 
   btBroadphaseInterface* broadphase;
   btDefaultCollisionConfiguration* collision_configuration_;
@@ -71,6 +73,7 @@ public:
       tf::TransformBroadcaster* br);
   ~Body();
 
+  visualization_msgs::Marker marker_;
   void update();
 };
 
@@ -98,6 +101,8 @@ int BulletServer::init()
 
   period_ = 1.0 / 60.0;
 
+  marker_pub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+  // TODO(lucasw) make this a service
   // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
 
@@ -110,6 +115,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
     delete bodies_[msg->name];
 
   bodies_[msg->name] = new Body(msg->name, msg->pose, dynamics_world_, &br_);
+  marker_pub_.publish(bodies_[msg->name]->marker_);
 }
 
 void BulletServer::update()
@@ -129,6 +135,8 @@ BulletServer::~BulletServer()
   for (std::map<std::string, Body*>::iterator it = bodies_.begin();
       it != bodies_.end(); ++it)
   {
+    it->second->marker_.action = visualization_msgs::Marker::DELETE;
+    marker_pub_.publish(it->second->marker_);
     delete it->second;
   }
 
@@ -154,8 +162,9 @@ Body::Body(const std::string name,
   dynamics_world_(dynamics_world),
   br_(br)
 {
-  ROS_INFO_STREAM(name << " " << pose);
-  shape_ = new btSphereShape(1);
+  // ROS_INFO_STREAM(name << " " << pose);
+  float radius = 1.0;
+  shape_ = new btSphereShape(radius);
   motion_state_ = new btDefaultMotionState(btTransform(
       btQuaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w),
       btVector3(pose.position.x, pose.position.y, pose.position.z)));
@@ -166,6 +175,24 @@ Body::Body(const std::string name,
       shape_, fallInertia);
   rigid_body_ = new btRigidBody(fallRigidBodyCI);
   dynamics_world_->addRigidBody(rigid_body_);
+
+  // TODO(lucasw) is it more efficient for every marker to have the same ns,
+  // and have id be a hash of the name?
+  marker_.ns = name;
+  marker_.id = 0;
+  marker_.header.frame_id = name;
+  marker_.header.stamp = ros::Time::now();
+  marker_.frame_locked = true;
+  marker_.type = visualization_msgs::Marker::SPHERE;
+  marker_.action = visualization_msgs::Marker::ADD;
+  marker_.pose.orientation.w = 1.0;
+  marker_.color.r = 1.0;
+  marker_.color.g = 0.7;
+  marker_.color.a = 1.0;
+  marker_.scale.x = radius * 2;
+  marker_.scale.y = radius * 2;
+  marker_.scale.z = radius * 2;
+  marker_.lifetime = ros::Duration();
 }
 
 Body::~Body()

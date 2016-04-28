@@ -18,6 +18,7 @@
   gets more than 5 or 10 seconds behind current time).
 */
 
+#include <boost/functional/hash.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet_server/Body.h>
 #include <geometry_msgs/Pose.h>
@@ -125,6 +126,7 @@ void BulletServer::update()
       it != bodies_.end(); ++it)
   {
     it->second->update();
+    // marker_pub_.publish(it->second->marker_);
   }
   ros::spinOnce();
   ros::Duration(period_).sleep();
@@ -154,6 +156,18 @@ BulletServer::~BulletServer()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
+unsigned long hash(const char *str) {
+    unsigned long hash = 5381;
+    int c;
+
+    while (c = *str++) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+
+    return hash;
+}
+
 Body::Body(const std::string name,
     geometry_msgs::Pose pose,
     btDiscreteDynamicsWorld* dynamics_world,
@@ -178,10 +192,10 @@ Body::Body(const std::string name,
 
   // TODO(lucasw) is it more efficient for every marker to have the same ns,
   // and have id be a hash of the name?
-  marker_.ns = name;
-  marker_.id = 0;
+  marker_.ns = "bullet_server"; // name;
+  marker_.id = hash(name.c_str());
   marker_.header.frame_id = name;
-  marker_.header.stamp = ros::Time::now();
+  // marker_.header.stamp = ros::Time::now();
   marker_.frame_locked = true;
   marker_.type = visualization_msgs::Marker::SPHERE;
   marker_.action = visualization_msgs::Marker::ADD;

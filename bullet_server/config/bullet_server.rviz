@@ -1,15 +1,15 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 78
+    Help Height: 218
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /Axes1
-        - /Marker1
+        - /Marker1/Status1
         - /Marker1/Namespaces1
         - /Grid YZ1/Offset1
       Splitter Ratio: 0.509294
-    Tree Height: 697
+    Tree Height: 557
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -96,7 +96,7 @@ Visualization Manager:
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
-        t1: true
+        bullet_server: true
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -106,10 +106,6 @@ Visualization Manager:
         All Enabled: true
         map:
           Value: true
-        t1:
-          Value: true
-        t2:
-          Value: true
       Marker Scale: 8
       Name: TF
       Show Arrows: true
@@ -117,10 +113,6 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          t1:
-            {}
-          t2:
-            {}
       Update Interval: 0
       Value: true
     - Alpha: 0.5
@@ -183,22 +175,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 27.2841
+      Distance: 8.2079
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -3.45866
-        Y: -2.53682
-        Z: 3.68819
+        X: 4.39604
+        Y: 2.41777
+        Z: 4.19445
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.304797
+      Pitch: 0.384797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.695399
+      Yaw: 0.310401
     Saved: ~
 Window Geometry:
   Camera:
@@ -218,5 +210,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1071
-  X: 768
-  Y: 17
+  X: 778
+  Y: 19

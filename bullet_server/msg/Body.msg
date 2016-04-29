@@ -10,7 +10,7 @@ uint8 MULTI_SPHERE=5
 # has to be unique of all links
 # if an existing link of this name exists it will be replaced
 string name
-int32 type
+uint8 type
 # starting pose and twist
 # TODO should initial conditions be in a separate message
 # than the body name and shape etc.?

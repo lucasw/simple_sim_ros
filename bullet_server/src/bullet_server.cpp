@@ -69,7 +69,9 @@ class Body
   btDiscreteDynamicsWorld* dynamics_world_;
 public:
   Body(const std::string name,
+      unsigned int type,
       geometry_msgs::Pose pose,
+      geometry_msgs::Vector3 scale,
       btDiscreteDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br);
   ~Body();
@@ -115,7 +117,8 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
   if (bodies_.count(msg->name) > 0)
     delete bodies_[msg->name];
 
-  bodies_[msg->name] = new Body(msg->name, msg->pose, dynamics_world_, &br_);
+  bodies_[msg->name] = new Body(msg->name, msg->type, msg->pose,
+      msg->scale, dynamics_world_, &br_);
   marker_pub_.publish(bodies_[msg->name]->marker_);
 }
 
@@ -169,16 +172,27 @@ unsigned long hash(const char *str) {
 }
 
 Body::Body(const std::string name,
+    unsigned int type,
     geometry_msgs::Pose pose,
+    geometry_msgs::Vector3 scale,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br) :
+  shape_(NULL),
+  rigid_body_(NULL),
   name_(name),
   dynamics_world_(dynamics_world),
   br_(br)
 {
-  // ROS_INFO_STREAM(name << " " << pose);
-  float radius = 1.0;
-  shape_ = new btSphereShape(radius);
+  // ROS_INFO_STREAM(name << " " << type << " " << pose);
+
+  // TODO(lucasw) rename this Body to disambiguate?
+  if (type == bullet_server::Body::SPHERE)
+    shape_ = new btSphereShape(scale.x / 2);
+  else if (type == bullet_server::Body::BOX)
+    shape_ = new btBoxShape(btVector3(scale.x / 2, scale.y / 2, scale.z / 2));
+  else
+    return;
+
   motion_state_ = new btDefaultMotionState(btTransform(
       btQuaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w),
       btVector3(pose.position.x, pose.position.y, pose.position.z)));
@@ -197,29 +211,45 @@ Body::Body(const std::string name,
   marker_.header.frame_id = name;
   // marker_.header.stamp = ros::Time::now();
   marker_.frame_locked = true;
-  marker_.type = visualization_msgs::Marker::SPHERE;
+  if (type == bullet_server::Body::SPHERE)
+  {
+    marker_.type = visualization_msgs::Marker::SPHERE;
+    marker_.scale.x = scale.x;
+    marker_.scale.y = scale.x;
+    marker_.scale.z = scale.x;
+  }
+  else if (type == bullet_server::Body::BOX)
+  {
+    marker_.type = visualization_msgs::Marker::CUBE;
+    marker_.scale.x = scale.x;
+    marker_.scale.y = scale.y;
+    marker_.scale.z = scale.z;
+  }
   marker_.action = visualization_msgs::Marker::ADD;
   marker_.pose.orientation.w = 1.0;
   marker_.color.r = 1.0;
   marker_.color.g = 0.7;
   marker_.color.a = 1.0;
-  marker_.scale.x = radius * 2;
-  marker_.scale.y = radius * 2;
-  marker_.scale.z = radius * 2;
   marker_.lifetime = ros::Duration();
 }
 
 Body::~Body()
 {
   dynamics_world_->removeRigidBody(rigid_body_);
-  delete rigid_body_->getMotionState();
-  delete rigid_body_;
-  delete shape_;
+  if (shape_)
+  {
+    delete rigid_body_->getMotionState();
+    delete rigid_body_;
+  }
+  if (shape_)
+    delete shape_;
 }
 
 // TODO(lucasw) pass in current time
 void Body::update()
 {
+  if (!shape_)
+    return;
   btTransform trans;
   rigid_body_->getMotionState()->getWorldTransform(trans);
 

@@ -186,7 +186,7 @@ Body::Body(const std::string name,
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
-  // ROS_INFO_STREAM(name << " " << type << " " << pose);
+  ROS_INFO_STREAM(name << " " << type);  // << " " << pose);
 
   // TODO(lucasw) rename this Body to disambiguate?
   if (type == bullet_server::Body::SPHERE)
@@ -331,7 +331,6 @@ Body::Body(const std::string name,
       marker.scale.z = height;  // the length along axis of the cylinder
       marker_array_.markers.push_back(marker);
     }
-
   }
   else
     return;

@@ -301,7 +301,36 @@ Body::Body(const std::string name,
       marker.scale.z = scale.x * 2;
       marker_array_.markers.push_back(marker);
     }
+  }
+  else if (type == bullet_server::Body::CONE)
+  {
+    // TODO(lucasw) construct a cone out of triangles, for now use cylinders
+    shape_ = new btConeShape(scale.x, scale.y);
 
+    const int num_segs = 8;
+    const float full_height = scale.y;
+    const float height = full_height / static_cast<float>(num_segs);
+    for (size_t i = 0; i < num_segs; ++i)
+    {
+      const float diameter = 2.0 * scale.x * (num_segs - i) / static_cast<float>(num_segs);
+
+      // TODO(lucasw) there is an extra gap between the cones I can't account for
+      // is the bullet cone slightly taller than scale.y?
+      // It is taller by 0.080 when the set height is 1.0
+      visualization_msgs::Marker marker;
+      marker.type = visualization_msgs::Marker::CYLINDER;
+      marker.pose.position.y = height * i + height/2.0 - full_height / 2.0;
+      // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+      // KDL::Rotation(-M_PI_2, 0, 0)?
+      // tf::Quaternion quat = tf::createQuaternionFromRPY();
+      // tf::Matrix3x3(quat)
+      marker.pose.orientation.x = 0.70710678;
+      marker.pose.orientation.w = 0.70710678;
+      marker.scale.x = diameter;
+      marker.scale.y = diameter;
+      marker.scale.z = height;  // the length along axis of the cylinder
+      marker_array_.markers.push_back(marker);
+    }
 
   }
   else

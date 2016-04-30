@@ -38,7 +38,7 @@ class BulletServer
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   tf::TransformBroadcaster br_;
   float period_;
-  ros::Publisher marker_pub_;
+  // ros::Publisher marker_pub_;
   ros::Publisher marker_array_pub_;
 
   btBroadphaseInterface* broadphase;
@@ -64,8 +64,9 @@ class Body
 {
   const std::string name_;
   tf::TransformBroadcaster* br_;
-  ros::Publisher* marker_pub_;
-  visualization_msgs::Marker marker_;
+  // ros::Publisher* marker_pub_;
+  ros::Publisher* marker_array_pub_;
+  visualization_msgs::MarkerArray marker_array_;
 
   btCollisionShape* shape_;
   btRigidBody* rigid_body_;
@@ -78,7 +79,7 @@ public:
       geometry_msgs::Vector3 scale,
       btDiscreteDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
-      ros::Publisher* marker_pub_);
+      ros::Publisher* marker_array_pub_);
   ~Body();
 
   void update();
@@ -108,7 +109,7 @@ int BulletServer::init()
 
   period_ = 1.0 / 60.0;
 
-  marker_pub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+  marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
   // TODO(lucasw) make this a service
   // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
@@ -122,7 +123,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
     delete bodies_[msg->name];
 
   bodies_[msg->name] = new Body(msg->name, msg->type, msg->pose,
-      msg->scale, dynamics_world_, &br_, &marker_pub_);
+      msg->scale, dynamics_world_, &br_, &marker_array_pub_);
 }
 
 void BulletServer::update()
@@ -132,7 +133,6 @@ void BulletServer::update()
       it != bodies_.end(); ++it)
   {
     it->second->update();
-    // marker_pub_.publish(it->second->marker_);
   }
   ros::spinOnce();
   ros::Duration(period_).sleep();
@@ -178,34 +178,39 @@ Body::Body(const std::string name,
     geometry_msgs::Vector3 scale,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
-    ros::Publisher* marker_pub) :
+    ros::Publisher* marker_array_pub) :
   shape_(NULL),
   rigid_body_(NULL),
   name_(name),
   dynamics_world_(dynamics_world),
   br_(br),
-  marker_pub_(marker_pub)
+  marker_array_pub_(marker_array_pub)
 {
   // ROS_INFO_STREAM(name << " " << type << " " << pose);
 
-  marker_.pose.orientation.w = 1.0;
   // TODO(lucasw) rename this Body to disambiguate?
   if (type == bullet_server::Body::SPHERE)
   {
+    visualization_msgs::Marker marker;
     shape_ = new btSphereShape(scale.x);
 
-    marker_.type = visualization_msgs::Marker::SPHERE;
-    marker_.scale.x = scale.x * 2;
-    marker_.scale.y = scale.x * 2;
-    marker_.scale.z = scale.x * 2;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.scale.x = scale.x * 2;
+    marker.scale.y = scale.x * 2;
+    marker.scale.z = scale.x * 2;
+    marker.pose.orientation.w = 1.0;
+    marker_array_.markers.push_back(marker);
   }
   else if (type == bullet_server::Body::BOX)
   {
     shape_ = new btBoxShape(btVector3(scale.x, scale.y, scale.z));
-    marker_.type = visualization_msgs::Marker::CUBE;
-    marker_.scale.x = scale.x * 2;
-    marker_.scale.y = scale.y * 2;
-    marker_.scale.z = scale.z * 2;
+
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::CUBE;
+    marker.scale.x = scale.x * 2;
+    marker.scale.y = scale.y * 2;
+    marker.scale.z = scale.z * 2;
+    marker_array_.markers.push_back(marker);
   }
   else if (type == bullet_server::Body::CYLINDER)
   {
@@ -213,16 +218,18 @@ Body::Body(const std::string name,
     // cylinder is rviz have a central z axis- so rotate the rviz cylinder
     shape_ = new btCylinderShape(btVector3(scale.x, scale.y, scale.z));
 
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::CYLINDER;
     // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
     // KDL::Rotation(-M_PI_2, 0, 0)?
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
-    marker_.pose.orientation.x = 0.70710678;
-    marker_.pose.orientation.w = 0.70710678;
-    marker_.type = visualization_msgs::Marker::CYLINDER;
-    marker_.scale.x = scale.x * 2;
-    marker_.scale.y = scale.x * 2;  // no support for flattened cylinder
-    marker_.scale.z = scale.y * 2;
+    marker.pose.orientation.x = 0.70710678;
+    marker.pose.orientation.w = 0.70710678;
+    marker.scale.x = scale.x * 2;
+    marker.scale.y = scale.x * 2;  // no support for flattened cylinder
+    marker.scale.z = scale.y * 2;
+    marker_array_.markers.push_back(marker);
   }
   else if (type == bullet_server::Body::CYLINDER)
   {
@@ -230,18 +237,23 @@ Body::Body(const std::string name,
     // cylinder is rviz have a central z axis- so rotate the rviz cylinder
     shape_ = new btCylinderShape(btVector3(scale.x, scale.y, scale.z));
 
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::CYLINDER;
     // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
     // KDL::Rotation(-M_PI_2, 0, 0)?
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
-    marker_.pose.orientation.x = 0.70710678;
-    marker_.pose.orientation.w = 0.70710678;
-    marker_.type = visualization_msgs::Marker::CYLINDER;
-    marker_.scale.x = scale.x * 2;
-    marker_.scale.y = scale.z * 2;
-    marker_.scale.z = scale.y * 2;
+    marker.pose.orientation.x = 0.70710678;
+    marker.pose.orientation.w = 0.70710678;
+    marker.scale.x = scale.x * 2;
+    marker.scale.y = scale.z * 2;
+    marker.scale.z = scale.y * 2;
+    marker_array_.markers.push_back(marker);
   }
+  else if (type == bullet_server::Body::CAPSULE)
+  {
 
+  }
   else
     return;
 
@@ -258,24 +270,27 @@ Body::Body(const std::string name,
 
   // TODO(lucasw) is it more efficient for every marker to have the same ns,
   // and have id be a hash of the name?
-  marker_.ns = "bullet_server"; // name;
-  marker_.id = hash(name.c_str());
-  marker_.header.frame_id = name;
-  // marker_.header.stamp = ros::Time::now();
-  marker_.frame_locked = true;
-  marker_.action = visualization_msgs::Marker::ADD;
-  marker_.color.r = 1.0;
-  marker_.color.g = 0.7;
-  marker_.color.a = 1.0;
-  marker_.lifetime = ros::Duration();
-
-  marker_pub_->publish(marker_);
+  for (size_t i = 0; i < marker_array_.markers.size(); ++i)
+  {
+    marker_array_.markers[i].ns = "bullet_server"; // name;
+    marker_array_.markers[i].id = hash(name.c_str()) + i * 10000;
+    marker_array_.markers[i].header.frame_id = name;
+    // marker_.header.stamp = ros::Time::now();
+    marker_array_.markers[i].frame_locked = true;
+    marker_array_.markers[i].action = visualization_msgs::Marker::ADD;
+    marker_array_.markers[i].color.r = 1.0;
+    marker_array_.markers[i].color.g = 0.7;
+    marker_array_.markers[i].color.a = 1.0;
+    marker_array_.markers[i].lifetime = ros::Duration();
+  }
+  marker_array_pub_->publish(marker_array_);
 }
 
 Body::~Body()
 {
-  marker_.action = visualization_msgs::Marker::DELETE;
-  marker_pub_->publish(marker_);
+  for (size_t i = 0; i < marker_array_.markers.size(); ++i)
+    marker_array_.markers[i].action = visualization_msgs::Marker::DELETE;
+  marker_array_pub_->publish(marker_array_);
   dynamics_world_->removeRigidBody(rigid_body_);
   if (shape_)
   {

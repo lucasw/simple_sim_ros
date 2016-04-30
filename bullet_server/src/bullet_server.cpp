@@ -27,6 +27,7 @@
 #include <string>
 #include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 class Body;
 
@@ -38,6 +39,7 @@ class BulletServer
   tf::TransformBroadcaster br_;
   float period_;
   ros::Publisher marker_pub_;
+  ros::Publisher marker_array_pub_;
 
   btBroadphaseInterface* broadphase;
   btDefaultCollisionConfiguration* collision_configuration_;
@@ -62,6 +64,8 @@ class Body
 {
   const std::string name_;
   tf::TransformBroadcaster* br_;
+  ros::Publisher* marker_pub_;
+  visualization_msgs::Marker marker_;
 
   btCollisionShape* shape_;
   btRigidBody* rigid_body_;
@@ -73,10 +77,10 @@ public:
       geometry_msgs::Pose pose,
       geometry_msgs::Vector3 scale,
       btDiscreteDynamicsWorld* dynamics_world,
-      tf::TransformBroadcaster* br);
+      tf::TransformBroadcaster* br,
+      ros::Publisher* marker_pub_);
   ~Body();
 
-  visualization_msgs::Marker marker_;
   void update();
 };
 
@@ -118,8 +122,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
     delete bodies_[msg->name];
 
   bodies_[msg->name] = new Body(msg->name, msg->type, msg->pose,
-      msg->scale, dynamics_world_, &br_);
-  marker_pub_.publish(bodies_[msg->name]->marker_);
+      msg->scale, dynamics_world_, &br_, &marker_pub_);
 }
 
 void BulletServer::update()
@@ -140,8 +143,6 @@ BulletServer::~BulletServer()
   for (std::map<std::string, Body*>::iterator it = bodies_.begin();
       it != bodies_.end(); ++it)
   {
-    it->second->marker_.action = visualization_msgs::Marker::DELETE;
-    marker_pub_.publish(it->second->marker_);
     delete it->second;
   }
 
@@ -176,12 +177,14 @@ Body::Body(const std::string name,
     geometry_msgs::Pose pose,
     geometry_msgs::Vector3 scale,
     btDiscreteDynamicsWorld* dynamics_world,
-    tf::TransformBroadcaster* br) :
+    tf::TransformBroadcaster* br,
+    ros::Publisher* marker_pub) :
   shape_(NULL),
   rigid_body_(NULL),
   name_(name),
   dynamics_world_(dynamics_world),
-  br_(br)
+  br_(br),
+  marker_pub_(marker_pub)
 {
   // ROS_INFO_STREAM(name << " " << type << " " << pose);
 
@@ -218,9 +221,27 @@ Body::Body(const std::string name,
     marker_.pose.orientation.w = 0.70710678;
     marker_.type = visualization_msgs::Marker::CYLINDER;
     marker_.scale.x = scale.x * 2;
+    marker_.scale.y = scale.x * 2;  // no support for flattened cylinder
+    marker_.scale.z = scale.y * 2;
+  }
+  else if (type == bullet_server::Body::CYLINDER)
+  {
+    // cylinders in bullet have y central axis,
+    // cylinder is rviz have a central z axis- so rotate the rviz cylinder
+    shape_ = new btCylinderShape(btVector3(scale.x, scale.y, scale.z));
+
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker_.pose.orientation.x = 0.70710678;
+    marker_.pose.orientation.w = 0.70710678;
+    marker_.type = visualization_msgs::Marker::CYLINDER;
+    marker_.scale.x = scale.x * 2;
     marker_.scale.y = scale.z * 2;
     marker_.scale.z = scale.y * 2;
   }
+
   else
     return;
 
@@ -247,10 +268,14 @@ Body::Body(const std::string name,
   marker_.color.g = 0.7;
   marker_.color.a = 1.0;
   marker_.lifetime = ros::Duration();
+
+  marker_pub_->publish(marker_);
 }
 
 Body::~Body()
 {
+  marker_.action = visualization_msgs::Marker::DELETE;
+  marker_pub_->publish(marker_);
   dynamics_world_->removeRigidBody(rigid_body_);
   if (shape_)
   {

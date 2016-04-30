@@ -235,7 +235,8 @@ Body::Body(const std::string name,
   {
     // cylinders in bullet have y central axis,
     // cylinder is rviz have a central z axis- so rotate the rviz cylinder
-    shape_ = new btCylinderShape(btVector3(scale.x, scale.y, scale.z));
+    // TODO(lucasw) why does the cylinder take three parameters when it only uses two?
+    shape_ = new btCylinderShape(btVector3(scale.x, scale.y, scale.x));
 
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::CYLINDER;
@@ -246,12 +247,61 @@ Body::Body(const std::string name,
     marker.pose.orientation.x = 0.70710678;
     marker.pose.orientation.w = 0.70710678;
     marker.scale.x = scale.x * 2;
-    marker.scale.y = scale.z * 2;
+    marker.scale.y = scale.x * 2;
     marker.scale.z = scale.y * 2;
     marker_array_.markers.push_back(marker);
   }
   else if (type == bullet_server::Body::CAPSULE)
   {
+    shape_ = new btCapsuleShape(scale.x, scale.y);
+
+    // build the capsule out of three shape because rviz doesn't have
+    // a capsule marker
+    {
+      visualization_msgs::Marker marker;
+      marker.type = visualization_msgs::Marker::CYLINDER;
+      // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+      // KDL::Rotation(-M_PI_2, 0, 0)?
+      // tf::Quaternion quat = tf::createQuaternionFromRPY();
+      // tf::Matrix3x3(quat)
+      marker.pose.orientation.x = 0.70710678;
+      marker.pose.orientation.w = 0.70710678;
+      marker.scale.x = scale.x * 2;  // diameter
+      marker.scale.y = scale.x * 2;
+      marker.scale.z = scale.y * 2 - scale.x * 2;  // the axis of the cylinder
+      marker_array_.markers.push_back(marker);
+    }
+    {
+      visualization_msgs::Marker marker;
+      marker.type = visualization_msgs::Marker::SPHERE;
+      // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+      // KDL::Rotation(-M_PI_2, 0, 0)?
+      // tf::Quaternion quat = tf::createQuaternionFromRPY();
+      // tf::Matrix3x3(quat)
+      marker.pose.position.y = -scale.y + scale.x;
+      // marker.pose.orientation.x = 0.70710678;
+      // marker.pose.orientation.w = 0.70710678;
+      marker.scale.x = scale.x * 2;
+      marker.scale.y = scale.x * 2;
+      marker.scale.z = scale.x * 2;
+      marker_array_.markers.push_back(marker);
+    }
+    {
+      visualization_msgs::Marker marker;
+      marker.type = visualization_msgs::Marker::SPHERE;
+      // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+      // KDL::Rotation(-M_PI_2, 0, 0)?
+      // tf::Quaternion quat = tf::createQuaternionFromRPY();
+      // tf::Matrix3x3(quat)
+      marker.pose.position.y = scale.y - scale.x;
+      // marker.pose.orientation.x = 0.70710678;
+      // marker.pose.orientation.w = 0.70710678;
+      marker.scale.x = scale.x * 2;
+      marker.scale.y = scale.x * 2;
+      marker.scale.z = scale.x * 2;
+      marker_array_.markers.push_back(marker);
+    }
+
 
   }
   else

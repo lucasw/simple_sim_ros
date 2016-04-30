@@ -185,11 +185,42 @@ Body::Body(const std::string name,
 {
   // ROS_INFO_STREAM(name << " " << type << " " << pose);
 
+  marker_.pose.orientation.w = 1.0;
   // TODO(lucasw) rename this Body to disambiguate?
   if (type == bullet_server::Body::SPHERE)
-    shape_ = new btSphereShape(scale.x / 2);
+  {
+    shape_ = new btSphereShape(scale.x);
+
+    marker_.type = visualization_msgs::Marker::SPHERE;
+    marker_.scale.x = scale.x * 2;
+    marker_.scale.y = scale.x * 2;
+    marker_.scale.z = scale.x * 2;
+  }
   else if (type == bullet_server::Body::BOX)
-    shape_ = new btBoxShape(btVector3(scale.x / 2, scale.y / 2, scale.z / 2));
+  {
+    shape_ = new btBoxShape(btVector3(scale.x, scale.y, scale.z));
+    marker_.type = visualization_msgs::Marker::CUBE;
+    marker_.scale.x = scale.x * 2;
+    marker_.scale.y = scale.y * 2;
+    marker_.scale.z = scale.z * 2;
+  }
+  else if (type == bullet_server::Body::CYLINDER)
+  {
+    // cylinders in bullet have y central axis,
+    // cylinder is rviz have a central z axis- so rotate the rviz cylinder
+    shape_ = new btCylinderShape(btVector3(scale.x, scale.y, scale.z));
+
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker_.pose.orientation.x = 0.70710678;
+    marker_.pose.orientation.w = 0.70710678;
+    marker_.type = visualization_msgs::Marker::CYLINDER;
+    marker_.scale.x = scale.x * 2;
+    marker_.scale.y = scale.z * 2;
+    marker_.scale.z = scale.y * 2;
+  }
   else
     return;
 
@@ -211,22 +242,7 @@ Body::Body(const std::string name,
   marker_.header.frame_id = name;
   // marker_.header.stamp = ros::Time::now();
   marker_.frame_locked = true;
-  if (type == bullet_server::Body::SPHERE)
-  {
-    marker_.type = visualization_msgs::Marker::SPHERE;
-    marker_.scale.x = scale.x;
-    marker_.scale.y = scale.x;
-    marker_.scale.z = scale.x;
-  }
-  else if (type == bullet_server::Body::BOX)
-  {
-    marker_.type = visualization_msgs::Marker::CUBE;
-    marker_.scale.x = scale.x;
-    marker_.scale.y = scale.y;
-    marker_.scale.z = scale.z;
-  }
   marker_.action = visualization_msgs::Marker::ADD;
-  marker_.pose.orientation.w = 1.0;
   marker_.color.r = 1.0;
   marker_.color.g = 0.7;
   marker_.color.a = 1.0;

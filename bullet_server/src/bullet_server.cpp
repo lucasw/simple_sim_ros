@@ -183,7 +183,7 @@ void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
     ROS_WARN_STREAM("body does not exist " << msg->body);
     return;
   }
-  ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
+  // ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
   const btVector3 point_rel_body(msg->location.x, msg->location.y, msg->location.z);
   const btVector3 impulse(msg->impulse.x, msg->impulse.y, msg->impulse.z);
   bodies_[msg->body]->rigid_body_->activate();

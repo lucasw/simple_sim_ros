@@ -54,6 +54,7 @@ roslint_cpp()
 add_message_files(
   FILES
   Body.msg
+  Constraint.msg
 )
 
 ## Generate services in the 'srv' folder

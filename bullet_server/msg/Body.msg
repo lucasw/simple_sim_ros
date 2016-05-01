@@ -1,9 +1,9 @@
 uint8 SPHERE=0
-# not supported yet
 uint8 BOX=1
 uint8 CYLINDER=2
 uint8 CAPSULE=3
 uint8 CONE=4
+# not supported yet, TODO(lucasw) probably needs a different message type
 uint8 MULTI_SPHERE=5
 # TODO mesh shapes, convex hull...
 # http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Collision_Shapes

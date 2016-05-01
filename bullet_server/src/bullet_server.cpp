@@ -21,6 +21,7 @@
 #include <boost/functional/hash.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet_server/Body.h>
+#include <bullet_server/Constraint.h>
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
@@ -36,6 +37,8 @@ class BulletServer
   ros::NodeHandle nh_;
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
+  ros::Subscriber constraint_sub_;
+  void constraintCallback(const bullet_server::Constraint::ConstPtr& msg);
   tf::TransformBroadcaster br_;
   float period_;
   // ros::Publisher marker_pub_;
@@ -52,6 +55,7 @@ class BulletServer
   btRigidBody* ground_rigid_body_;
 
   std::map<std::string, Body*> bodies_;
+  std::map<std::string, btTypedConstraint*> constraints_;
 
   int init();
 public:
@@ -69,7 +73,6 @@ class Body
   visualization_msgs::MarkerArray marker_array_;
 
   btCollisionShape* shape_;
-  btRigidBody* rigid_body_;
   btDefaultMotionState* motion_state_;
   btDiscreteDynamicsWorld* dynamics_world_;
 public:
@@ -82,6 +85,7 @@ public:
       ros::Publisher* marker_array_pub_);
   ~Body();
 
+  btRigidBody* rigid_body_;
   void update();
 };
 
@@ -113,6 +117,7 @@ int BulletServer::init()
   // TODO(lucasw) make this a service
   // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
+  constraint_sub_ = nh_.subscribe("add_constraint", 10, &BulletServer::constraintCallback, this);
 
   return 0;
 }
@@ -124,6 +129,45 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
 
   bodies_[msg->name] = new Body(msg->name, msg->type, msg->pose,
       msg->scale, dynamics_world_, &br_, &marker_array_pub_);
+}
+
+void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr& msg)
+{
+  // Can't handle joints between bodies that don't exist yet
+  if (msg->body_a == msg->body_b)
+  {
+    ROS_WARN_STREAM("can't have constraint on same body "
+        << msg->body_a << " " << msg->body_b);
+    return;
+  }
+  if (bodies_.count(msg->body_a) == 0)
+  {
+    ROS_WARN_STREAM("body does not exist " << msg->body_a);
+    return;
+  }
+  if (bodies_.count(msg->body_b) == 0)
+  {
+    ROS_WARN_STREAM("body does not exist " << msg->body_b);
+    return;
+  }
+  if (constraints_.count(msg->name) > 0)
+  {
+    dynamics_world_->removeConstraint(constraints_[msg->name]);
+    delete constraints_[msg->name];
+  }
+  const btVector3 pivot_in_a(msg->pivot_in_a.x, msg->pivot_in_a.y, msg->pivot_in_a.z);
+  const btVector3 pivot_in_b(msg->pivot_in_b.x, msg->pivot_in_b.y, msg->pivot_in_b.z);
+  if (msg->type == bullet_server::Constraint::POINT2POINT)
+  {
+    ROS_INFO_STREAM(msg->name << " " << msg->body_a << " " << msg->body_b
+        << msg->pivot_in_a << " " << msg->pivot_in_b);
+    constraints_[msg->name] = new btPoint2PointConstraint(
+        *bodies_[msg->body_a]->rigid_body_,
+        *bodies_[msg->body_b]->rigid_body_,
+        pivot_in_a,
+        pivot_in_b);
+    dynamics_world_->addConstraint(constraints_[msg->name]);
+  }
 }
 
 void BulletServer::update()
@@ -370,7 +414,7 @@ Body::~Body()
     marker_array_.markers[i].action = visualization_msgs::Marker::DELETE;
   marker_array_pub_->publish(marker_array_);
   dynamics_world_->removeRigidBody(rigid_body_);
-  if (shape_)
+  if (rigid_body_)
   {
     delete rigid_body_->getMotionState();
     delete rigid_body_;

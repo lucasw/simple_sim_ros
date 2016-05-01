@@ -55,6 +55,7 @@ add_message_files(
   FILES
   Body.msg
   Constraint.msg
+  Impulse.msg
 )
 
 ## Generate services in the 'srv' folder

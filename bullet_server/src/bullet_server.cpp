@@ -22,6 +22,7 @@
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet_server/Body.h>
 #include <bullet_server/Constraint.h>
+#include <bullet_server/Impulse.h>
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
@@ -39,6 +40,8 @@ class BulletServer
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   ros::Subscriber constraint_sub_;
   void constraintCallback(const bullet_server::Constraint::ConstPtr& msg);
+  ros::Subscriber impulse_sub_;
+  void impulseCallback(const bullet_server::Impulse::ConstPtr& msg);
   tf::TransformBroadcaster br_;
   float period_;
   // ros::Publisher marker_pub_;
@@ -118,6 +121,7 @@ int BulletServer::init()
   // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
   constraint_sub_ = nh_.subscribe("add_constraint", 10, &BulletServer::constraintCallback, this);
+  impulse_sub_ = nh_.subscribe("add_impulse", 10, &BulletServer::impulseCallback, this);
 
   return 0;
 }
@@ -167,7 +171,23 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
         pivot_in_a,
         pivot_in_b);
     dynamics_world_->addConstraint(constraints_[msg->name]);
+    bodies_[msg->body_a]->rigid_body_->activate();
+    bodies_[msg->body_b]->rigid_body_->activate();
   }
+}
+
+void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
+{
+  if (bodies_.count(msg->body) == 0)
+  {
+    ROS_WARN_STREAM("body does not exist " << msg->body);
+    return;
+  }
+  ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
+  const btVector3 point_rel_body(msg->location.x, msg->location.y, msg->location.z);
+  const btVector3 impulse(msg->impulse.x, msg->impulse.y, msg->impulse.z);
+  bodies_[msg->body]->rigid_body_->activate();
+  bodies_[msg->body]->rigid_body_->applyImpulse(impulse, point_rel_body);
 }
 
 void BulletServer::update()

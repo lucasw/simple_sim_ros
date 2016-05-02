@@ -105,4 +105,4 @@ if False:
         rospy.sleep(1.0)
 
 
-rospy.spin()
+# rospy.spin()

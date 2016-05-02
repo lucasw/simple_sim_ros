@@ -23,11 +23,11 @@ wheel.name = "wheel0"
 wheel.type = Body.CYLINDER
 wheel.pose.position.x = 1.0
 wheel.pose.position.y = 1.0
-wheel.pose.position.z = 1.0
+wheel.pose.position.z = 0.8
 wheel.pose.orientation.x = 0.0  # 0.707
 wheel.pose.orientation.w = 1.0  # 0.707
 wheel.scale.x = 0.5
-wheel.scale.y = 0.3
+wheel.scale.y = 0.2
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
 body_pub.publish(wheel)
@@ -48,6 +48,57 @@ wheel.pose.position.y = 1.0
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
 
-#chassis = Body()
+chassis = Body()
+chassis.name = "chassis0"
+chassis.type = Body.BOX
+chassis.pose.position.x = 0.0
+chassis.pose.position.y = 0.0
+chassis.pose.position.z = 0.8
+chassis.pose.orientation.x = 0.0  # 0.707
+chassis.pose.orientation.w = 1.0  # 0.707
+chassis.scale.x = 1.2
+chassis.scale.y = 0.5
+chassis.scale.z = 0.25
+body_pub.publish(chassis)
+rospy.sleep(sleep_time)
+
+
+axel = Constraint()
+axel.name = "axel0"
+axel.type = Constraint.POINT2POINT
+axel.body_a = "chassis0"
+axel.body_b = "wheel0"
+axel.pivot_in_a.x = 1.0  # wheel0.pose.position.x
+axel.pivot_in_a.y = 0.75
+axel.pivot_in_a.z = -0.1
+constraint_pub.publish(axel)
+rospy.sleep(sleep_time)
+
+axel.name = "axel1"
+axel.body_b = "wheel1"
+axel.pivot_in_a.y = -0.75
+constraint_pub.publish(axel)
+rospy.sleep(sleep_time)
+
+axel.name = "axel2"
+axel.body_b = "wheel2"
+axel.pivot_in_a.x = -1.0
+constraint_pub.publish(axel)
+rospy.sleep(sleep_time)
+
+axel.name = "axel3"
+axel.body_b = "wheel3"
+axel.pivot_in_a.y = 0.75
+constraint_pub.publish(axel)
+rospy.sleep(sleep_time)
+
+impulse = Impulse()
+impulse.body = "chassis0"
+impulse.impulse.x = 1
+
+while not rospy.is_shutdown():
+    impulse_pub.publish(impulse)
+    rospy.sleep(1.0)
+
 
 rospy.spin()

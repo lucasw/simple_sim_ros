@@ -32,6 +32,7 @@
 #include <visualization_msgs/MarkerArray.h>
 
 class Body;
+class Constraint;
 
 class BulletServer
 {
@@ -58,7 +59,7 @@ class BulletServer
   btRigidBody* ground_rigid_body_;
 
   std::map<std::string, Body*> bodies_;
-  std::map<std::string, btTypedConstraint*> constraints_;
+  std::map<std::string, Constraint*> constraints_;
 
   int init();
 public:
@@ -69,7 +70,6 @@ public:
 
 class Body
 {
-  const std::string name_;
   tf::TransformBroadcaster* br_;
   // ros::Publisher* marker_pub_;
   ros::Publisher* marker_array_pub_;
@@ -88,9 +88,72 @@ public:
       ros::Publisher* marker_array_pub_);
   ~Body();
 
+  const std::string name_;
   btRigidBody* rigid_body_;
   void update();
 };
+
+class Constraint
+{
+  btTypedConstraint* constraint_;
+
+  Body* body_a_;
+  Body* body_b_;
+  btDiscreteDynamicsWorld* dynamics_world_;
+  ros::Publisher* marker_array_pub_;
+public:
+  Constraint(
+      const std::string name,
+      unsigned int type,
+      Body* body_a,
+      Body* body_b,
+      geometry_msgs::Point pivot_in_a,
+      geometry_msgs::Point pivot_in_b,
+      btDiscreteDynamicsWorld* dynamics_world,
+      ros::Publisher* marker_array_pub);
+  ~Constraint();
+};
+
+Constraint::Constraint(
+      const std::string name,
+      unsigned int type,
+      Body* body_a,
+      Body* body_b,
+      geometry_msgs::Point pivot_in_a,
+      geometry_msgs::Point pivot_in_b,
+      btDiscreteDynamicsWorld* dynamics_world,
+      ros::Publisher* marker_array_pub) :
+    body_a_(body_a),
+    body_b_(body_b),
+    dynamics_world_(dynamics_world),
+    marker_array_pub_(marker_array_pub)
+{
+
+  const btVector3 pivot_in_a_bt(pivot_in_a.x, pivot_in_a.y, pivot_in_a.z);
+  const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
+  if (type == bullet_server::Constraint::POINT2POINT)
+  {
+    ROS_INFO_STREAM(name << " " << body_a->name_ << " " << body_b->name_
+        << pivot_in_a << " " << pivot_in_b);
+    constraint_ = new btPoint2PointConstraint(
+        *body_a->rigid_body_,
+        *body_b->rigid_body_,
+        pivot_in_a_bt,
+        pivot_in_b_bt);
+    dynamics_world_->addConstraint(constraint_);
+    body_a->rigid_body_->activate();
+    body_b->rigid_body_->activate();
+
+    // TODO(lucasw) publish a marker for both bodies- a line to the center of the body
+    // to the pivot, and then a sphere at the ball joint
+  }
+}
+
+Constraint::~Constraint()
+{
+  dynamics_world_->removeConstraint(constraint_);
+  delete constraint_;
+}
 
 BulletServer::BulletServer()
 {
@@ -156,24 +219,19 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
   }
   if (constraints_.count(msg->name) > 0)
   {
-    dynamics_world_->removeConstraint(constraints_[msg->name]);
     delete constraints_[msg->name];
   }
-  const btVector3 pivot_in_a(msg->pivot_in_a.x, msg->pivot_in_a.y, msg->pivot_in_a.z);
-  const btVector3 pivot_in_b(msg->pivot_in_b.x, msg->pivot_in_b.y, msg->pivot_in_b.z);
-  if (msg->type == bullet_server::Constraint::POINT2POINT)
-  {
-    ROS_INFO_STREAM(msg->name << " " << msg->body_a << " " << msg->body_b
-        << msg->pivot_in_a << " " << msg->pivot_in_b);
-    constraints_[msg->name] = new btPoint2PointConstraint(
-        *bodies_[msg->body_a]->rigid_body_,
-        *bodies_[msg->body_b]->rigid_body_,
-        pivot_in_a,
-        pivot_in_b);
-    dynamics_world_->addConstraint(constraints_[msg->name]);
-    bodies_[msg->body_a]->rigid_body_->activate();
-    bodies_[msg->body_b]->rigid_body_->activate();
-  }
+  Constraint* constraint = new Constraint(
+      msg->name,
+      msg->type,
+      bodies_[msg->body_a],
+      bodies_[msg->body_b],
+      msg->pivot_in_a,
+      msg->pivot_in_b,
+      dynamics_world_,
+      &marker_array_pub_);
+  constraints_[msg->name] = constraint;
+
 }
 
 void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)

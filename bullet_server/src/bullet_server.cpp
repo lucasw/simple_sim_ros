@@ -20,9 +20,12 @@
 
 #include <boost/functional/hash.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
+#include <bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <bullet_server/Body.h>
 #include <bullet_server/Constraint.h>
+#include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
+#include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
@@ -57,6 +60,9 @@ class BulletServer
   void constraintCallback(const bullet_server::Constraint::ConstPtr& msg);
   ros::Subscriber impulse_sub_;
   void impulseCallback(const bullet_server::Impulse::ConstPtr& msg);
+  ros::Subscriber heightfield_sub_;
+  void heightfieldCallback(const bullet_server::Heightfield::ConstPtr& msg);
+
   tf::TransformBroadcaster br_;
   float period_;
   // ros::Publisher marker_pub_;
@@ -104,6 +110,19 @@ public:
       btDiscreteDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub_);
+  // heightfield
+  Body(BulletServer* parent,
+    const std::string name,
+    // unsigned int type,
+    // geometry_msgs::Pose pose,
+    // geometry_msgs::Vector3 scale,
+    cv::Mat& image,
+    const float resolution,
+    const float height_scale,
+    const bool flip_quad_edges,
+    btDiscreteDynamicsWorld* dynamics_world,
+    tf::TransformBroadcaster* br,
+    ros::Publisher* marker_array_pub);
   ~Body();
 
   // keep track of constraints attached to this body
@@ -338,6 +357,32 @@ void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
   bodies_[msg->body]->rigid_body_->activate();
   bodies_[msg->body]->rigid_body_->applyImpulse(impulse, point_rel_body);
 }
+
+void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPtr& msg)
+{
+  // convert to cv Mat - TODO(lucasw) do I need to?
+  cv_bridge::CvImagePtr cv_ptr;
+
+  try
+  {
+    cv_ptr = cv_bridge::toCvCopy(msg->image, sensor_msgs::image_encodings::BGR8);
+  }
+  catch (cv_bridge::Exception& e)
+  {
+    ROS_ERROR("cv_bridge exception: %s", e.what());
+    return;
+  }
+
+  if (bodies_.count(msg->name) > 0)
+  {
+    delete bodies_[msg->name];
+  }
+
+  bodies_[msg->name] = new Body(this, msg->name,
+      cv_ptr->image, msg->resolution, msg->height_scale, msg->flip_quad_edges,
+      dynamics_world_, &br_, &marker_array_pub_);
+}
+
 
 void BulletServer::update()
 {
@@ -574,6 +619,59 @@ Body::Body(BulletServer* parent,
     marker_array_.markers[i].lifetime = ros::Duration();
   }
   marker_array_pub_->publish(marker_array_);
+}
+
+Body::Body(
+    BulletServer* parent,
+    const std::string name,
+    // unsigned int type,
+    // geometry_msgs::Pose pose,
+    // geometry_msgs::Vector3 scale,
+    cv::Mat& image,
+    const float resolution,
+    const float height_scale,
+    const bool flip_quad_edges,
+    btDiscreteDynamicsWorld* dynamics_world,
+    tf::TransformBroadcaster* br,
+    ros::Publisher* marker_array_pub) :
+  parent_(parent),
+  shape_(NULL),
+  rigid_body_(NULL),
+  name_(name),
+  dynamics_world_(dynamics_world),
+  br_(br),
+  marker_array_pub_(marker_array_pub)
+{
+  btHeightfieldTerrainShape* heightfield_shape = new btHeightfieldTerrainShape(
+      image.size().width,
+      image.size().height,
+      image.data,
+      height_scale,
+      0,
+      255,
+      2,
+      PHY_UCHAR,
+      flip_quad_edges);
+
+  // the height scale takes care of the vertical scaling
+  btVector3 local_scaling(resolution, resolution, 1.0);
+  heightfield_shape->setLocalScaling(local_scaling);
+
+  shape_ = heightfield_shape;
+
+  btTransform tf;
+  tf.setIdentity();
+  tf.setOrigin(btVector3(0, 0, -height_scale * 255));
+
+  // TODO(lucasw) calculate btTransform from frame_id 
+  motion_state_ = new btDefaultMotionState(tf);
+  float mass = 0.0;
+  btVector3 fallInertia(0, 0, 0);
+  // shape_->calculateLocalInertia(mass, fallInertia);
+  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,
+      shape_, fallInertia);
+  rigid_body_ = new btRigidBody(fallRigidBodyCI);
+  dynamics_world_->addRigidBody(rigid_body_);
 }
 
 Body::~Body()

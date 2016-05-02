@@ -179,6 +179,7 @@ Constraint::Constraint(
       marker.color.a = 0.4;
       marker.lifetime = ros::Duration();
 
+      // TODO(lucasw) could turn this into function
       marker.id = hash(name.c_str());
       marker.header.frame_id = body_a->name_;
       marker.pose.position = pivot_in_a;
@@ -193,6 +194,29 @@ Constraint::Constraint(
       marker.color.r = 0.6;
       marker.color.g = 0.3;
       marker.color.b = 0.7;
+      marker_array.markers.push_back(marker);
+
+      // draw lines from the origin to the pivot
+      marker.scale.x = 0.05;
+
+      marker.id = hash((name + "_line_a").c_str());
+      marker.header.frame_id = body_a->name_;
+      marker.pose.position.x = 0;
+      marker.pose.position.y = 0;
+      marker.pose.position.z = 0;
+      marker.type = visualization_msgs::Marker::LINE_STRIP;
+      marker.points.resize(2);
+      marker.points[1] = pivot_in_a;
+      marker_array.markers.push_back(marker);
+
+      marker.id = hash((name + "_line_b").c_str());
+      marker.header.frame_id = body_b->name_;
+      marker.pose.position.x = 0;
+      marker.pose.position.y = 0;
+      marker.pose.position.z = 0;
+      marker.type = visualization_msgs::Marker::LINE_STRIP;
+      marker.points.resize(2);
+      marker.points[1] = pivot_in_b;
       marker_array.markers.push_back(marker);
     }
 

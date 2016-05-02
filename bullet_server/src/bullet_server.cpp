@@ -34,6 +34,20 @@
 class Body;
 class Constraint;
 
+
+// TODO(lucasw) replace this with something better, numbers aren't random enough
+// http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
+unsigned long hash(const char *str) {
+    unsigned long hash = 5381;
+    int c;
+
+    while (c = *str++) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+
+    return hash;
+}
+
 class BulletServer
 {
   ros::NodeHandle nh_;
@@ -133,8 +147,8 @@ Constraint::Constraint(
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
   if (type == bullet_server::Constraint::POINT2POINT)
   {
-    ROS_INFO_STREAM(name << " " << body_a->name_ << " " << body_b->name_
-        << pivot_in_a << " " << pivot_in_b);
+    // ROS_INFO_STREAM(name << " " << body_a->name_ << " " << body_b->name_
+    //     << pivot_in_a << " " << pivot_in_b);
     constraint_ = new btPoint2PointConstraint(
         *body_a->rigid_body_,
         *body_b->rigid_body_,
@@ -144,8 +158,45 @@ Constraint::Constraint(
     body_a->rigid_body_->activate();
     body_b->rigid_body_->activate();
 
+    visualization_msgs::MarkerArray marker_array;
     // TODO(lucasw) publish a marker for both bodies- a line to the center of the body
     // to the pivot, and then a sphere at the ball joint
+    {
+      visualization_msgs::Marker marker;
+      marker.type = visualization_msgs::Marker::SPHERE;
+      // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+      // KDL::Rotation(-M_PI_2, 0, 0)?
+      // tf::Quaternion quat = tf::createQuaternionFromRPY();
+      // tf::Matrix3x3(quat)
+      marker.pose.orientation.w = 1.0;
+      marker.scale.x = 0.1;
+      marker.scale.y = 0.1;
+      marker.scale.z = 0.1;
+      marker.ns = "constraints";
+      // marker_.header.stamp = ros::Time::now();
+      marker.frame_locked = true;
+      marker.action = visualization_msgs::Marker::ADD;
+      marker.color.a = 0.4;
+      marker.lifetime = ros::Duration();
+
+      marker.id = hash(name.c_str());
+      marker.header.frame_id = body_a->name_;
+      marker.pose.position = pivot_in_a;
+      marker.color.r = 0.5;
+      marker.color.g = 0.7;
+      marker.color.b = 0.3;
+      marker_array.markers.push_back(marker);
+
+      marker.id = hash((name + "_b").c_str());
+      marker.header.frame_id = body_b->name_;
+      marker.pose.position = pivot_in_b;
+      marker.color.r = 0.6;
+      marker.color.g = 0.3;
+      marker.color.b = 0.7;
+      marker_array.markers.push_back(marker);
+    }
+
+    marker_array_pub_->publish(marker_array);
   }
 }
 
@@ -231,7 +282,6 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       dynamics_world_,
       &marker_array_pub_);
   constraints_[msg->name] = constraint;
-
 }
 
 void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
@@ -281,18 +331,6 @@ BulletServer::~BulletServer()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-// http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
-unsigned long hash(const char *str) {
-    unsigned long hash = 5381;
-    int c;
-
-    while (c = *str++) {
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    }
-
-    return hash;
-}
 
 Body::Body(const std::string name,
     unsigned int type,
@@ -472,7 +510,7 @@ Body::Body(const std::string name,
   // and have id be a hash of the name?
   for (size_t i = 0; i < marker_array_.markers.size(); ++i)
   {
-    marker_array_.markers[i].ns = "bullet_server"; // name;
+    marker_array_.markers[i].ns = "bodies"; // name;
     marker_array_.markers[i].id = hash(name.c_str()) + i * 10000;
     marker_array_.markers[i].header.frame_id = name;
     // marker_.header.stamp = ros::Time::now();

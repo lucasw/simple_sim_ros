@@ -69,14 +69,16 @@ axel.type = Constraint.POINT2POINT
 axel.body_a = "chassis0"
 axel.body_b = "wheel0"
 axel.pivot_in_a.x = 1.0  # wheel0.pose.position.x
-axel.pivot_in_a.y = 0.75
+axel.pivot_in_a.y = 0.6
 axel.pivot_in_a.z = -0.1
+axel.pivot_in_b.y = -0.2
 constraint_pub.publish(axel)
 rospy.sleep(sleep_time)
 
 axel.name = "axel1"
 axel.body_b = "wheel1"
 axel.pivot_in_a.y = -0.75
+axel.pivot_in_b.y = 0.2
 constraint_pub.publish(axel)
 rospy.sleep(sleep_time)
 
@@ -89,16 +91,18 @@ rospy.sleep(sleep_time)
 axel.name = "axel3"
 axel.body_b = "wheel3"
 axel.pivot_in_a.y = 0.75
+axel.pivot_in_b.y = -0.2
 constraint_pub.publish(axel)
 rospy.sleep(sleep_time)
 
-impulse = Impulse()
-impulse.body = "chassis0"
-impulse.impulse.x = 1
+if False:
+    impulse = Impulse()
+    impulse.body = "chassis0"
+    impulse.impulse.x = 1
 
-while not rospy.is_shutdown():
-    impulse_pub.publish(impulse)
-    rospy.sleep(1.0)
+    while not rospy.is_shutdown():
+        impulse_pub.publish(impulse)
+        rospy.sleep(1.0)
 
 
 rospy.spin()

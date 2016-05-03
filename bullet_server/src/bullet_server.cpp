@@ -173,7 +173,7 @@ Constraint::Constraint(
     dynamics_world_(dynamics_world),
     marker_array_pub_(marker_array_pub)
 {
-  ROS_INFO_STREAM("new " << name << " " << body_a->name_ << " " << body_b->name_);
+  ROS_DEBUG_STREAM("new " << name << " " << body_a->name_ << " " << body_b->name_);
   const btVector3 pivot_in_a_bt(pivot_in_a.x, pivot_in_a.y, pivot_in_a.z);
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
   if (type == bullet_server::Constraint::POINT2POINT)
@@ -283,7 +283,7 @@ int BulletServer::init()
 
   ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
   ground_motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-      btVector3(0, 0, -5)));
+      btVector3(0, 0, -10)));
   btRigidBody::btRigidBodyConstructionInfo
     ground_rigid_body_CI(0, ground_motion_state_, ground_shape_, btVector3(0, 0, 0));
   ground_rigid_body_ = new btRigidBody(ground_rigid_body_CI);
@@ -447,7 +447,7 @@ Body::Body(BulletServer* parent,
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
-  ROS_INFO_STREAM(name << " " << type);  // << " " << pose);
+  ROS_DEBUG_STREAM(name << " " << type);  // << " " << pose);
 
   // TODO(lucasw) rename this Body to disambiguate?
   if (type == bullet_server::Body::SPHERE)
@@ -753,7 +753,7 @@ Body::Body(
 
 Body::~Body()
 {
-  ROS_INFO_STREAM("delete body " << name_);
+  ROS_DEBUG_STREAM("delete body " << name_);
   // if there is a constraint attached to this body, it
   // needs to be removed first
   for (std::map<std::string, Constraint*>::iterator it = constraints_.begin();
@@ -810,7 +810,7 @@ void Body::update()
 
 void Body::addConstraint(Constraint* constraint)
 {
-  ROS_INFO_STREAM(name_ << ": add constraint " << constraint->name_);
+  ROS_DEBUG_STREAM(name_ << ": add constraint " << constraint->name_);
   constraints_[constraint->name_] = constraint;
 }
 

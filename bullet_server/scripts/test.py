@@ -49,8 +49,8 @@ image = cv2.imread(rospack.get_path('bullet_server') + "/data/heightfield_small.
 # cv2.imshow("image", image)
 # cv2.waitKey(0)
 heightfield.image = bridge.cv2_to_imgmsg(image, encoding="mono8")
-heightfield.resolution = 16.0 / image.shape[0]
-heightfield.height_scale = 5.0 / 255.0
+heightfield.resolution = 64.0 / image.shape[0]
+heightfield.height_scale = 10.0 / 255.0
 heightfield.image.header.frame_id = "map"
 heightfield_pub.publish(heightfield)
 rospy.sleep(sleep_time * 5)
@@ -60,8 +60,6 @@ wheel.name = "wheel1"
 wheel.pose.position.y = -1.0
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
-
-exit()
 
 wheel.name = "wheel2"
 wheel.pose.position.x = -1.0
@@ -87,6 +85,7 @@ chassis.scale.z = 0.25
 body_pub.publish(chassis)
 rospy.sleep(sleep_time)
 
+exit()
 
 axel = Constraint()
 axel.name = "axel0"
@@ -123,7 +122,7 @@ rospy.sleep(sleep_time)
 if False:
     impulse = Impulse()
     impulse.body = "chassis0"
-    impulse.impulse.x = 1
+    impulse.impulse.x = -1.4
 
     while not rospy.is_shutdown():
         impulse_pub.publish(impulse)

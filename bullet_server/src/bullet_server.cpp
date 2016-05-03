@@ -99,6 +99,11 @@ class Body
   ros::Publisher* marker_array_pub_;
   visualization_msgs::MarkerArray marker_array_;
 
+  // for triangle meshes
+  btVector3* vertices_;
+  int* indices_;
+  btTriangleIndexVertexArray* index_vertex_arrays_;
+
   std::map<std::string, Constraint*> constraints_;
   btCollisionShape* shape_;
   btDefaultMotionState* motion_state_;
@@ -440,6 +445,9 @@ Body::Body(BulletServer* parent,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
   parent_(parent),
+  vertices_(NULL),
+  indices_(NULL),
+  index_vertex_arrays_(NULL),
   shape_(NULL),
   rigid_body_(NULL),
   name_(name),
@@ -642,12 +650,22 @@ Body::Body(
   shape_(NULL),
   rigid_body_(NULL),
   name_(name),
+  vertices_(NULL),
+  indices_(NULL),
+  index_vertex_arrays_(NULL),
   dynamics_world_(dynamics_world),
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
   // TODO(lucasw) some indications that 2.8x heightfield is screwy
-
+  // also btBvhTriangleMeshShape looks like proper efficient way to do big terrains
+  double min_val, max_val;
+  cv::minMaxLoc(image, &min_val, &max_val);
+  const float min_height = min_val * height_scale;
+  const float max_height = max_val * height_scale;
+  btTransform tf;
+  tf.setIdentity();
+#if 0
   // TODO(lucasw) Convert image BGR2GRAY if it isn't already?
   // Also make sure is uchar mono8- support floating types later
 
@@ -656,10 +674,6 @@ Body::Body(
   // so enforce that here
   // TODO(lucasw) the terrain may get center automatically,
   // so offset the rviz marker to match
-  double min_val, max_val;
-  cv::minMaxLoc(image, &min_val, &max_val);
-  const float min_height = min_val * height_scale;
-  const float max_height = max_val * height_scale;
   const int up_axis = 2;
   btHeightfieldTerrainShape* heightfield_shape = new btHeightfieldTerrainShape(
       image.size().width,
@@ -678,19 +692,7 @@ Body::Body(
 
   shape_ = heightfield_shape;
 
-  btTransform tf;
-  tf.setIdentity();
   tf.setOrigin(btVector3(0, 0, 0));
-
-  // TODO(lucasw) calculate btTransform from frame_id 
-  motion_state_ = new btDefaultMotionState(tf);
-  float mass = 0.0;
-  btVector3 fallInertia(0, 0, 0);
-  // shape_->calculateLocalInertia(mass, fallInertia);
-  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,
-      shape_, fallInertia);
-  rigid_body_ = new btRigidBody(fallRigidBodyCI);
-  dynamics_world_->addRigidBody(rigid_body_);
 
   // make triangle list marker
   {
@@ -751,6 +753,124 @@ Body::Body(
     marker_array_.markers.push_back(marker);
     marker_array_pub_->publish(marker_array_);
   }
+  #else
+
+  // make triangle list marker and bvh triangle mesh
+  {
+    const size_t wd = image.size().width;
+    const size_t ht = image.size().height;
+
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    marker.header.frame_id = "map";
+    marker.ns = "heightfield";
+    marker.frame_locked = true;
+    marker.id = hash(name.c_str());
+    marker.color.r = 1.0;
+    marker.color.g = 0.6;
+    marker.color.a = 1.0;
+    marker.pose.position.x = -wd * resolution / 2.0;
+    marker.pose.position.y = -ht * resolution / 2.0;
+    marker.pose.position.z = -(max_height - min_height)/2.0;
+    tf.setOrigin(btVector3(marker.pose.position.x,
+        marker.pose.position.y,
+        marker.pose.position.z));
+
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = resolution;
+    marker.scale.y = resolution;
+    marker.scale.z = height_scale;  // the length along axis of the cylinder
+
+    // create vertices
+    const int total_vertices = ht * wd;
+    const int total_triangles = 2 * (ht - 1) * (wd - 1);
+    vertices_ = new btVector3[total_vertices];
+    indices_ = new int[total_triangles * 3];
+    for (size_t y = 0; y < ht - 1; ++y)
+    {
+      for (size_t x = 0; x < wd - 1; ++x)
+      {
+        vertices_[x + y * wd].setValue(
+            x * resolution,
+            y * resolution,
+            image.at<uchar>(y, x) * height_scale);
+      }
+    }
+
+    // create indicies
+    ROS_DEBUG_STREAM("channels " << image.channels());
+    // TODO(lucasw) need a height field rviz display type
+    // or at least a triangle strip, this has tons of 
+    // duplicate triangles
+    int index = 0;
+    for (size_t y = 0; y < ht - 1; ++y)
+    {
+      for (size_t x = 0; x < wd - 1; ++x)
+      {
+        indices_[index++] = x + y * wd;
+        indices_[index++] = (x + 1) + y * wd;
+        indices_[index++] = (x + 1) + (y + 1) * wd;
+
+        indices_[index++] = (x + 1) + (y + 1) * wd;
+        indices_[index++] = x + (y + 1) * wd;
+        indices_[index++] = x + y * wd;
+
+        geometry_msgs::Point p1;
+        p1.x = x;
+        p1.y = y;
+        p1.z = image.at<uchar>(y, x);
+        geometry_msgs::Point p2;
+        p2.x = (x + 1);
+        p2.y = y;
+        p2.z = image.at<uchar>(y, x + 1);
+        geometry_msgs::Point p3;
+        p3.x = (x + 1);
+        p3.y = (y + 1);
+        p3.z = image.at<uchar>(y + 1, x + 1);
+        geometry_msgs::Point p4;
+        p4.x = x;
+        p4.y = (y + 1);
+        p4.z = image.at<uchar>(y + 1, x);
+
+        // first triangle in quad
+        marker.points.push_back(p1);
+        marker.points.push_back(p2);
+        marker.points.push_back(p3);
+
+        // second triangle in quad
+        marker.points.push_back(p3);
+        marker.points.push_back(p4);
+        marker.points.push_back(p1);
+      }
+    }
+    marker_array_.markers.push_back(marker);
+    marker_array_pub_->publish(marker_array_);
+
+    const int vert_stride = sizeof(btVector3);
+    const int index_stride = 3 * sizeof(int);
+    index_vertex_arrays_ = new btTriangleIndexVertexArray(total_triangles,
+        indices_,
+        index_stride,
+        total_vertices,
+        (btScalar*) &vertices_[0].x(),
+        vert_stride);
+
+    const bool use_quantized_aabb_compression = true;
+    shape_ = new btBvhTriangleMeshShape(index_vertex_arrays_,
+        use_quantized_aabb_compression);
+  }
+  #endif
+
+  // TODO(lucasw) calculate btTransform from frame_id 
+  motion_state_ = new btDefaultMotionState(tf);
+  const float mass = 0.0;
+  btVector3 fall_inertia(0, 0, 0);
+  // shape_->calculateLocalInertia(mass, fallInertia);
+  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,
+      shape_, fall_inertia);
+  rigid_body_ = new btRigidBody(fallRigidBodyCI);
+  dynamics_world_->addRigidBody(rigid_body_);
 }
 
 Body::~Body()
@@ -787,6 +907,12 @@ Body::~Body()
   }
   if (shape_)
     delete shape_;
+  if (indices_)
+    delete indices_;
+  if (vertices_)
+    delete vertices_;
+  if (index_vertex_arrays_)
+    delete index_vertex_arrays_;
 }
 
 // TODO(lucasw) pass in current time

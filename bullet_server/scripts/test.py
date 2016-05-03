@@ -23,7 +23,7 @@ rospy.sleep(1.0)
 sleep_time = 0.1
 
 # Car
-z_height = 7.8
+z_height = 8.8
 wheel = Body()
 wheel.name = "wheel0"
 wheel.type = Body.CYLINDER
@@ -36,26 +36,10 @@ wheel.scale.x = 0.5
 wheel.scale.y = 0.2
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
+# republish wheel because usually the first one isn't received
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
 
-
-# Heightfield
-bridge = cv_bridge.CvBridge()
-rospack = rospkg.RosPack()
-heightfield = Heightfield()
-heightfield.name = "jpg_test"
-image = cv2.imread(rospack.get_path('bullet_server') + "/data/heightfield_small2.jpg", 0)
-# cv2.imshow("image", image)
-# cv2.waitKey(0)
-heightfield.image = bridge.cv2_to_imgmsg(image, encoding="mono8")
-heightfield.resolution = 64.0 / image.shape[0]
-heightfield.height_scale = 10.0 / 255.0
-heightfield.image.header.frame_id = "map"
-heightfield_pub.publish(heightfield)
-rospy.sleep(sleep_time * 5)
-
-# back to car
 wheel.name = "wheel1"
 wheel.pose.position.y = -1.0
 body_pub.publish(wheel)
@@ -85,15 +69,16 @@ chassis.scale.z = 0.25
 body_pub.publish(chassis)
 rospy.sleep(sleep_time)
 
-exit()
+# exit()
 
+axel_y = 0.75
 axel = Constraint()
 axel.name = "axel0"
 axel.type = Constraint.POINT2POINT
 axel.body_a = "chassis0"
 axel.body_b = "wheel0"
 axel.pivot_in_a.x = 1.0  # wheel0.pose.position.x
-axel.pivot_in_a.y = 0.6
+axel.pivot_in_a.y = axel_y
 axel.pivot_in_a.z = -0.1
 axel.pivot_in_b.y = -0.2
 constraint_pub.publish(axel)
@@ -101,7 +86,7 @@ rospy.sleep(sleep_time)
 
 axel.name = "axel1"
 axel.body_b = "wheel1"
-axel.pivot_in_a.y = -0.75
+axel.pivot_in_a.y = -axel_y
 axel.pivot_in_b.y = 0.2
 constraint_pub.publish(axel)
 rospy.sleep(sleep_time)
@@ -114,7 +99,7 @@ rospy.sleep(sleep_time)
 
 axel.name = "axel3"
 axel.body_b = "wheel3"
-axel.pivot_in_a.y = 0.75
+axel.pivot_in_a.y = axel_y
 axel.pivot_in_b.y = -0.2
 constraint_pub.publish(axel)
 rospy.sleep(sleep_time)

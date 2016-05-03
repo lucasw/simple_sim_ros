@@ -26,6 +26,7 @@
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/Pose.h>
 #include <map>
@@ -368,7 +369,7 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 
   try
   {
-    cv_ptr = cv_bridge::toCvCopy(msg->image, sensor_msgs::image_encodings::BGR8);
+    cv_ptr = cv_bridge::toCvCopy(msg->image, sensor_msgs::image_encodings::MONO8);
   }
   catch (cv_bridge::Exception& e)
   {
@@ -653,8 +654,10 @@ Body::Body(
   // so enforce that here
   // TODO(lucasw) the terrain may get center automatically,
   // so offset the rviz marker to match
-  const float min_height = 0.0 * height_scale;  // TODO(lucasw) should be min of image.data
-  const float max_height = 255.0 * height_scale;  // TODO(lucasw) should be max of image.data
+  double min_val, max_val;
+  cv::minMaxLoc(image, &min_val, &max_val);
+  const float min_height = min_val * height_scale;
+  const float max_height = max_val * height_scale;
   const int up_axis = 2;
   btHeightfieldTerrainShape* heightfield_shape = new btHeightfieldTerrainShape(
       image.size().width,
@@ -707,6 +710,7 @@ Body::Body(
     marker.scale.y = resolution;
     marker.scale.z = height_scale;  // the length along axis of the cylinder
 
+    ROS_INFO_STREAM("channels " << image.channels());
     // TODO(lucasw) need a height field rviz display type
     // or at least a triangle strip, this has tons of 
     // duplicate triangles

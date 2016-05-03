@@ -50,7 +50,7 @@ image = cv2.imread(rospack.get_path('bullet_server') + "/data/heightfield_small.
 # cv2.waitKey(0)
 heightfield.image = bridge.cv2_to_imgmsg(image, encoding="mono8")
 heightfield.resolution = 16.0 / image.shape[0]
-heightfield.height_scale = 2.0 / 255.0
+heightfield.height_scale = 5.0 / 255.0
 heightfield.image.header.frame_id = "map"
 heightfield_pub.publish(heightfield)
 rospy.sleep(sleep_time * 5)

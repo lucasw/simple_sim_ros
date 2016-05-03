@@ -25,6 +25,7 @@
 #include <bullet_server/Constraint.h>
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/Pose.h>
 #include <map>
@@ -280,7 +281,8 @@ int BulletServer::init()
   dynamics_world_->setGravity(btVector3(0, 0, -10));
 
   ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
-  ground_motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, -1)));
+  ground_motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
+      btVector3(0, 0, -5)));
   btRigidBody::btRigidBodyConstructionInfo
     ground_rigid_body_CI(0, ground_motion_state_, ground_shape_, btVector3(0, 0, 0));
   ground_rigid_body_ = new btRigidBody(ground_rigid_body_CI);
@@ -644,17 +646,24 @@ Body::Body(
   marker_array_pub_(marker_array_pub)
 {
   // TODO(lucasw) Convert image BGR2GRAY if it isn't already?
-  // Also make sure is uchar- support floating types later
+  // Also make sure is uchar mono8- support floating types later
 
-  #if 0
+  // TODO(lucasw) 
+  // This needs to be true: height_scale * max(image.data) = max_height
+  // so enforce that here
+  // TODO(lucasw) the terrain may get center automatically,
+  // so offset the rviz marker to match
+  const float min_height = 0.0 * height_scale;  // TODO(lucasw) should be min of image.data
+  const float max_height = 255.0 * height_scale;  // TODO(lucasw) should be max of image.data
+  const int up_axis = 2;
   btHeightfieldTerrainShape* heightfield_shape = new btHeightfieldTerrainShape(
       image.size().width,
       image.size().height,
       image.data,
       height_scale,
-      0,
-      255,
-      2,
+      min_height,
+      max_height,
+      up_axis,
       PHY_UCHAR,
       flip_quad_edges);
 
@@ -677,7 +686,6 @@ Body::Body(
       shape_, fallInertia);
   rigid_body_ = new btRigidBody(fallRigidBodyCI);
   dynamics_world_->addRigidBody(rigid_body_);
-  #endif
 
   // make triangle list marker
   {
@@ -690,7 +698,9 @@ Body::Body(
     marker.color.r = 1.0;
     marker.color.g = 0.6;
     marker.color.a = 1.0;
-    marker.pose.position.z = 0;
+    marker.pose.position.x = -image.size().width * resolution / 2.0;
+    marker.pose.position.y = -image.size().height * resolution / 2.0;
+    marker.pose.position.z = -(max_height - min_height)/2.0;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.w = 1.0;
     marker.scale.x = resolution;
@@ -707,19 +717,19 @@ Body::Body(
         geometry_msgs::Point p1;
         p1.x = x;
         p1.y = y;
-        p1.z = image.at<uchar>(y, x)/255.0;
+        p1.z = image.at<uchar>(y, x);
         geometry_msgs::Point p2;
         p2.x = (x + 1);
         p2.y = y;
-        p2.z = image.at<uchar>(y, x + 1)/255.0;
+        p2.z = image.at<uchar>(y, x + 1);
         geometry_msgs::Point p3;
         p3.x = (x + 1);
         p3.y = (y + 1);
-        p3.z = image.at<uchar>(y + 1, x + 1)/255.0;
+        p3.z = image.at<uchar>(y + 1, x + 1);
         geometry_msgs::Point p4;
         p4.x = x;
         p4.y = (y + 1);
-        p4.z = image.at<uchar>(y + 1, x)/255.0;
+        p4.z = image.at<uchar>(y + 1, x);
 
         // first triangle in quad
         marker.points.push_back(p1);

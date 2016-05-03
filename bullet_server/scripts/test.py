@@ -23,12 +23,13 @@ rospy.sleep(1.0)
 sleep_time = 0.1
 
 # Car
+z_height = 1.8
 wheel = Body()
 wheel.name = "wheel0"
 wheel.type = Body.CYLINDER
 wheel.pose.position.x = 1.0
 wheel.pose.position.y = 1.0
-wheel.pose.position.z = 0.8
+wheel.pose.position.z = z_height
 wheel.pose.orientation.x = 0.0  # 0.707
 wheel.pose.orientation.w = 1.0  # 0.707
 wheel.scale.x = 0.5
@@ -45,9 +46,11 @@ rospack = rospkg.RosPack()
 heightfield = Heightfield()
 heightfield.name = "jpg_test"
 image = cv2.imread(rospack.get_path('bullet_server') + "/data/heightfield_small.jpg", 0)
+# cv2.imshow("image", image)
+# cv2.waitKey(0)
 heightfield.image = bridge.cv2_to_imgmsg(image, encoding="mono8")
-heightfield.resolution = 32.0 / image.shape[0]
-heightfield.height_scale = 1.5
+heightfield.resolution = 16.0 / image.shape[0]
+heightfield.height_scale = 2.0 / 255.0
 heightfield.image.header.frame_id = "map"
 heightfield_pub.publish(heightfield)
 rospy.sleep(sleep_time * 5)
@@ -75,7 +78,7 @@ chassis.name = "chassis0"
 chassis.type = Body.BOX
 chassis.pose.position.x = 0.0
 chassis.pose.position.y = 0.0
-chassis.pose.position.z = 0.8
+chassis.pose.position.z = z_height
 chassis.pose.orientation.x = 0.0  # 0.707
 chassis.pose.orientation.w = 1.0  # 0.707
 chassis.scale.x = 1.2

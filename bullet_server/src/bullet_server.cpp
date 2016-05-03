@@ -646,6 +646,8 @@ Body::Body(
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
+  // TODO(lucasw) some indications that 2.8x heightfield is screwy
+
   // TODO(lucasw) Convert image BGR2GRAY if it isn't already?
   // Also make sure is uchar mono8- support floating types later
 

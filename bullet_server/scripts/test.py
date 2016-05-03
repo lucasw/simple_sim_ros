@@ -3,13 +3,17 @@
 # 
 # create a number of bodies and joints in the bullet server
 
+import cv2
+import cv_bridge
+import rospkg
 import rospy
 
-from bullet_server.msg import Body, Constraint, Impulse
+from bullet_server.msg import Body, Constraint, Heightfield, Impulse
 
 
 rospy.init_node("test_bullet_server")
 
+heightfield_pub = rospy.Publisher("add_heightfield", Heightfield, queue_size=5)
 body_pub = rospy.Publisher("add_body", Body, queue_size=5)
 constraint_pub = rospy.Publisher("add_constraint", Constraint, queue_size=1)
 impulse_pub = rospy.Publisher("add_impulse", Impulse, queue_size=1)
@@ -18,6 +22,7 @@ rospy.sleep(1.0)
 
 sleep_time = 0.1
 
+# Car
 wheel = Body()
 wheel.name = "wheel0"
 wheel.type = Body.CYLINDER
@@ -33,10 +38,27 @@ rospy.sleep(sleep_time)
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
 
+
+# Heightfield
+bridge = cv_bridge.CvBridge()
+rospack = rospkg.RosPack()
+heightfield = Heightfield()
+heightfield.name = "jpg_test"
+image = cv2.imread(rospack.get_path('bullet_server') + "/data/heightfield_small.jpg", 0)
+heightfield.image = bridge.cv2_to_imgmsg(image, encoding="mono8")
+heightfield.resolution = 32.0 / image.shape[0]
+heightfield.height_scale = 1.5
+heightfield.image.header.frame_id = "map"
+heightfield_pub.publish(heightfield)
+rospy.sleep(sleep_time * 5)
+
+# back to car
 wheel.name = "wheel1"
 wheel.pose.position.y = -1.0
 body_pub.publish(wheel)
 rospy.sleep(sleep_time)
+
+exit()
 
 wheel.name = "wheel2"
 wheel.pose.position.x = -1.0

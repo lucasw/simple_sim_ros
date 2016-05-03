@@ -40,8 +40,8 @@ class Constraint;
 
 // TODO(lucasw) replace this with something better, numbers aren't random enough
 // http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
-unsigned long hash(const char *str) {
-    unsigned long hash = 5381;
+unsigned short hash(const char *str) {
+    unsigned short hash = 5381;
     int c;
 
     while (c = *str++) {
@@ -292,6 +292,7 @@ int BulletServer::init()
   // TODO(lucasw) make this a service
   // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
+  heightfield_sub_ = nh_.subscribe("add_heightfield", 10, &BulletServer::heightfieldCallback, this);
   constraint_sub_ = nh_.subscribe("add_constraint", 10, &BulletServer::constraintCallback, this);
   impulse_sub_ = nh_.subscribe("add_impulse", 10, &BulletServer::impulseCallback, this);
 
@@ -642,6 +643,10 @@ Body::Body(
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
+  // TODO(lucasw) Convert image BGR2GRAY if it isn't already?
+  // Also make sure is uchar- support floating types later
+
+  #if 0
   btHeightfieldTerrainShape* heightfield_shape = new btHeightfieldTerrainShape(
       image.size().width,
       image.size().height,
@@ -661,7 +666,7 @@ Body::Body(
 
   btTransform tf;
   tf.setIdentity();
-  tf.setOrigin(btVector3(0, 0, -height_scale * 255));
+  tf.setOrigin(btVector3(0, 0, 0));
 
   // TODO(lucasw) calculate btTransform from frame_id 
   motion_state_ = new btDefaultMotionState(tf);
@@ -672,6 +677,64 @@ Body::Body(
       shape_, fallInertia);
   rigid_body_ = new btRigidBody(fallRigidBodyCI);
   dynamics_world_->addRigidBody(rigid_body_);
+  #endif
+
+  // make triangle list marker
+  {
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    marker.header.frame_id = "map";
+    marker.ns = "heightfield";
+    marker.frame_locked = true;
+    marker.id = hash(name.c_str());
+    marker.color.r = 1.0;
+    marker.color.g = 0.6;
+    marker.color.a = 1.0;
+    marker.pose.position.z = 0;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = resolution;
+    marker.scale.y = resolution;
+    marker.scale.z = height_scale;  // the length along axis of the cylinder
+
+    // TODO(lucasw) need a height field rviz display type
+    // or at least a triangle strip, this has tons of 
+    // duplicate triangles
+    for (size_t y = 0; y < image.size().height - 1; ++y)
+    {
+      for (size_t x = 0; x < image.size().width - 1; ++x)
+      {
+        geometry_msgs::Point p1;
+        p1.x = x;
+        p1.y = y;
+        p1.z = image.at<uchar>(y, x)/255.0;
+        geometry_msgs::Point p2;
+        p2.x = (x + 1);
+        p2.y = y;
+        p2.z = image.at<uchar>(y, x + 1)/255.0;
+        geometry_msgs::Point p3;
+        p3.x = (x + 1);
+        p3.y = (y + 1);
+        p3.z = image.at<uchar>(y + 1, x + 1)/255.0;
+        geometry_msgs::Point p4;
+        p4.x = x;
+        p4.y = (y + 1);
+        p4.z = image.at<uchar>(y + 1, x)/255.0;
+
+        // first triangle in quad
+        marker.points.push_back(p1);
+        marker.points.push_back(p2);
+        marker.points.push_back(p3);
+
+        // second triangle in quad
+        marker.points.push_back(p3);
+        marker.points.push_back(p4);
+        marker.points.push_back(p1);
+      }
+    }
+    marker_array_.markers.push_back(marker);
+    marker_array_pub_->publish(marker_array_);
+  }
 }
 
 Body::~Body()
@@ -695,7 +758,10 @@ Body::~Body()
   }
 
   for (size_t i = 0; i < marker_array_.markers.size(); ++i)
+  {
     marker_array_.markers[i].action = visualization_msgs::Marker::DELETE;
+    marker_array_.markers[i].points.resize(0);
+  }
   marker_array_pub_->publish(marker_array_);
   if (rigid_body_)
   {

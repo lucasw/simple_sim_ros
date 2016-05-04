@@ -3,8 +3,6 @@
 # 
 # create a number of bodies and joints in the bullet server
 
-import cv2
-import cv_bridge
 import rospkg
 import rospy
 
@@ -13,7 +11,6 @@ from bullet_server.msg import Body, Constraint, Heightfield, Impulse
 
 rospy.init_node("test_bullet_server")
 
-heightfield_pub = rospy.Publisher("add_heightfield", Heightfield, queue_size=5)
 body_pub = rospy.Publisher("add_body", Body, queue_size=5)
 constraint_pub = rospy.Publisher("add_constraint", Constraint, queue_size=1)
 impulse_pub = rospy.Publisher("add_impulse", Impulse, queue_size=1)

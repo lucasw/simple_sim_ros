@@ -208,14 +208,14 @@ Constraint::Constraint(
       // tf::Quaternion quat = tf::createQuaternionFromRPY();
       // tf::Matrix3x3(quat)
       marker.pose.orientation.w = 1.0;
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
-      marker.scale.z = 0.1;
+      marker.scale.x = 0.4;
+      marker.scale.y = 0.4;
+      marker.scale.z = 0.4;
       marker.ns = "constraints";
       // marker_.header.stamp = ros::Time::now();
       marker.frame_locked = true;
       marker.action = visualization_msgs::Marker::ADD;
-      marker.color.a = 0.4;
+      marker.color.a = 1.0;
       marker.lifetime = ros::Duration();
 
       // TODO(lucasw) could turn this into function
@@ -236,7 +236,7 @@ Constraint::Constraint(
       marker_array.markers.push_back(marker);
 
       // draw lines from the origin to the pivot
-      marker.scale.x = 0.05;
+      marker.scale.x = 0.1;
 
       marker.id = hash((name + "_line_a").c_str());
       marker.header.frame_id = body_a->name_;

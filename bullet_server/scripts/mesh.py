@@ -26,4 +26,4 @@ print mesh.faces[0].indices
 # print mesh.vertices
 # print mesh.
 
-#TODO(lucasw) convert the vertices and indices to a shape_msg/Mesh
+# TODO(lucasw) convert the vertices and indices to a shape_msg/Mesh

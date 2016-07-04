@@ -7,9 +7,11 @@ project(bullet_server)
 find_package(catkin REQUIRED COMPONENTS
   # bullet
   cv_bridge
+  geometry_msgs
   roscpp
   roslint
   rospy
+  shape_msgs
   sensor_msgs
   tf
   visualization_msgs
@@ -59,6 +61,7 @@ add_message_files(
   Constraint.msg
   Impulse.msg
   Heightfield.msg
+  SoftBody.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -79,6 +82,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  shape_msgs
   sensor_msgs
   geometry_msgs
 )

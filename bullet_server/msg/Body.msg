@@ -7,7 +7,7 @@ uint8 CONE=4
 uint8 MULTI_SPHERE=5
 # TODO mesh shapes, convex hull...
 # http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Collision_Shapes
-# has to be unique of all links
+# The name has to be unique of all links
 # if an existing link of this name exists it will be replaced
 string name
 uint8 type

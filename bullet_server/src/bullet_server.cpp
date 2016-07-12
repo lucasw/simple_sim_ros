@@ -21,6 +21,11 @@
 #include <boost/functional/hash.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <bullet_server/AddBody.h>
+#include <bullet_server/AddCompound.h>
+#include <bullet_server/AddConstraint.h>
+#include <bullet_server/AddHeightfield.h>
+#include <bullet_server/AddImpulse.h>
 #include <bullet_server/Body.h>
 #include <bullet_server/Constraint.h>
 #include <bullet_server/Heightfield.h>
@@ -56,6 +61,9 @@ unsigned short hash(const char *str) {
 class BulletServer
 {
   ros::NodeHandle nh_;
+  ros::ServiceServer add_compound_;
+  bool addCompound(bullet_server::AddCompound::Request& req,
+                   bullet_server::AddCompound::Response& res);
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   ros::Subscriber constraint_sub_;
@@ -298,13 +306,36 @@ int BulletServer::init()
 
   marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
   // TODO(lucasw) make this a service
-  // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose: {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
+  // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose:
+  // {position: {x: 0.201, y: 0.001, z: 10}, orientation: {w: 1}}}" -1
   body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
   heightfield_sub_ = nh_.subscribe("add_heightfield", 10, &BulletServer::heightfieldCallback, this);
   constraint_sub_ = nh_.subscribe("add_constraint", 10, &BulletServer::constraintCallback, this);
   impulse_sub_ = nh_.subscribe("add_impulse", 10, &BulletServer::impulseCallback, this);
 
+  add_compound_ = nh_.advertiseService("add_compound", &BulletServer::addCompound, this);
+
   return 0;
+}
+
+bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
+                               bullet_server::AddCompound::Response& res)
+{
+  for (size_t i = 0; i < req.body.size(); ++i)
+  {
+    // TODO(lucasw) need a return value for each of these
+    bullet_server::Body::ConstPtr body_ptr(new bullet_server::Body(req.body[i]));
+    bodyCallback(body_ptr);
+  }
+
+  for (size_t i = 0; i < req.constraint.size(); ++i)
+  {
+    bullet_server::Constraint::ConstPtr constraint_ptr(new bullet_server::Constraint(req.constraint[i]));
+    constraintCallback(constraint_ptr);
+  }
+
+  res.success = true;
+  return true;
 }
 
 void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)

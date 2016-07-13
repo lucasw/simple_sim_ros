@@ -55,10 +55,24 @@ class LoadUrdf:
                 bodies[body.name] = body
                 # self.body_pub.publish(body)
 
+        constraints = {}
+        for joint in self.robot.joints:
+            print ''
+            print joint
+            constraint = Constraint()
+            constraint.body_a = joint.parent
+            constraint.body_b = joint.child
+            if joint.type == 'fixed':
+                constraint.type = Constraint.FIXED
+            constraints[joint.name] = constraint
+
         add_compound_request = AddCompoundRequest()
         for key in bodies.keys():
             # rospy.loginfo(bodies.name)
             add_compound_request.body.append(bodies[key])
+        for key in constraints.keys():
+            # rospy.loginfo(bodies.name)
+            add_compound_request.constraint.append(constraints[key])
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

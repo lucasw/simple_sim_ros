@@ -187,10 +187,35 @@ Constraint::Constraint(
     marker_array_pub_(marker_array_pub)
 {
   ROS_DEBUG_STREAM("new " << name << " " << body_a->name_ << " " << body_b->name_);
+  // TODO(lucasw) pivot -> translation or similar
   const btVector3 pivot_in_a_bt(pivot_in_a.x, pivot_in_a.y, pivot_in_a.z);
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
+  bool dont_collide = true;
+  if (type == bullet_server::Constraint::HINGE)
+  {
+    constraint_ = new btHingeConstraint(
+        *body_a->rigid_body_,
+        *body_b->rigid_body_,
+        pivot_in_a_bt,
+        pivot_in_b_bt);
+
+  }
+  if (type == bullet_server::Constraint::FIXED)
+  {
+    // TODO(lucasw) need orientation
+    btTransform frame_in_a = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_a_bt);
+    btTransform frame_in_b = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_b_bt);
+
+    constraint_ = new btFixedConstraint(
+        *body_a->rigid_body_,
+        *body_b->rigid_body_,
+        frame_in_a,
+        frame_in_b);
+  }
   if (type == bullet_server::Constraint::POINT2POINT)
   {
+    // TODO(lucasw) set this in Constraint?
+    dont_collide = false;
     // ROS_INFO_STREAM(name << " " << body_a->name_ << " " << body_b->name_
     //     << pivot_in_a << " " << pivot_in_b);
     constraint_ = new btPoint2PointConstraint(
@@ -198,13 +223,8 @@ Constraint::Constraint(
         *body_b->rigid_body_,
         pivot_in_a_bt,
         pivot_in_b_bt);
+
     dynamics_world_->addConstraint(constraint_);
-    body_a->rigid_body_->activate();
-    body_b->rigid_body_->activate();
-
-    body_a->addConstraint(this);
-    body_b->addConstraint(this);
-
     visualization_msgs::MarkerArray marker_array;
     // TODO(lucasw) publish a marker for both bodies- a line to the center of the body
     // to the pivot, and then a sphere at the ball joint
@@ -269,6 +289,11 @@ Constraint::Constraint(
 
     marker_array_pub_->publish(marker_array);
   }
+  dynamics_world_->addConstraint(constraint_, dont_collide);
+  body_a->addConstraint(this);
+  body_b->addConstraint(this);
+  body_a->rigid_body_->activate();
+  body_b->rigid_body_->activate();
 }
 
 Constraint::~Constraint()

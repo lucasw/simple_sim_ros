@@ -4,6 +4,7 @@
 import rospy
 
 from bullet_server.msg import Body, Constraint, Heightfield, Impulse
+from bullet_server.srv import *
 from urdf_parser_py.urdf import URDF
 
 
@@ -14,19 +15,30 @@ class LoadUrdf:
         self.robot = URDF.from_parameter_server()
         # rospy.loginfo(self.robot)
 
-        # TODO(lucasw) make these services instead
-        self.body_pub = rospy.Publisher("add_body", Body, queue_size=50)
-        self.constraint_pub = rospy.Publisher("add_constraint", Constraint, queue_size=50)
+        try:
+            rospy.wait_for_service('add_compound', 5)
+        except ROSException as e:
+            rospy.logerr("no service available")
+            rospy.logerr(e)
+            return
+        self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
+        # self.body_pub = rospy.Publisher("add_body", Body, queue_size=50)
+        # self.constraint_pub = rospy.Publisher("add_constraint", Constraint, queue_size=50)
 
+        bodies = {}
         for link in self.robot.links:
             if rospy.is_shutdown():
                 break
-            print ' '
-            rospy.loginfo(link.name)
+            # try:
+            #     rospy.loginfo(link.visual.origin)
+            # except:
+            #     pass
             if link.collision is not None:
                 body = Body()
+                # TODO(lucasw) tf_prefix needed here?
                 body.name = link.name
                 body.pose.position.z = 2.0
+                # TODO(lwalter) transformations.py rpy to quaternion
                 body.pose.orientation.w = 1.0
                 # TODO(lwalter) is there a better way to get type?
                 if str(type(link.collision.geometry)) == "<class 'urdf_parser_py.urdf.Box'>":
@@ -40,8 +52,19 @@ class LoadUrdf:
                     body.scale.y = link.collision.geometry.radius
                     body.scale.z = link.collision.geometry.length
 
-                self.body_pub.publish(body)
-                rospy.sleep(2.0)
+                bodies[body.name] = body
+                # self.body_pub.publish(body)
+
+        add_compound_request = AddCompoundRequest()
+        for key in bodies.keys():
+            # rospy.loginfo(bodies.name)
+            add_compound_request.body.append(bodies[key])
+
+        try:
+            add_compound_response = self.add_compound(add_compound_request)
+            rospy.loginfo(add_compound_response)
+        except rospy.service.ServiceException as e:
+            rospy.logerr(e)
 
 if __name__ == '__main__':
     rospy.init_node('load_urdf')

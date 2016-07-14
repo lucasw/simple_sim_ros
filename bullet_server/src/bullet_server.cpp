@@ -162,6 +162,8 @@ public:
       Body* body_b,
       geometry_msgs::Point pivot_in_a,
       geometry_msgs::Point pivot_in_b,
+      geometry_msgs::Vector3 axis_in_a,
+      geometry_msgs::Vector3 axis_in_b,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();
@@ -178,6 +180,8 @@ Constraint::Constraint(
       Body* body_b,
       geometry_msgs::Point pivot_in_a,
       geometry_msgs::Point pivot_in_b,
+      geometry_msgs::Vector3 axis_in_a,
+      geometry_msgs::Vector3 axis_in_b,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     name_(name),
@@ -190,6 +194,8 @@ Constraint::Constraint(
   // TODO(lucasw) pivot -> translation or similar
   const btVector3 pivot_in_a_bt(pivot_in_a.x, pivot_in_a.y, pivot_in_a.z);
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
+  const btVector3 axis_in_a_bt(axis_in_a.x, axis_in_a.y, axis_in_a.z);
+  const btVector3 axis_in_b_bt(axis_in_b.x, axis_in_b.y, axis_in_b.z);
   bool dont_collide = true;
   if (type == bullet_server::Constraint::HINGE)
   {
@@ -197,7 +203,9 @@ Constraint::Constraint(
         *body_a->rigid_body_,
         *body_b->rigid_body_,
         pivot_in_a_bt,
-        pivot_in_b_bt);
+        pivot_in_b_bt,
+        axis_in_a_bt,
+        axis_in_b_bt);
 
   }
   if (type == bullet_server::Constraint::FIXED)
@@ -404,6 +412,8 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       bodies_[msg->body_b],
       msg->pivot_in_a,
       msg->pivot_in_b,
+      msg->axis_in_a,
+      msg->axis_in_b,
       dynamics_world_,
       &marker_array_pub_);
   constraints_[msg->name] = constraint;

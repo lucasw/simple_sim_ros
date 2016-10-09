@@ -29,6 +29,7 @@ include_directories(${BULLET_INCLUDE_DIRS})
 # catkin_python_setup()
 
 roslint_cpp()
+roslint_python()
 
 ################################################
 ## Declare ROS messages, services and actions ##

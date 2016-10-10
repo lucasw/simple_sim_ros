@@ -1,4 +1,7 @@
 bullet_server/Body[] body
 bullet_server/Constraint[] constraint
+# remove any existing bodies and constraint with above names
+# instead of adding them
+bool remove
 ---
 bool success

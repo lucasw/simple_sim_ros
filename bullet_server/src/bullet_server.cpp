@@ -96,7 +96,7 @@ public:
   BulletServer();
   ~BulletServer();
   void update();
-  void removeConstraint(Constraint* constraint);
+  void removeConstraint(const Constraint* constraint, const bool remove_from_bodies);
 };
 
 class Body
@@ -142,7 +142,7 @@ public:
 
   // keep track of constraints attached to this body
   void addConstraint(Constraint* constraint);
-  void removeConstraint(Constraint* constraint);
+  void removeConstraint(const Constraint* constraint);
   const std::string name_;
   btRigidBody* rigid_body_;
   void update();
@@ -154,6 +154,7 @@ class Constraint
 
   btDiscreteDynamicsWorld* dynamics_world_;
   ros::Publisher* marker_array_pub_;
+  visualization_msgs::MarkerArray marker_array_;
 public:
   Constraint(
       const std::string name,
@@ -190,7 +191,7 @@ Constraint::Constraint(
     dynamics_world_(dynamics_world),
     marker_array_pub_(marker_array_pub)
 {
-  ROS_DEBUG_STREAM("new " << name << " " << body_a->name_ << " " << body_b->name_);
+  ROS_INFO_STREAM("new Constraint " << name << " " << body_a->name_ << " " << body_b->name_);
   // TODO(lucasw) pivot -> translation or similar
   const btVector3 pivot_in_a_bt(pivot_in_a.x, pivot_in_a.y, pivot_in_a.z);
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
@@ -233,7 +234,6 @@ Constraint::Constraint(
         pivot_in_b_bt);
 
     dynamics_world_->addConstraint(constraint_);
-    visualization_msgs::MarkerArray marker_array;
     // TODO(lucasw) publish a marker for both bodies- a line to the center of the body
     // to the pivot, and then a sphere at the ball joint
     {
@@ -261,7 +261,7 @@ Constraint::Constraint(
       marker.color.r = 0.5;
       marker.color.g = 0.7;
       marker.color.b = 0.3;
-      marker_array.markers.push_back(marker);
+      marker_array_.markers.push_back(marker);
 
       marker.id = hash((name + "_b").c_str());
       marker.header.frame_id = body_b->name_;
@@ -269,7 +269,7 @@ Constraint::Constraint(
       marker.color.r = 0.6;
       marker.color.g = 0.3;
       marker.color.b = 0.7;
-      marker_array.markers.push_back(marker);
+      marker_array_.markers.push_back(marker);
 
       // draw lines from the origin to the pivot
       marker.scale.x = 0.1;
@@ -282,7 +282,7 @@ Constraint::Constraint(
       marker.type = visualization_msgs::Marker::LINE_STRIP;
       marker.points.resize(2);
       marker.points[1] = pivot_in_a;
-      marker_array.markers.push_back(marker);
+      marker_array_.markers.push_back(marker);
 
       marker.id = hash((name + "_line_b").c_str());
       marker.header.frame_id = body_b->name_;
@@ -292,10 +292,10 @@ Constraint::Constraint(
       marker.type = visualization_msgs::Marker::LINE_STRIP;
       marker.points.resize(2);
       marker.points[1] = pivot_in_b;
-      marker_array.markers.push_back(marker);
+      marker_array_.markers.push_back(marker);
     }
 
-    marker_array_pub_->publish(marker_array);
+    marker_array_pub_->publish(marker_array_);
   }
   dynamics_world_->addConstraint(constraint_, dont_collide);
   body_a->addConstraint(this);
@@ -306,7 +306,15 @@ Constraint::Constraint(
 
 Constraint::~Constraint()
 {
-  ROS_INFO_STREAM("delete constraint " << name_);
+  ROS_INFO_STREAM("Constraint: delete " << name_);
+
+  for (size_t i = 0; i < marker_array_.markers.size(); ++i)
+  {
+    marker_array_.markers[i].action = visualization_msgs::Marker::DELETE;
+    marker_array_.markers[i].points.resize(0);
+  }
+  marker_array_pub_->publish(marker_array_);
+
   // TODO(lucasw) it needs to be removed from BulletServer->constraints_
   dynamics_world_->removeConstraint(constraint_);
   delete constraint_;
@@ -328,8 +336,9 @@ int BulletServer::init()
   dynamics_world_->setGravity(btVector3(0, 0, -10));
 
   ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
+  // TODO(lucasw) make a service set where the ground plane is, if any
   ground_motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-      btVector3(0, 0, -10)));
+      btVector3(0, 0, -1.0)));
   btRigidBody::btRigidBodyConstructionInfo
     ground_rigid_body_CI(0, ground_motion_state_, ground_shape_, btVector3(0, 0, 0));
   ground_rigid_body_ = new btRigidBody(ground_rigid_body_CI);
@@ -356,15 +365,41 @@ bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
 {
   for (size_t i = 0; i < req.body.size(); ++i)
   {
-    // TODO(lucasw) need a return value for each of these
-    bullet_server::Body::ConstPtr body_ptr(new bullet_server::Body(req.body[i]));
-    bodyCallback(body_ptr);
+    if (req.remove)
+    {
+      // TODO(lucasw) if name doesn't exist, then return false? 
+      const std::string name = req.body[i].name;
+      if (bodies_.count(name) > 0)
+      {
+        delete bodies_[name];
+        bodies_.erase(name);
+      }
+    }
+    else
+    {
+      // TODO(lucasw) need a return value for each of these
+      bullet_server::Body::ConstPtr body_ptr(new bullet_server::Body(req.body[i]));
+      bodyCallback(body_ptr);
+    }
   }
 
   for (size_t i = 0; i < req.constraint.size(); ++i)
   {
-    bullet_server::Constraint::ConstPtr constraint_ptr(new bullet_server::Constraint(req.constraint[i]));
-    constraintCallback(constraint_ptr);
+    if (req.remove)
+    {
+      const std::string name = req.constraint[i].name;
+      if (constraints_.count(name) > 0)
+      {
+        Constraint* constraint = constraints_[name];
+        removeConstraint(constraints_[name], true);
+        delete constraint;
+      }
+    }
+    else
+    {
+      bullet_server::Constraint::ConstPtr constraint_ptr(new bullet_server::Constraint(req.constraint[i]));
+      constraintCallback(constraint_ptr);
+    }
   }
 
   res.success = true;
@@ -403,7 +438,10 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
   }
   if (constraints_.count(msg->name) > 0)
   {
-    delete constraints_[msg->name];
+    ROS_INFO_STREAM("removing same named constraint: " << msg->name);
+    Constraint* constraint = constraints_[msg->name];
+    removeConstraint(constraints_[msg->name], true);
+    delete constraint;
   }
   Constraint* constraint = new Constraint(
       msg->name,
@@ -416,6 +454,7 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       msg->axis_in_b,
       dynamics_world_,
       &marker_array_pub_);
+
   constraints_[msg->name] = constraint;
 }
 
@@ -471,11 +510,18 @@ void BulletServer::update()
   ros::Duration(period_).sleep();
 }
 
-void BulletServer::removeConstraint(Constraint* constraint)
+void BulletServer::removeConstraint(const Constraint* constraint,
+    const bool remove_from_bodies=false)
 {
+  if (remove_from_bodies)
+  {
+    constraint->body_a_->removeConstraint(constraint);
+    constraint->body_b_->removeConstraint(constraint);
+  }
+
   // This doesn't delete the constraint just removes it (most likely
   // because it is about to be deleted from the a Body it is 
-  // attached to.
+  // attached to).
   ROS_INFO_STREAM("BulletServer: remove constraint " << constraint->name_);
   constraints_.erase(constraint->name_);
 }
@@ -521,7 +567,7 @@ Body::Body(BulletServer* parent,
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
-  ROS_DEBUG_STREAM(name << " " << type);  // << " " << pose);
+  ROS_INFO_STREAM("new Body " << name << " " << type);  // << " " << pose);
 
   // TODO(lucasw) rename this Body to disambiguate?
   if (type == bullet_server::Body::SPHERE)
@@ -941,22 +987,24 @@ Body::Body(
 
 Body::~Body()
 {
-  ROS_DEBUG_STREAM("delete body " << name_);
+  ROS_INFO_STREAM("Body delete " << name_);
   // if there is a constraint attached to this body, it
   // needs to be removed first
   for (std::map<std::string, Constraint*>::iterator it = constraints_.begin();
       it != constraints_.end(); ++it)
   {
-    ROS_INFO_STREAM(name_ << " remove constraint " << it->first);
+    const std::string constraint_name = it->first;
+    const Constraint* constraint = it->second;
+    ROS_INFO_STREAM("Body " << name_ << " remove constraint " << constraint_name);
     // need to remove it from map from other Body
-    if (it->second->body_a_->name_ != name_)
-      it->second->body_a_->removeConstraint(it->second);
+    if (constraint->body_a_->name_ != name_)
+      constraint->body_a_->removeConstraint(constraint);
     if (it->second->body_b_->name_ != name_)
-      it->second->body_b_->removeConstraint(it->second);
+      constraint->body_b_->removeConstraint(constraint);
 
     // need to remove it from BulletSever constraints map
-    parent_->removeConstraint(it->second);
-    delete it->second;
+    parent_->removeConstraint(constraint);
+    delete constraint;
   }
 
   for (size_t i = 0; i < marker_array_.markers.size(); ++i)
@@ -1004,16 +1052,17 @@ void Body::update()
 
 void Body::addConstraint(Constraint* constraint)
 {
-  ROS_DEBUG_STREAM(name_ << ": add constraint " << constraint->name_);
+  ROS_INFO_STREAM(name_ << ": add constraint " << constraint->name_);
   constraints_[constraint->name_] = constraint;
 }
 
-void Body::removeConstraint(Constraint* constraint)
+// TODO(lucasw) make const
+void Body::removeConstraint(const Constraint* constraint)
 {
   // This doesn't delete the constraint just removes it (most likely
   // because it is about to be deleted from the other Body it is 
   // attached to.
-  ROS_INFO_STREAM(name_ << ": remove constraint " << constraint->name_);
+  ROS_INFO_STREAM("Body " << name_ << ": remove constraint " << constraint->name_);
   constraints_.erase(constraint->name_);
 }
 

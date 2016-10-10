@@ -6,6 +6,7 @@
       args="-d $(find bullet_server)/config/bullet_server.rviz"
       if="$(arg use_rviz)"/>
 
-  <node pkg="bullet_server" type="bullet_server" name="bullet_server"/>
+  <node pkg="bullet_server" type="bullet_server" name="bullet_server"
+      output="screen"/>
 
 </launch>

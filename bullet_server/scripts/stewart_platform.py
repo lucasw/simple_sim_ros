@@ -14,8 +14,9 @@ class StewartPlatform:
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
         add_compound_request = AddCompoundRequest()
+        add_compound_request.remove = rospy.get_param('~remove', False)
 
-        floor = -9.0
+        floor = -1.0
         radius = 0.5
         height = 1.0
         rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
@@ -49,7 +50,7 @@ class StewartPlatform:
         # add_compound_request.body.append(top_plate)
 
         # make six actuator cylinder bottoms with TBD spacing in a circle
-        for i in range(6):
+        for i in range(1):  # range(6):
             bot_cylinder = Body()
             bot_cylinder.name = "bot_cylinder_" + str(i)
             bot_cylinder.pose.orientation.x = rot90[0]
@@ -74,12 +75,11 @@ class StewartPlatform:
             constraint.body_b = bot_cylinder.name
             constraint.type = Constraint.POINT2POINT
             constraint.pivot_in_a.x = bot_cylinder.pose.position.x
-            constraint.pivot_in_a.y = bot_cylinder.pose.position.y
-            constraint.pivot_in_a.z = bot_cylinder.pose.position.z + 0.2
+            constraint.pivot_in_a.y = bot_cylinder.pose.position.y + 0.2
+            constraint.pivot_in_a.z = bot_cylinder.pose.position.z
             constraint.pivot_in_b.x = 0
-            constraint.pivot_in_b.y = 0
-            constraint.pivot_in_b.z = -bot_cylinder.scale.y - 0.05
-
+            constraint.pivot_in_b.y = -bot_cylinder.scale.y - 0.05
+            constraint.pivot_in_b.z = 0
             add_compound_request.constraint.append(constraint)
 
         # connect the cylinders to the bottom plate with p2p ball socket

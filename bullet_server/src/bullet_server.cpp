@@ -211,6 +211,7 @@ Constraint::Constraint(
   }
   if (type == bullet_server::Constraint::FIXED)
   {
+    #if BT_BULLET_VERSION >= 282
     // TODO(lucasw) need orientation
     btTransform frame_in_a = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_a_bt);
     btTransform frame_in_b = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_b_bt);
@@ -220,6 +221,8 @@ Constraint::Constraint(
         *body_b->rigid_body_,
         frame_in_a,
         frame_in_b);
+    #endif
+    ROS_ERROR_STREAM("fixed joint not supported in this bullet version " << BT_BULLET_VERSION);
   }
   if (type == bullet_server::Constraint::POINT2POINT)
   {
@@ -233,7 +236,6 @@ Constraint::Constraint(
         pivot_in_a_bt,
         pivot_in_b_bt);
 
-    dynamics_world_->addConstraint(constraint_);
     // TODO(lucasw) publish a marker for both bodies- a line to the center of the body
     // to the pivot, and then a sphere at the ball joint
     {
@@ -306,7 +308,8 @@ Constraint::Constraint(
 
 Constraint::~Constraint()
 {
-  ROS_INFO_STREAM("Constraint: delete " << name_);
+  ROS_INFO_STREAM("Constraint: delete " << name_ << " "
+    << dynamics_world_->getNumConstraints());
 
   for (size_t i = 0; i < marker_array_.markers.size(); ++i)
   {
@@ -318,6 +321,7 @@ Constraint::~Constraint()
   // TODO(lucasw) it needs to be removed from BulletServer->constraints_
   dynamics_world_->removeConstraint(constraint_);
   delete constraint_;
+  ROS_INFO_STREAM("remaining constraints in world " << dynamics_world_->getNumConstraints());
 }
 
 BulletServer::BulletServer()

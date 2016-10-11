@@ -7,7 +7,6 @@ Panels:
         - /Marker1/Namespaces1
         - /Grid1
         - /Grid YZ1/Offset1
-        - /Grid2
       Splitter Ratio: 0.509293973
     Tree Height: 557
   - Class: rviz/Selection
@@ -60,8 +59,7 @@ Visualization Manager:
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
-        bodies: true
-        constraints: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -97,7 +95,7 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: false
     - Alpha: 0.5
-      Cell Size: 5
+      Cell Size: 1
       Class: rviz/Grid
       Color: 255; 255; 255
       Enabled: true
@@ -109,7 +107,7 @@ Visualization Manager:
       Offset:
         X: 0
         Y: 0
-        Z: -1
+        Z: 0
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
@@ -136,7 +134,7 @@ Visualization Manager:
       Cell Size: 50
       Class: rviz/Grid
       Color: 160; 160; 164
-      Enabled: true
+      Enabled: false
       Line Style:
         Line Width: 0.0299999993
         Value: Lines
@@ -149,7 +147,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -174,22 +172,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.2363739
+      Distance: 0.832058072
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 9.86976051
-        Y: 5.76071882
-        Z: 2.88946319
+        X: 0
+        Y: 0
+        Z: 0
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.32979167
+      Pitch: 0.555398405
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.765280426
+      Yaw: 5.99858141
     Saved: ~
 Window Geometry:
   Displays:
@@ -207,5 +205,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1128
-  X: 699
+  X: 697
   Y: 24

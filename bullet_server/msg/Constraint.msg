@@ -1,6 +1,7 @@
 uint8 POINT2POINT=0
 uint8 FIXED=1
 uint8 HINGE=2
+uint8 SLIDER=3
 # http://bulletphysics.org/mediawiki-1.5.8/index.php/Constraints
 uint8 type
 string name

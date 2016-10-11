@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Create a stewart platform with service calls into bullet_server
 
+import copy
 import math
 import rospy
 import tf
@@ -16,9 +17,9 @@ class StewartPlatform:
         add_compound_request = AddCompoundRequest()
         add_compound_request.remove = rospy.get_param('~remove', False)
 
-        floor = -1.0
-        radius = 0.5
-        height = 1.0
+        floor = 0.0
+        radius = 1.0
+        height = radius * 2
         rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
         thickness = 0.1
         # make the bottom cylinder plate
@@ -50,7 +51,7 @@ class StewartPlatform:
         # add_compound_request.body.append(top_plate)
 
         # make six actuator cylinder bottoms with TBD spacing in a circle
-        for i in range(1):  # range(6):
+        for i in range(6):
             bot_cylinder = Body()
             bot_cylinder.name = "bot_cylinder_" + str(i)
             bot_cylinder.pose.orientation.x = rot90[0]
@@ -58,17 +59,16 @@ class StewartPlatform:
             bot_cylinder.pose.orientation.z = rot90[2]
             bot_cylinder.pose.orientation.w = rot90[3]
             bot_cylinder.pose.position.x = 0.7 * radius * math.cos(i/6.0 * 2.0 * math.pi)
-            bot_cylinder.pose.position.y = 0.7 * radius * math.sin(i/6.0 * 2.0 * math.pi)
-            bot_cylinder.pose.position.z = floor + 0.2 + height/6.0 * 0.5 + 0.03
+            bot_cylinder.pose.position.y = floor + 0.2 + height/6.0 * 0.5 + 0.2
+            bot_cylinder.pose.position.z = 0.7 * radius * math.sin(i/6.0 * 2.0 * math.pi)
             bot_cylinder.type = Body.CYLINDER
-            bot_cylinder.scale.x = thickness/2.0
-            bot_cylinder.scale.y = height/8.0
-            bot_cylinder.scale.z = thickness/2.0
+            bot_cylinder.scale.x = thickness / 2.0
+            bot_cylinder.scale.y = height / 8.0
+            bot_cylinder.scale.z = thickness / 2.0
             add_compound_request.body.append(bot_cylinder)
 
-            # This will crash the server if run twice-
-            # having a new constraint with same name as old one isn't handled
-            # correctly, but it isn't removing old one properly.
+            # connect the cylinders to the bottom plate with p2p ball socket
+            # joints.
             constraint = Constraint()
             constraint.name = "bot_cylinder_p2p_" + str(i)
             constraint.body_a = "bottom_plate"
@@ -78,18 +78,33 @@ class StewartPlatform:
             constraint.pivot_in_a.y = bot_cylinder.pose.position.y + 0.2
             constraint.pivot_in_a.z = bot_cylinder.pose.position.z
             constraint.pivot_in_b.x = 0
-            constraint.pivot_in_b.y = -bot_cylinder.scale.y - 0.05
+            constraint.pivot_in_b.y = bot_cylinder.scale.y + 0.05
             constraint.pivot_in_b.z = 0
             add_compound_request.constraint.append(constraint)
 
-        # connect the cylinders to the bottom plate with p2p ball socket
-        # joints.
+            # make six actuator cylinder tops
+            top_cylinder = copy.deepcopy(bot_cylinder)
+            top_cylinder.name = "top_cylinder_" + str(i)
+            top_cylinder.pose.position.y = floor - height
+            add_compound_request.body.append(top_cylinder)
 
-        # make six actuator cylinder tops
+            # connect each top cylinder to paired bottom cylinder with slider constraint 
+            prismatic = Constraint()
+            prismatic.name = "prismatic_" + str(i)
+            prismatic.body_a = bot_cylinder.name
+            prismatic.body_b = top_cylinder.name
+            prismatic.type = Constraint.SLIDER
+            prismatic.pivot_in_a.x = 0
+            prismatic.pivot_in_a.y = 0
+            prismatic.pivot_in_a.z = 0
+            prismatic.pivot_in_b.x = 0
+            prismatic.pivot_in_b.y = 0
+            prismatic.pivot_in_b.z = 0
+            prismatic.lower_lim = 0.5
+            prismatic.upper_lim = 1.5
+            add_compound_request.constraint.append(prismatic)
 
-        # connect the top cylinders with p2p joints to top plate
-
-        # connect each top cylinder to paired bottom cylinder with slider constraint 
+            # connect the top cylinders with p2p joints to top plate
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

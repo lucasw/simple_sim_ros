@@ -165,6 +165,8 @@ public:
       geometry_msgs::Point pivot_in_b,
       geometry_msgs::Vector3 axis_in_a,
       geometry_msgs::Vector3 axis_in_b,
+      const double lower_lim,
+      const double upper_lim,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();
@@ -183,6 +185,8 @@ Constraint::Constraint(
       geometry_msgs::Point pivot_in_b,
       geometry_msgs::Vector3 axis_in_a,
       geometry_msgs::Vector3 axis_in_b,
+      const double lower_lim,
+      const double upper_lim,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     name_(name),
@@ -191,7 +195,7 @@ Constraint::Constraint(
     dynamics_world_(dynamics_world),
     marker_array_pub_(marker_array_pub)
 {
-  ROS_INFO_STREAM("new Constraint " << name << " " << body_a->name_ << " " << body_b->name_);
+  ROS_DEBUG_STREAM("new Constraint " << name << " " << body_a->name_ << " " << body_b->name_);
   // TODO(lucasw) pivot -> translation or similar
   const btVector3 pivot_in_a_bt(pivot_in_a.x, pivot_in_a.y, pivot_in_a.z);
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
@@ -207,14 +211,95 @@ Constraint::Constraint(
         pivot_in_b_bt,
         axis_in_a_bt,
         axis_in_b_bt);
-
   }
-  if (type == bullet_server::Constraint::FIXED)
+  else if (type == bullet_server::Constraint::SLIDER)
+  {
+    // the x-axis is where the slider joint will be along
+    // This works for making the axis align with cylinder objects, may not be desired
+    // for other uses.
+    const btTransform frame_in_a = btTransform(btQuaternion(0.5, -0.5, 0.5, -0.5), pivot_in_a_bt);
+    const btTransform frame_in_b = btTransform(btQuaternion(0.5, -0.5, 0.5, -0.5), pivot_in_b_bt);
+    const bool use_linear_reference_frame_a = true;
+
+    btSliderConstraint* slider = new btSliderConstraint(
+        *body_a->rigid_body_,
+        *body_b->rigid_body_,
+        frame_in_a,
+        frame_in_b,
+        use_linear_reference_frame_a);
+
+    slider->setLowerLinLimit(lower_lim);
+    slider->setUpperLinLimit(upper_lim);
+
+    constraint_ = slider;
+
+    {
+      visualization_msgs::Marker marker;
+      marker.type = visualization_msgs::Marker::SPHERE;
+      // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+      // KDL::Rotation(-M_PI_2, 0, 0)?
+      // tf::Quaternion quat = tf::createQuaternionFromRPY();
+      // tf::Matrix3x3(quat)
+      marker.pose.orientation.w = 1.0;
+      marker.scale.x = 0.2;
+      marker.scale.y = 0.2;
+      marker.scale.z = 0.2;
+      marker.ns = "constraints";
+      // marker_.header.stamp = ros::Time::now();
+      marker.frame_locked = true;
+      marker.action = visualization_msgs::Marker::ADD;
+      marker.color.a = 1.0;
+      marker.lifetime = ros::Duration();
+
+      // TODO(lucasw) could turn this into function
+      marker.id = hash(name.c_str());
+      marker.header.frame_id = body_a->name_;
+      marker.pose.position = pivot_in_a;
+      marker.color.r = 0.5;
+      marker.color.g = 0.7;
+      marker.color.b = 0.3;
+      marker_array_.markers.push_back(marker);
+
+      marker.id = hash((name + "_b").c_str());
+      marker.header.frame_id = body_b->name_;
+      marker.pose.position = pivot_in_b;
+      marker.color.r = 0.6;
+      marker.color.g = 0.3;
+      marker.color.b = 0.7;
+      marker_array_.markers.push_back(marker);
+
+      // draw lines from the origin to the pivot
+      marker.scale.x = 0.05;
+
+      marker.id = hash((name + "_line_a").c_str());
+      marker.header.frame_id = body_a->name_;
+      marker.pose.position.x = 0;
+      marker.pose.position.y = 0;
+      marker.pose.position.z = 0;
+      marker.type = visualization_msgs::Marker::LINE_STRIP;
+      marker.points.resize(2);
+      marker.points[1] = pivot_in_a;
+      marker_array_.markers.push_back(marker);
+
+      marker.id = hash((name + "_line_b").c_str());
+      marker.header.frame_id = body_b->name_;
+      marker.pose.position.x = 0;
+      marker.pose.position.y = 0;
+      marker.pose.position.z = 0;
+      marker.type = visualization_msgs::Marker::LINE_STRIP;
+      marker.points.resize(2);
+      marker.points[1] = pivot_in_b;
+      marker_array_.markers.push_back(marker);
+    }
+
+    marker_array_pub_->publish(marker_array_);
+  }
+  else if (type == bullet_server::Constraint::FIXED)
   {
     #if BT_BULLET_VERSION >= 282
     // TODO(lucasw) need orientation
-    btTransform frame_in_a = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_a_bt);
-    btTransform frame_in_b = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_b_bt);
+    const btTransform frame_in_a = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_a_bt);
+    const btTransform frame_in_b = btTransform(btQuaternion(0, 0, 0, 1), pivot_in_b_bt);
 
     constraint_ = new btFixedConstraint(
         *body_a->rigid_body_,
@@ -246,9 +331,9 @@ Constraint::Constraint(
       // tf::Quaternion quat = tf::createQuaternionFromRPY();
       // tf::Matrix3x3(quat)
       marker.pose.orientation.w = 1.0;
-      marker.scale.x = 0.4;
-      marker.scale.y = 0.4;
-      marker.scale.z = 0.4;
+      marker.scale.x = 0.3;
+      marker.scale.y = 0.3;
+      marker.scale.z = 0.3;
       marker.ns = "constraints";
       // marker_.header.stamp = ros::Time::now();
       marker.frame_locked = true;
@@ -308,7 +393,7 @@ Constraint::Constraint(
 
 Constraint::~Constraint()
 {
-  ROS_INFO_STREAM("Constraint: delete " << name_ << " "
+  ROS_DEBUG_STREAM("Constraint: delete " << name_ << " "
     << dynamics_world_->getNumConstraints());
 
   for (size_t i = 0; i < marker_array_.markers.size(); ++i)
@@ -456,6 +541,8 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       msg->pivot_in_b,
       msg->axis_in_a,
       msg->axis_in_b,
+      msg->lower_lim,
+      msg->upper_lim,
       dynamics_world_,
       &marker_array_pub_);
 
@@ -571,7 +658,7 @@ Body::Body(BulletServer* parent,
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
-  ROS_INFO_STREAM("new Body " << name << " " << type);  // << " " << pose);
+  ROS_DEBUG_STREAM("new Body " << name << " " << type);  // << " " << pose);
 
   // TODO(lucasw) rename this Body to disambiguate?
   if (type == bullet_server::Body::SPHERE)
@@ -991,7 +1078,7 @@ Body::Body(
 
 Body::~Body()
 {
-  ROS_INFO_STREAM("Body delete " << name_);
+  ROS_DEBUG_STREAM("Body delete " << name_);
   // if there is a constraint attached to this body, it
   // needs to be removed first
   for (std::map<std::string, Constraint*>::iterator it = constraints_.begin();

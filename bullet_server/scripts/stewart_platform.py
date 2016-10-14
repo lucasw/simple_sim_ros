@@ -25,6 +25,8 @@ class StewartPlatform:
         # make the bottom cylinder plate
         bot_plate = Body()
         bot_plate.name = "bottom_plate"
+        # make the plate static
+        bot_plate.mass = 0.0
         bot_plate.pose.orientation.x = rot90[0]
         bot_plate.pose.orientation.y = rot90[1]
         bot_plate.pose.orientation.z = rot90[2]
@@ -39,6 +41,7 @@ class StewartPlatform:
         # make the top cylinder plate
         top_plate = Body()
         top_plate.name = "top_plate"
+        top_plate.mass = 1.0
         top_plate.pose.orientation.x = rot90[0]
         top_plate.pose.orientation.y = rot90[1]
         top_plate.pose.orientation.z = rot90[2]
@@ -54,6 +57,7 @@ class StewartPlatform:
         for i in range(6):
             bot_cylinder = Body()
             bot_cylinder.name = "bot_cylinder_" + str(i)
+            bot_cylinder.mass = 0.3
             bot_cylinder.pose.orientation.x = rot90[0]
             bot_cylinder.pose.orientation.y = rot90[1]
             bot_cylinder.pose.orientation.z = rot90[2]

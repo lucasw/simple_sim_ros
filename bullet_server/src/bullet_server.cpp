@@ -84,6 +84,8 @@ class BulletServer
   btSequentialImpulseConstraintSolver* solver;
   btDiscreteDynamicsWorld* dynamics_world_;
 
+  // TODO(lucasw) make this configurable by addCompound
+  // instead of hard coded
   btCollisionShape* ground_shape_;
   btDefaultMotionState* ground_motion_state_;
   btRigidBody* ground_rigid_body_;
@@ -120,6 +122,7 @@ public:
   Body(BulletServer* parent,
       const std::string name,
       unsigned int type,
+      const float mass,
       geometry_msgs::Pose pose,
       geometry_msgs::Vector3 scale,
       btDiscreteDynamicsWorld* dynamics_world,
@@ -428,8 +431,10 @@ int BulletServer::init()
   // TODO(lucasw) make a service set where the ground plane is, if any
   ground_motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
       btVector3(0, 0, -1.0)));
+  // setting inertia to zero makes the body static
+  const btVector3 inertia(0, 0, 0);
   btRigidBody::btRigidBodyConstructionInfo
-    ground_rigid_body_CI(0, ground_motion_state_, ground_shape_, btVector3(0, 0, 0));
+    ground_rigid_body_CI(0, ground_motion_state_, ground_shape_, inertia);
   ground_rigid_body_ = new btRigidBody(ground_rigid_body_CI);
   dynamics_world_->addRigidBody(ground_rigid_body_);
 
@@ -502,8 +507,9 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
     delete bodies_[msg->name];
   }
 
-  bodies_[msg->name] = new Body(this, msg->name, msg->type, msg->pose,
-      msg->scale, dynamics_world_, &br_, &marker_array_pub_);
+  bodies_[msg->name] = new Body(this, msg->name, msg->type, msg->mass,
+      msg->pose, msg->scale,
+      dynamics_world_, &br_, &marker_array_pub_);
 }
 
 void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr& msg)
@@ -598,7 +604,7 @@ void BulletServer::update()
     it->second->update();
   }
   ros::spinOnce();
-  ros::Duration(period_).sleep();
+  ros::Duration(period_ * 10).sleep();
 }
 
 void BulletServer::removeConstraint(const Constraint* constraint,
@@ -642,6 +648,7 @@ BulletServer::~BulletServer()
 Body::Body(BulletServer* parent,
     const std::string name,
     unsigned int type,
+    const float mass,
     geometry_msgs::Pose pose,
     geometry_msgs::Vector3 scale,
     btDiscreteDynamicsWorld* dynamics_world,
@@ -810,10 +817,11 @@ Body::Body(BulletServer* parent,
   motion_state_ = new btDefaultMotionState(btTransform(
       btQuaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w),
       btVector3(pose.position.x, pose.position.y, pose.position.z)));
-  btScalar mass = 1;
+  // TODO(lucasw) provide in message
+  btScalar scalar_mass = mass;
   btVector3 fallInertia(0, 0, 0);
-  shape_->calculateLocalInertia(mass, fallInertia);
-  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,
+  shape_->calculateLocalInertia(scalar_mass, fallInertia);
+  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(scalar_mass, motion_state_,
       shape_, fallInertia);
   rigid_body_ = new btRigidBody(fallRigidBodyCI);
   dynamics_world_->addRigidBody(rigid_body_);
@@ -836,6 +844,7 @@ Body::Body(BulletServer* parent,
   marker_array_pub_->publish(marker_array_);
 }
 
+// make a static height map
 Body::Body(
     BulletServer* parent,
     const std::string name,
@@ -1067,7 +1076,7 @@ Body::Body(
 
   // TODO(lucasw) calculate btTransform from frame_id 
   motion_state_ = new btDefaultMotionState(tf);
-  const float mass = 0.0;
+  const btScalar mass = 0.0;
   btVector3 fall_inertia(0, 0, 0);
   // shape_->calculateLocalInertia(mass, fallInertia);
   btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,

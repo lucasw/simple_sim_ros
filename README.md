@@ -4,6 +4,20 @@ Minimally featured but fast ROS physics simulation wrapping bullet
 
 ```
 roslaunch bullet_server bullet_server.launch
+rosrun bullet_server stewart_platform.py
+```
+
+Then extend on 'actuator', though no close loop control is keeping the other actuators in
+position:
+
+```
+rostopic pub /add_impulse bullet_server/Impulse "{body: 'top_cylinder_0', impulse:{x: -0.1}}" -r 4
+```
+
+# old instructions, now out of date
+
+```
+roslaunch bullet_server bullet_server.launch
 rosrun bullet_server random_body.py
 rosrun bullet_server test.py  # drop a small 'car'
 ```

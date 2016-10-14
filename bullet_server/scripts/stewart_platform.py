@@ -41,30 +41,35 @@ class StewartPlatform:
         # make the top cylinder plate
         top_plate = Body()
         top_plate.name = "top_plate"
-        top_plate.mass = 1.0
+        top_plate.mass = 0.5
         top_plate.pose.orientation.x = rot90[0]
         top_plate.pose.orientation.y = rot90[1]
         top_plate.pose.orientation.z = rot90[2]
         top_plate.pose.orientation.w = rot90[3]
-        top_plate.pose.position.z = floor + height
+        top_plate.pose.position.z = floor + 1.7
         top_plate.type = Body.CYLINDER
         top_plate.scale.x = radius
         top_plate.scale.y = thickness
         top_plate.scale.z = radius
-        # add_compound_request.body.append(top_plate)
+        add_compound_request.body.append(top_plate)
 
         # make six actuator cylinder bottoms with TBD spacing in a circle
         for i in range(6):
             bot_cylinder = Body()
             bot_cylinder.name = "bot_cylinder_" + str(i)
             bot_cylinder.mass = 0.3
+            rot90 = tf.transformations.quaternion_from_euler(-math.pi/2.0, 0, 0)
             bot_cylinder.pose.orientation.x = rot90[0]
             bot_cylinder.pose.orientation.y = rot90[1]
             bot_cylinder.pose.orientation.z = rot90[2]
             bot_cylinder.pose.orientation.w = rot90[3]
-            bot_cylinder.pose.position.x = 0.7 * radius * math.cos(i/6.0 * 2.0 * math.pi)
-            bot_cylinder.pose.position.y = floor + 0.2 + height/6.0 * 0.5 + 0.2
-            bot_cylinder.pose.position.z = 0.7 * radius * math.sin(i/6.0 * 2.0 * math.pi)
+            if i % 2 == 0:
+                angle = i / 6.0 * 2.0 * math.pi - 0.15
+            else:
+                angle = (i - 1) / 6.0 * 2.0 * math.pi + 0.15
+            bot_cylinder.pose.position.x = 0.7 * radius * math.cos(angle)
+            bot_cylinder.pose.position.y = 0.7 * radius * math.sin(angle)
+            bot_cylinder.pose.position.z = floor + 0.2 + height/6.0 * 0.5 + 0.3
             bot_cylinder.type = Body.CYLINDER
             bot_cylinder.scale.x = thickness / 2.0
             bot_cylinder.scale.y = height / 8.0
@@ -78,9 +83,11 @@ class StewartPlatform:
             constraint.body_a = "bottom_plate"
             constraint.body_b = bot_cylinder.name
             constraint.type = Constraint.POINT2POINT
+            # Need to transform bot_cylinder.pose into bot_plate frame
+            # to get these
             constraint.pivot_in_a.x = bot_cylinder.pose.position.x
-            constraint.pivot_in_a.y = bot_cylinder.pose.position.y + 0.2
-            constraint.pivot_in_a.z = bot_cylinder.pose.position.z
+            constraint.pivot_in_a.z = -bot_cylinder.pose.position.y
+            constraint.pivot_in_a.y = bot_cylinder.pose.position.z - 0.5
             constraint.pivot_in_b.x = 0
             constraint.pivot_in_b.y = bot_cylinder.scale.y + 0.05
             constraint.pivot_in_b.z = 0
@@ -89,7 +96,14 @@ class StewartPlatform:
             # make six actuator cylinder tops
             top_cylinder = copy.deepcopy(bot_cylinder)
             top_cylinder.name = "top_cylinder_" + str(i)
-            top_cylinder.pose.position.y = floor - height
+            top_cylinder.mass = 0.3
+            if i % 2 == 0:
+                angle = (i - 1) / 6.0 * 2.0 * math.pi + 0.15
+            else:
+                angle = (i) / 6.0 * 2.0 * math.pi - 0.15
+            top_cylinder.pose.position.x = 0.7 * radius * math.cos(angle)
+            top_cylinder.pose.position.y = 0.7 * radius * math.sin(angle)
+            top_cylinder.pose.position.z = bot_cylinder.pose.position.z + 0.6
             add_compound_request.body.append(top_cylinder)
 
             # connect each top cylinder to paired bottom cylinder with slider constraint 
@@ -99,16 +113,32 @@ class StewartPlatform:
             prismatic.body_b = top_cylinder.name
             prismatic.type = Constraint.SLIDER
             prismatic.pivot_in_a.x = 0
-            prismatic.pivot_in_a.y = 0
+            prismatic.pivot_in_a.y = -0.3
             prismatic.pivot_in_a.z = 0
             prismatic.pivot_in_b.x = 0
-            prismatic.pivot_in_b.y = 0
+            prismatic.pivot_in_b.y = 0.3
             prismatic.pivot_in_b.z = 0
-            prismatic.lower_lim = 0.5
-            prismatic.upper_lim = 1.5
+            prismatic.lower_lim = 0.0
+            prismatic.upper_lim = 1.0
             add_compound_request.constraint.append(prismatic)
 
             # connect the top cylinders with p2p joints to top plate
+            constraint = Constraint()
+            constraint.name = "tot_cylinder_p2p_" + str(i)
+            constraint.body_a = "top_plate"
+            constraint.body_b = top_cylinder.name
+            constraint.type = Constraint.POINT2POINT
+            # Need to transform bot_cylinder.pose into bot_plate frame
+            # to get these
+
+            constraint.pivot_in_a.x = top_cylinder.pose.position.x
+            constraint.pivot_in_a.z = -top_cylinder.pose.position.y
+            constraint.pivot_in_a.y = -0.2
+            constraint.pivot_in_b.x = 0
+            constraint.pivot_in_b.y = -0.2
+            constraint.pivot_in_b.z = 0
+            add_compound_request.constraint.append(constraint)
+
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

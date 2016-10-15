@@ -7,8 +7,11 @@ uint8 type
 string name
 string body_a
 string body_b
-float32 lower_lim
-float32 upper_lim
+# these limits are only for sliders
+float32 lower_lin_lim
+float32 upper_lin_lim
+float32 lower_ang_lim
+float32 upper_ang_lim
 # if type is fixed pivot is just a point, not a pivot, rename later?
 geometry_msgs/Point pivot_in_a
 geometry_msgs/Point pivot_in_b

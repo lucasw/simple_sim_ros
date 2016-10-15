@@ -118,8 +118,10 @@ class StewartPlatform:
             prismatic.pivot_in_b.x = 0
             prismatic.pivot_in_b.y = 0.3
             prismatic.pivot_in_b.z = 0
-            prismatic.lower_lim = 0.0
-            prismatic.upper_lim = 0.2
+            prismatic.lower_lin_lim = 0.0
+            prismatic.upper_lin_lim = 0.2
+            prismatic.lower_ang_lim = -0.1
+            prismatic.upper_ang_lim = 0.1
             add_compound_request.constraint.append(prismatic)
 
             # connect the top cylinders with p2p joints to top plate

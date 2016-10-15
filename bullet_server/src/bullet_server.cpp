@@ -168,8 +168,10 @@ public:
       geometry_msgs::Point pivot_in_b,
       geometry_msgs::Vector3 axis_in_a,
       geometry_msgs::Vector3 axis_in_b,
-      const double lower_lim,
-      const double upper_lim,
+      const double lower_lin_lim,
+      const double upper_lin_lim,
+      const double lower_ang_lim,
+      const double upper_ang_lim,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();
@@ -188,8 +190,10 @@ Constraint::Constraint(
       geometry_msgs::Point pivot_in_b,
       geometry_msgs::Vector3 axis_in_a,
       geometry_msgs::Vector3 axis_in_b,
-      const double lower_lim,
-      const double upper_lim,
+      const double lower_lin_lim,
+      const double upper_lin_lim,
+      const double lower_ang_lim,
+      const double upper_ang_lim,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     name_(name),
@@ -231,8 +235,10 @@ Constraint::Constraint(
         frame_in_b,
         use_linear_reference_frame_a);
 
-    slider->setLowerLinLimit(lower_lim);
-    slider->setUpperLinLimit(upper_lim);
+    slider->setLowerLinLimit(lower_lin_lim);
+    slider->setUpperLinLimit(upper_lin_lim);
+    slider->setLowerAngLimit(lower_ang_lim);
+    slider->setUpperAngLimit(upper_ang_lim);
 
     constraint_ = slider;
 
@@ -547,8 +553,10 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       msg->pivot_in_b,
       msg->axis_in_a,
       msg->axis_in_b,
-      msg->lower_lim,
-      msg->upper_lim,
+      msg->lower_lin_lim,
+      msg->upper_lin_lim,
+      msg->lower_ang_lim,
+      msg->upper_ang_lim,
       dynamics_world_,
       &marker_array_pub_);
 

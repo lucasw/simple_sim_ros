@@ -14,7 +14,7 @@ position:
 rostopic pub /add_impulse bullet_server/Impulse "{body: 'top_cylinder_0', impulse:{x: -0.1}}" -r 4
 ```
 
-# old instructions, now out of date
+# old instructions (now out of date)
 
 ```
 roslaunch bullet_server bullet_server.launch

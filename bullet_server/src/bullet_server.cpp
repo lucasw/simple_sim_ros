@@ -36,6 +36,7 @@
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
@@ -153,10 +154,12 @@ public:
 
 class Constraint
 {
+  ros::NodeHandle nh_;
   btTypedConstraint* constraint_;
 
   btDiscreteDynamicsWorld* dynamics_world_;
   ros::Publisher* marker_array_pub_;
+  std::map<std::string, ros::Publisher> pubs_;
   visualization_msgs::MarkerArray marker_array_;
 public:
   Constraint(
@@ -179,6 +182,7 @@ public:
   const std::string name_;
   Body* body_a_;
   Body* body_b_;
+  void update();
 };
 
 Constraint::Constraint(
@@ -196,6 +200,7 @@ Constraint::Constraint(
       const double upper_ang_lim,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
+    nh_(name),
     name_(name),
     body_a_(body_a),
     body_b_(body_b),
@@ -209,6 +214,8 @@ Constraint::Constraint(
   const btVector3 axis_in_a_bt(axis_in_a.x, axis_in_a.y, axis_in_a.z);
   const btVector3 axis_in_b_bt(axis_in_b.x, axis_in_b.y, axis_in_b.z);
   bool dont_collide = true;
+  // TODO(lucasw) instead of this big switch here, need to have
+  // subclasses
   if (type == bullet_server::Constraint::HINGE)
   {
     constraint_ = new btHingeConstraint(
@@ -234,6 +241,8 @@ Constraint::Constraint(
         frame_in_a,
         frame_in_b,
         use_linear_reference_frame_a);
+
+    pubs_["linear_pos"] = nh_.advertise<std_msgs::Float32>("linear_pos", 1);
 
     slider->setLowerLinLimit(lower_lin_lim);
     slider->setUpperLinLimit(upper_lin_lim);
@@ -418,6 +427,20 @@ Constraint::~Constraint()
   ROS_INFO_STREAM("remaining constraints in world " << dynamics_world_->getNumConstraints());
 }
 
+void Constraint::update()
+{
+  // TODO(lucasw) get rid of this with subclasses
+  btSliderConstraint* slider = dynamic_cast<btSliderConstraint*>(constraint_);
+  if (slider)
+  {
+    std_msgs::Float32 msg;
+    msg.data = slider->getLinearPos();
+    pubs_["linear_pos"].publish(msg);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 BulletServer::BulletServer()
 {
   init();
@@ -611,6 +634,13 @@ void BulletServer::update()
   {
     it->second->update();
   }
+  // TODO(lucasw) maybe Body and Constraint should inherit from same base
+  for (std::map<std::string, Constraint*>::iterator it = constraints_.begin();
+      it != constraints_.end(); ++it)
+  {
+    it->second->update();
+  }
+
   ros::spinOnce();
   ros::Duration(period_ * 20).sleep();
 }

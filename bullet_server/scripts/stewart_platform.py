@@ -120,8 +120,9 @@ class StewartPlatform:
             prismatic.pivot_in_b.z = 0
             prismatic.lower_lin_lim = 0.0
             prismatic.upper_lin_lim = 0.2
-            prismatic.lower_ang_lim = -0.1
-            prismatic.upper_ang_lim = 0.1
+            # TODO(lucasw) is this an absolute angle or rate?
+            prismatic.lower_ang_lim = -0.01
+            prismatic.upper_ang_lim = 0.01
             add_compound_request.constraint.append(prismatic)
 
             # connect the top cylinders with p2p joints to top plate

@@ -159,8 +159,11 @@ class Constraint
 
   btDiscreteDynamicsWorld* dynamics_world_;
   ros::Publisher* marker_array_pub_;
+  std::map<std::string, float> command_;
   std::map<std::string, ros::Publisher> pubs_;
+  std::map<std::string, ros::Subscriber> subs_;
   visualization_msgs::MarkerArray marker_array_;
+  void commandCallback(const std_msgs::Float32::ConstPtr msg, const std::string motor_name);
 public:
   Constraint(
       const std::string name,
@@ -242,7 +245,17 @@ Constraint::Constraint(
         frame_in_b,
         use_linear_reference_frame_a);
 
+    // TODO(lucasw) make these controllable via service (or topic?)
+    slider->setMaxLinMotorForce(1000.0);
+    slider->setPoweredLinMotor(true);
+
     pubs_["linear_pos"] = nh_.advertise<std_msgs::Float32>("linear_pos", 1);
+    // body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
+    const std::string motor_name = "target_lin_motor_vel";
+    command_[motor_name] = 0;
+    subs_[motor_name] = nh_.subscribe<std_msgs::Float32>(motor_name, 1,
+                                                         boost::bind(&Constraint::commandCallback,
+                                                                     this, _1, motor_name));
 
     slider->setLowerLinLimit(lower_lin_lim);
     slider->setUpperLinLimit(upper_lin_lim);
@@ -436,7 +449,17 @@ void Constraint::update()
     std_msgs::Float32 msg;
     msg.data = slider->getLinearPos();
     pubs_["linear_pos"].publish(msg);
+
+    // TODO(lucasw) this isn't having any effect
+    slider->setTargetLinMotorVelocity(btScalar(command_["target_lin_motor_vel"]));
   }
+}
+
+void Constraint::commandCallback(const std_msgs::Float32::ConstPtr msg,
+                                 const std::string motor_name)
+{
+  ROS_INFO_STREAM(name_ << ": " << motor_name << " " << msg->data);
+  command_[motor_name] = msg->data;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -642,7 +665,7 @@ void BulletServer::update()
   }
 
   ros::spinOnce();
-  ros::Duration(period_ * 20).sleep();
+  ros::Duration(period_ * 10).sleep();
 }
 
 void BulletServer::removeConstraint(const Constraint* constraint,
@@ -1190,7 +1213,7 @@ void Body::update()
 
 void Body::addConstraint(Constraint* constraint)
 {
-  ROS_INFO_STREAM(name_ << ": add constraint " << constraint->name_);
+  ROS_DEBUG_STREAM(name_ << ": add constraint " << constraint->name_);
   constraints_[constraint->name_] = constraint;
 }
 

@@ -178,6 +178,7 @@ public:
       const double upper_lin_lim,
       const double lower_ang_lim,
       const double upper_ang_lim,
+      const float max_motor_impulse,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();
@@ -201,6 +202,7 @@ Constraint::Constraint(
       const double upper_lin_lim,
       const double lower_ang_lim,
       const double upper_ang_lim,
+      const float max_motor_impulse,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     nh_(name),
@@ -245,10 +247,6 @@ Constraint::Constraint(
         frame_in_b,
         use_linear_reference_frame_a);
 
-    // TODO(lucasw) make these controllable via service (or topic?)
-    slider->setMaxLinMotorForce(1000.0);
-    slider->setPoweredLinMotor(true);
-
     pubs_["linear_pos"] = nh_.advertise<std_msgs::Float32>("linear_pos", 1);
     // body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
     const std::string motor_name = "target_lin_motor_vel";
@@ -257,10 +255,18 @@ Constraint::Constraint(
                                                          boost::bind(&Constraint::commandCallback,
                                                                      this, _1, motor_name));
 
-    slider->setLowerLinLimit(lower_lin_lim);
-    slider->setUpperLinLimit(upper_lin_lim);
+    // TODO(lucasw) make these controllable via service (or topic?)
     slider->setLowerAngLimit(lower_ang_lim);
     slider->setUpperAngLimit(upper_ang_lim);
+    slider->setPoweredAngMotor(true);
+    slider->setMaxAngMotorForce(max_motor_impulse);
+    slider->setTargetAngMotorVelocity(0);
+
+    slider->setLowerLinLimit(lower_lin_lim);
+    slider->setUpperLinLimit(upper_lin_lim);
+    slider->setPoweredLinMotor(true);
+    slider->setMaxLinMotorForce(max_motor_impulse);
+    slider->setTargetLinMotorVelocity(0);
 
     constraint_ = slider;
 
@@ -337,8 +343,9 @@ Constraint::Constraint(
         *body_b->rigid_body_,
         frame_in_a,
         frame_in_b);
-    #endif
+    #else
     ROS_ERROR_STREAM("fixed joint not supported in this bullet version " << BT_BULLET_VERSION);
+    #endif
   }
   if (type == bullet_server::Constraint::POINT2POINT)
   {
@@ -451,14 +458,16 @@ void Constraint::update()
     pubs_["linear_pos"].publish(msg);
 
     // TODO(lucasw) this isn't having any effect
-    slider->setTargetLinMotorVelocity(btScalar(command_["target_lin_motor_vel"]));
+    const float vel = command_["target_lin_motor_vel"];
+    slider->setTargetLinMotorVelocity(btScalar(vel));
+    ROS_DEBUG_STREAM(name_ << " slider " << vel);
   }
 }
 
 void Constraint::commandCallback(const std_msgs::Float32::ConstPtr msg,
                                  const std::string motor_name)
 {
-  ROS_INFO_STREAM(name_ << ": " << motor_name << " " << msg->data);
+  ROS_DEBUG_STREAM(name_ << ": " << motor_name << " " << msg->data);
   command_[motor_name] = msg->data;
 }
 
@@ -603,6 +612,7 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       msg->upper_lin_lim,
       msg->lower_ang_lim,
       msg->upper_ang_lim,
+      msg->max_motor_impulse,
       dynamics_world_,
       &marker_array_pub_);
 
@@ -680,7 +690,7 @@ void BulletServer::removeConstraint(const Constraint* constraint,
   // This doesn't delete the constraint just removes it (most likely
   // because it is about to be deleted from the a Body it is 
   // attached to).
-  ROS_INFO_STREAM("BulletServer: remove constraint " << constraint->name_);
+  ROS_DEBUG_STREAM("BulletServer: remove constraint " << constraint->name_);
   constraints_.erase(constraint->name_);
 }
 
@@ -1156,7 +1166,7 @@ Body::~Body()
   {
     const std::string constraint_name = it->first;
     const Constraint* constraint = it->second;
-    ROS_INFO_STREAM("Body " << name_ << " remove constraint " << constraint_name);
+    ROS_DEBUG_STREAM("Body " << name_ << " remove constraint " << constraint_name);
     // need to remove it from map from other Body
     if (constraint->body_a_->name_ != name_)
       constraint->body_a_->removeConstraint(constraint);
@@ -1223,7 +1233,7 @@ void Body::removeConstraint(const Constraint* constraint)
   // This doesn't delete the constraint just removes it (most likely
   // because it is about to be deleted from the other Body it is 
   // attached to.
-  ROS_INFO_STREAM("Body " << name_ << ": remove constraint " << constraint->name_);
+  ROS_DEBUG_STREAM("Body " << name_ << ": remove constraint " << constraint->name_);
   constraints_.erase(constraint->name_);
 }
 

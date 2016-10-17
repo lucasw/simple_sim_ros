@@ -12,6 +12,7 @@ float32 lower_lin_lim
 float32 upper_lin_lim
 float32 lower_ang_lim
 float32 upper_ang_lim
+float32 max_motor_impulse
 # if type is fixed pivot is just a point, not a pivot, rename later?
 geometry_msgs/Point pivot_in_a
 geometry_msgs/Point pivot_in_b

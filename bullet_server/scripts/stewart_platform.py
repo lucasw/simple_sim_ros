@@ -119,10 +119,11 @@ class StewartPlatform:
             prismatic.pivot_in_b.y = 0.3
             prismatic.pivot_in_b.z = 0
             prismatic.lower_lin_lim = 0.0
-            prismatic.upper_lin_lim = 0.2
+            prismatic.upper_lin_lim = 0.5
             # TODO(lucasw) is this an absolute angle or rate?
-            prismatic.lower_ang_lim = -0.01
-            prismatic.upper_ang_lim = 0.01
+            prismatic.lower_ang_lim = -0.1
+            prismatic.upper_ang_lim = 0.1
+            prismatic.max_motor_impulse = 5000.0
             add_compound_request.constraint.append(prismatic)
 
             # connect the top cylinders with p2p joints to top plate
@@ -133,7 +134,6 @@ class StewartPlatform:
             constraint.type = Constraint.POINT2POINT
             # Need to transform bot_cylinder.pose into bot_plate frame
             # to get these
-
             constraint.pivot_in_a.x = top_cylinder.pose.position.x
             constraint.pivot_in_a.z = -top_cylinder.pose.position.y
             constraint.pivot_in_a.y = -0.2
@@ -141,7 +141,6 @@ class StewartPlatform:
             constraint.pivot_in_b.y = -0.2
             constraint.pivot_in_b.z = 0
             add_compound_request.constraint.append(constraint)
-
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

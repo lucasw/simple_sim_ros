@@ -23,6 +23,10 @@ Give periodic impulses to an actuator (rough motion):
 rostopic pub /add_impulse bullet_server/Impulse "{body: 'top_cylinder_0', impulse:{x: -0.1}}" -r 4
 ```
 
+Demonstration video:
+
+https://www.youtube.com/watch?v=URoyLptHvCU
+
 # old instructions (now out of date)
 
 ```

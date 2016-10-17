@@ -72,7 +72,7 @@ class StewartPlatform:
             bot_cylinder.pose.position.z = floor + 0.2 + height/6.0 * 0.5 + 0.3
             bot_cylinder.type = Body.CYLINDER
             bot_cylinder.scale.x = thickness / 2.0
-            bot_cylinder.scale.y = height / 8.0
+            bot_cylinder.scale.y = height / 4.0
             bot_cylinder.scale.z = thickness / 2.0
             add_compound_request.body.append(bot_cylinder)
 
@@ -104,6 +104,9 @@ class StewartPlatform:
             top_cylinder.pose.position.x = 0.7 * radius * math.cos(angle)
             top_cylinder.pose.position.y = 0.7 * radius * math.sin(angle)
             top_cylinder.pose.position.z = bot_cylinder.pose.position.z + 0.6
+            top_cylinder.scale.x = thickness / 2.3
+            top_cylinder.scale.y = height / 7.0
+            top_cylinder.scale.z = thickness / 2.3
             add_compound_request.body.append(top_cylinder)
 
             # connect each top cylinder to paired bottom cylinder with slider constraint 
@@ -113,13 +116,13 @@ class StewartPlatform:
             prismatic.body_b = top_cylinder.name
             prismatic.type = Constraint.SLIDER
             prismatic.pivot_in_a.x = 0
-            prismatic.pivot_in_a.y = -0.3
+            prismatic.pivot_in_a.y = -0.1
             prismatic.pivot_in_a.z = 0
             prismatic.pivot_in_b.x = 0
-            prismatic.pivot_in_b.y = 0.3
+            prismatic.pivot_in_b.y = 0.1
             prismatic.pivot_in_b.z = 0
             prismatic.lower_lin_lim = 0.0
-            prismatic.upper_lin_lim = 0.5
+            prismatic.upper_lin_lim = 0.3
             # TODO(lucasw) is this an absolute angle or rate?
             prismatic.lower_ang_lim = -0.1
             prismatic.upper_ang_lim = 0.1

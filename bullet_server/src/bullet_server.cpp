@@ -675,7 +675,7 @@ void BulletServer::update()
   }
 
   ros::spinOnce();
-  ros::Duration(period_ * 10).sleep();
+  ros::Duration(period_).sleep();
 }
 
 void BulletServer::removeConstraint(const Constraint* constraint,

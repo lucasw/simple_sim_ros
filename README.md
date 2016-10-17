@@ -10,6 +10,15 @@ rosrun bullet_server stewart_platform.py
 Then extend on 'actuator', though no close loop control is keeping the other actuators in
 position:
 
+Command a constant velocity to an actuator (prismatic_0 through prismatic_6), this will
+cause actuator 3 to retract:
+
+```
+rostopic pub /prismatic_3/target_lin_motor_vel std_msgs/Float32 "data: -0.1"  -1
+```
+
+Give periodic impulses to an actuator (rough motion):
+
 ```
 rostopic pub /add_impulse bullet_server/Impulse "{body: 'top_cylinder_0', impulse:{x: -0.1}}" -r 4
 ```

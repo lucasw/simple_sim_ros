@@ -36,7 +36,7 @@
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
@@ -164,7 +164,7 @@ class Constraint
   std::map<std::string, ros::Publisher> pubs_;
   std::map<std::string, ros::Subscriber> subs_;
   visualization_msgs::MarkerArray marker_array_;
-  void commandCallback(const std_msgs::Float32::ConstPtr msg, const std::string motor_name);
+  void commandCallback(const std_msgs::Float64::ConstPtr msg, const std::string motor_name);
 public:
   Constraint(
       const std::string name,
@@ -248,11 +248,11 @@ Constraint::Constraint(
         frame_in_b,
         use_linear_reference_frame_a);
 
-    pubs_["linear_pos"] = nh_.advertise<std_msgs::Float32>("linear_pos", 1);
+    pubs_["linear_pos"] = nh_.advertise<std_msgs::Float64>("linear_pos", 1);
     // body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
     const std::string motor_name = "target_lin_motor_vel";
     command_[motor_name] = 0;
-    subs_[motor_name] = nh_.subscribe<std_msgs::Float32>(motor_name, 1,
+    subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
                                                          boost::bind(&Constraint::commandCallback,
                                                                      this, _1, motor_name));
 
@@ -454,7 +454,7 @@ void Constraint::update()
   btSliderConstraint* slider = dynamic_cast<btSliderConstraint*>(constraint_);
   if (slider)
   {
-    std_msgs::Float32 msg;
+    std_msgs::Float64 msg;
     msg.data = slider->getLinearPos();
     pubs_["linear_pos"].publish(msg);
 
@@ -464,7 +464,7 @@ void Constraint::update()
   }
 }
 
-void Constraint::commandCallback(const std_msgs::Float32::ConstPtr msg,
+void Constraint::commandCallback(const std_msgs::Float64::ConstPtr msg,
                                  const std::string motor_name)
 {
   ROS_DEBUG_STREAM(name_ << ": " << motor_name << " " << msg->data);

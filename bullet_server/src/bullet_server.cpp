@@ -119,6 +119,7 @@ class Body
   btCollisionShape* shape_;
   btDefaultMotionState* motion_state_;
   btDiscreteDynamicsWorld* dynamics_world_;
+  int state_;
 public:
   Body(BulletServer* parent,
       const std::string name,
@@ -457,7 +458,6 @@ void Constraint::update()
     msg.data = slider->getLinearPos();
     pubs_["linear_pos"].publish(msg);
 
-    // TODO(lucasw) this isn't having any effect
     const float vel = command_["target_lin_motor_vel"];
     slider->setTargetLinMotorVelocity(btScalar(vel));
     ROS_DEBUG_STREAM(name_ << " slider " << vel);
@@ -469,6 +469,8 @@ void Constraint::commandCallback(const std_msgs::Float32::ConstPtr msg,
 {
   ROS_DEBUG_STREAM(name_ << ": " << motor_name << " " << msg->data);
   command_[motor_name] = msg->data;
+  body_a_->rigid_body_->activate();
+  body_b_->rigid_body_->activate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -734,7 +736,8 @@ Body::Body(BulletServer* parent,
   name_(name),
   dynamics_world_(dynamics_world),
   br_(br),
-  marker_array_pub_(marker_array_pub)
+  marker_array_pub_(marker_array_pub),
+  state_(-1)
 {
   ROS_DEBUG_STREAM("new Body " << name << " " << type);  // << " " << pose);
 
@@ -1206,6 +1209,8 @@ void Body::update()
   if (!shape_)
     return;
   btTransform trans;
+  // TODO(lucasw) instead of world transform, need to have a parent
+  // specified and get the transform relative to that.
   rigid_body_->getMotionState()->getWorldTransform(trans);
 
   tf::Transform transform;
@@ -1218,6 +1223,19 @@ void Body::update()
       trans.getRotation().getW()));
   br_->sendTransform(tf::StampedTransform(transform, ros::Time::now(),
     "map", name_));
+
+  const int state = rigid_body_->getActivationState();
+  if (state != state_)
+  {
+    state_ = state;
+    for (size_t i = 0; i < marker_array_.markers.size(); ++i)
+    {
+      marker_array_.markers[i].color.r = state * 0.2;
+      marker_array_.markers[i].color.g = 0.7 - state * 0.1;
+      marker_array_.markers[i].color.b = 1.0 - state * 0.2;
+    }
+    marker_array_pub_->publish(marker_array_);
+  }
   // ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
 }
 

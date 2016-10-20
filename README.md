@@ -4,17 +4,18 @@ Minimally featured but fast ROS physics simulation wrapping bullet
 
 ```
 roslaunch bullet_server bullet_server.launch
-rosrun bullet_server stewart_platform.py
+roslaunch bullet_server stewart_platform.launch
 ```
 
-Then extend on 'actuator', though no close loop control is keeping the other actuators in
-position:
+The ros pid package is required, for example `sudo apt-get install ros-jade-pid` on jade systems.
 
-Command a constant velocity to an actuator (prismatic_0 through prismatic_6), this will
+Then extend on 'actuator':
+
+Command a position to an actuator (prismatic_0 through prismatic_6), this will
 cause actuator 3 to retract:
 
 ```
-rostopic pub /prismatic_3/target_lin_motor_vel std_msgs/Float32 "data: -0.1"  -1
+rostopic pub /prismatic_3/setpoint std_msgs/Float64 "data: 0.1"  -1
 ```
 
 Give periodic impulses to an actuator (rough motion):

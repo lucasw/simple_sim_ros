@@ -21,6 +21,8 @@
 #include <boost/functional/hash.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <bullet/BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
+#include <bullet/BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <bullet_server/AddBody.h>
 #include <bullet_server/AddCompound.h>
 #include <bullet_server/AddConstraint.h>
@@ -79,11 +81,15 @@ class BulletServer
   // ros::Publisher marker_pub_;
   ros::Publisher marker_array_pub_;
 
-  btBroadphaseInterface* broadphase;
-  btDefaultCollisionConfiguration* collision_configuration_;
-  btCollisionDispatcher* dispatcher;
-  btSequentialImpulseConstraintSolver* solver;
-  btDiscreteDynamicsWorld* dynamics_world_;
+  btBroadphaseInterface* broadphase_;
+  // btDefaultCollisionConfiguration* collision_configuration_;
+  btSoftBodyRigidBodyCollisionConfiguration* collision_configuration_;
+  btCollisionDispatcher* dispatcher_;
+  // only used with opencl
+  // btSoftBodySolver* soft_body_solver_;
+  btSequentialImpulseConstraintSolver* solver_;
+  // btDiscreteDynamicsWorld* dynamics_world_;
+  btSoftRigidDynamicsWorld* dynamics_world_;
 
   // TODO(lucasw) make this configurable by addCompound
   // instead of hard coded
@@ -118,7 +124,8 @@ class Body
   std::map<std::string, Constraint*> constraints_;
   btCollisionShape* shape_;
   btDefaultMotionState* motion_state_;
-  btDiscreteDynamicsWorld* dynamics_world_;
+  // btDiscreteDynamicsWorld* dynamics_world_;
+  btSoftRigidDynamicsWorld* dynamics_world_;
   int state_;
 public:
   Body(BulletServer* parent,
@@ -127,7 +134,8 @@ public:
       const float mass,
       geometry_msgs::Pose pose,
       geometry_msgs::Vector3 scale,
-      btDiscreteDynamicsWorld* dynamics_world,
+      // btDiscreteDynamicsWorld* dynamics_world,
+      btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub_);
   // heightfield
@@ -140,7 +148,8 @@ public:
     const float resolution,
     const float height_scale,
     const bool flip_quad_edges,
-    btDiscreteDynamicsWorld* dynamics_world,
+    // btDiscreteDynamicsWorld* dynamics_world,
+    btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub);
   ~Body();
@@ -158,7 +167,8 @@ class Constraint
   ros::NodeHandle nh_;
   btTypedConstraint* constraint_;
 
-  btDiscreteDynamicsWorld* dynamics_world_;
+  // btDiscreteDynamicsWorld* dynamics_world_;
+  btSoftRigidDynamicsWorld* dynamics_world_;
   ros::Publisher* marker_array_pub_;
   std::map<std::string, float> command_;
   std::map<std::string, ros::Publisher> pubs_;
@@ -180,7 +190,8 @@ public:
       const double lower_ang_lim,
       const double upper_ang_lim,
       const float max_motor_impulse,
-      btDiscreteDynamicsWorld* dynamics_world,
+      // btDiscreteDynamicsWorld* dynamics_world,
+      btSoftRigidDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();
 
@@ -204,7 +215,8 @@ Constraint::Constraint(
       const double lower_ang_lim,
       const double upper_ang_lim,
       const float max_motor_impulse,
-      btDiscreteDynamicsWorld* dynamics_world,
+      // btDiscreteDynamicsWorld* dynamics_world,
+      btSoftRigidDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     nh_(name),
     name_(name),
@@ -482,12 +494,20 @@ BulletServer::BulletServer()
 
 int BulletServer::init()
 {
-  broadphase = new btDbvtBroadphase();
-  collision_configuration_ = new btDefaultCollisionConfiguration();
-  dispatcher = new btCollisionDispatcher(collision_configuration_);
-  solver = new btSequentialImpulseConstraintSolver;
-  dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher, broadphase,
-      solver, collision_configuration_);
+  // broadphase_ = new btDbvtBroadphase();
+  const int max_proxies = 32766;
+  btVector3 world_aabb_min(-1000, -1000, -1000);
+  btVector3 world_aabb_max(1000, 1000, 1000);
+  broadphase_ = new btAxisSweep3(world_aabb_min, world_aabb_max, max_proxies);
+
+  // collision_configuration_ = new btDefaultCollisionConfiguration();
+  collision_configuration_ = new btSoftBodyRigidBodyCollisionConfiguration();
+  dispatcher_ = new btCollisionDispatcher(collision_configuration_);
+  solver_ = new btSequentialImpulseConstraintSolver;
+  // dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher, broadphase_,
+  //    solver, collision_configuration_);
+  dynamics_world_ = new btSoftRigidDynamicsWorld(dispatcher_, broadphase_,
+      solver_, collision_configuration_);
   dynamics_world_->setGravity(btVector3(0, 0, -10));
 
   ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
@@ -710,10 +730,10 @@ BulletServer::~BulletServer()
   delete ground_shape_;
 
   delete dynamics_world_;
-  delete solver;
+  delete solver_;
   delete collision_configuration_;
-  delete dispatcher;
-  delete broadphase;
+  delete dispatcher_;
+  delete broadphase_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -724,7 +744,8 @@ Body::Body(BulletServer* parent,
     const float mass,
     geometry_msgs::Pose pose,
     geometry_msgs::Vector3 scale,
-    btDiscreteDynamicsWorld* dynamics_world,
+    // btDiscreteDynamicsWorld* dynamics_world,
+    btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
   parent_(parent),
@@ -929,7 +950,8 @@ Body::Body(
     const float resolution,
     const float height_scale,
     const bool flip_quad_edges,
-    btDiscreteDynamicsWorld* dynamics_world,
+    // btDiscreteDynamicsWorld* dynamics_world,
+    btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
   parent_(parent),

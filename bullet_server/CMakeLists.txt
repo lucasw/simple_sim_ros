@@ -59,9 +59,13 @@ add_message_files(
   FILES
   Body.msg
   Constraint.msg
+  Face.msg
   Impulse.msg
   Heightfield.msg
+  Link.msg
+  Node.msg
   SoftBody.msg
+  Tetra.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -32,6 +32,11 @@
 #include <bullet_server/Constraint.h>
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
+#include <bullet_server/SoftBody.h>
+#include <bullet_server/Node.h>
+#include <bullet_server/Link.h>
+#include <bullet_server/Face.h>
+#include <bullet_server/Tetra.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
@@ -46,7 +51,7 @@
 
 class Body;
 class Constraint;
-
+class SoftBody;
 
 // TODO(lucasw) replace this with something better, numbers aren't random enough
 // http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
@@ -97,7 +102,9 @@ class BulletServer
   btDefaultMotionState* ground_motion_state_;
   btRigidBody* ground_rigid_body_;
 
+  btSoftBodyWorldInfo soft_body_world_info_;
   std::map<std::string, Body*> bodies_;
+  std::map<std::string, SoftBody*> soft_bodies_;
   std::map<std::string, Constraint*> constraints_;
 
   int init();
@@ -116,6 +123,7 @@ class Body
   ros::Publisher* marker_array_pub_;
   visualization_msgs::MarkerArray marker_array_;
 
+  // TODO(lucasw) put this in a child class
   // for triangle meshes
   btVector3* vertices_;
   int* indices_;
@@ -160,6 +168,25 @@ public:
   const std::string name_;
   btRigidBody* rigid_body_;
   void update();
+};
+
+// TODO(lucasw) make a common base class
+class SoftBody
+{
+  BulletServer* parent_;
+  tf::TransformBroadcaster* br_;
+public:
+  SoftBody(BulletServer* parent,
+      const std::string name,
+      btSoftBodyWorldInfo* soft_body_world_info,
+      std::vector<bullet_server::Node> nodes,
+      std::vector<bullet_server::Link> links,
+      std::vector<bullet_server::Face> faces,
+      std::vector<bullet_server::Tetra> tetras,
+      btSoftRigidDynamicsWorld* dynamics_world,
+      tf::TransformBroadcaster* br);
+  ~SoftBody();
+  btSoftBody* soft_body_;
 };
 
 class Constraint
@@ -494,21 +521,35 @@ BulletServer::BulletServer()
 
 int BulletServer::init()
 {
+  // TODO(lucasw) can soft body only work with btAxisSweep3?
   // broadphase_ = new btDbvtBroadphase();
   const int max_proxies = 32766;
   btVector3 world_aabb_min(-1000, -1000, -1000);
   btVector3 world_aabb_max(1000, 1000, 1000);
   broadphase_ = new btAxisSweep3(world_aabb_min, world_aabb_max, max_proxies);
+  soft_body_world_info_.m_broadphase = broadphase_;
 
   // collision_configuration_ = new btDefaultCollisionConfiguration();
   collision_configuration_ = new btSoftBodyRigidBodyCollisionConfiguration();
   dispatcher_ = new btCollisionDispatcher(collision_configuration_);
+  soft_body_world_info_.m_dispatcher = dispatcher_;
   solver_ = new btSequentialImpulseConstraintSolver;
   // dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher, broadphase_,
   //    solver, collision_configuration_);
   dynamics_world_ = new btSoftRigidDynamicsWorld(dispatcher_, broadphase_,
       solver_, collision_configuration_);
-  dynamics_world_->setGravity(btVector3(0, 0, -10));
+ // TODO(lucasw) provide this in ros param
+  btVector3 gravity(0.0, 0.0, -10.0);
+  dynamics_world_->setGravity(gravity);
+  soft_body_world_info_.m_gravity = gravity;
+  // sdf -> 'signed distance field'
+  // sparse version of soft body to make collision detection easier
+  soft_body_world_info_.m_sparsesdf.Initialize();
+  soft_body_world_info_.air_density   = (btScalar)1.2;
+  soft_body_world_info_.water_density = 0;
+  soft_body_world_info_.water_offset    = 0;
+  soft_body_world_info_.water_normal    = btVector3(0,0,0);
+
 
   ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
   // TODO(lucasw) make a service set where the ground plane is, if any
@@ -1288,3 +1329,16 @@ int main(int argc, char** argv)
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+SoftBody::SoftBody(BulletServer* parent,
+    const std::string name,
+    btSoftBodyWorldInfo* soft_body_world_info,
+    std::vector<bullet_server::Node> nodes,
+    std::vector<bullet_server::Link> links,
+    std::vector<bullet_server::Face> faces,
+    std::vector<bullet_server::Tetra> tetras,
+    btSoftRigidDynamicsWorld* dynamics_world,
+    tf::TransformBroadcaster* br)
+{
+  soft_body_ = new btSoftBody(soft_body_world_info);
+}

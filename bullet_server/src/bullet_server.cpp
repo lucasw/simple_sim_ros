@@ -74,6 +74,7 @@ class BulletServer
                    bullet_server::AddCompound::Response& res);
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
+  void softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg);
   ros::Subscriber constraint_sub_;
   void constraintCallback(const bullet_server::Constraint::ConstPtr& msg);
   ros::Subscriber impulse_sub_;
@@ -179,10 +180,10 @@ public:
   SoftBody(BulletServer* parent,
       const std::string name,
       btSoftBodyWorldInfo* soft_body_world_info,
-      std::vector<bullet_server::Node>& nodes,
-      std::vector<bullet_server::Link>& links,
-      std::vector<bullet_server::Face>& faces,
-      std::vector<bullet_server::Tetra>& tetras,
+      const std::vector<bullet_server::Node>& nodes,
+      const std::vector<bullet_server::Link>& links,
+      const std::vector<bullet_server::Face>& faces,
+      const std::vector<bullet_server::Tetra>& tetras,
       btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br);
   ~SoftBody();
@@ -601,6 +602,26 @@ bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
     }
   }
 
+  for (size_t i = 0; i < req.soft_body.size(); ++i)
+  {
+    if (req.remove)
+    {
+      // TODO(lucasw) if name doesn't exist, then return false?
+      const std::string name = req.soft_body[i].name;
+      if (soft_bodies_.count(name) > 0)
+      {
+        delete soft_bodies_[name];
+        soft_bodies_.erase(name);
+      }
+    }
+    else
+    {
+      // TODO(lucasw) need a return value for each of these
+      bullet_server::SoftBody::ConstPtr body_ptr(new bullet_server::SoftBody(req.soft_body[i]));
+      softBodyCallback(body_ptr);
+    }
+  }
+
   for (size_t i = 0; i < req.constraint.size(); ++i)
   {
     if (req.remove)
@@ -635,6 +656,21 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
       msg->pose, msg->scale,
       dynamics_world_, &br_, &marker_array_pub_);
 }
+
+void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg)
+{
+  if (soft_bodies_.count(msg->name) > 0)
+  {
+    delete soft_bodies_[msg->name];
+  }
+
+  // std::vector
+  soft_bodies_[msg->name] = new SoftBody(this, msg->name,
+      &soft_body_world_info_,
+      msg->node, msg->link, msg->face, msg->tetra,
+      dynamics_world_, &br_);
+}
+
 
 void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr& msg)
 {
@@ -1333,10 +1369,10 @@ int main(int argc, char** argv)
 SoftBody::SoftBody(BulletServer* parent,
     const std::string name,
     btSoftBodyWorldInfo* soft_body_world_info,
-    std::vector<bullet_server::Node>& nodes,
-    std::vector<bullet_server::Link>& links,
-    std::vector<bullet_server::Face>& faces,
-    std::vector<bullet_server::Tetra>& tetras,
+    const std::vector<bullet_server::Node>& nodes,
+    const std::vector<bullet_server::Link>& links,
+    const std::vector<bullet_server::Face>& faces,
+    const std::vector<bullet_server::Tetra>& tetras,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br)
 {
@@ -1365,4 +1401,9 @@ SoftBody::SoftBody(BulletServer* parent,
       tetras[i].node_indices[2],
       tetras[i].node_indices[3]);
   }
+}
+
+SoftBody::~SoftBody()
+{
+  delete soft_body_;
 }

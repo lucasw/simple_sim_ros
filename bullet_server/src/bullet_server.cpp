@@ -179,10 +179,10 @@ public:
   SoftBody(BulletServer* parent,
       const std::string name,
       btSoftBodyWorldInfo* soft_body_world_info,
-      std::vector<bullet_server::Node> nodes,
-      std::vector<bullet_server::Link> links,
-      std::vector<bullet_server::Face> faces,
-      std::vector<bullet_server::Tetra> tetras,
+      std::vector<bullet_server::Node>& nodes,
+      std::vector<bullet_server::Link>& links,
+      std::vector<bullet_server::Face>& faces,
+      std::vector<bullet_server::Tetra>& tetras,
       btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br);
   ~SoftBody();
@@ -1333,12 +1333,36 @@ int main(int argc, char** argv)
 SoftBody::SoftBody(BulletServer* parent,
     const std::string name,
     btSoftBodyWorldInfo* soft_body_world_info,
-    std::vector<bullet_server::Node> nodes,
-    std::vector<bullet_server::Link> links,
-    std::vector<bullet_server::Face> faces,
-    std::vector<bullet_server::Tetra> tetras,
+    std::vector<bullet_server::Node>& nodes,
+    std::vector<bullet_server::Link>& links,
+    std::vector<bullet_server::Face>& faces,
+    std::vector<bullet_server::Tetra>& tetras,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br)
 {
   soft_body_ = new btSoftBody(soft_body_world_info);
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    btVector3 pos(nodes[i].position.x, nodes[i].position.y, nodes[i].position.z);
+    btScalar mass(nodes[i].mass);
+    soft_body_->appendNode(pos, mass);
+  }
+  for (size_t i = 0; i < links.size(); ++i)
+  {
+    soft_body_->appendLink(links[i].node_indices[0],
+      links[i].node_indices[1]);
+  }
+  for (size_t i = 0; i < faces.size(); ++i)
+  {
+    soft_body_->appendFace(faces[i].node_indices[0],
+      faces[i].node_indices[1],
+      faces[i].node_indices[2]);
+  }
+  for (size_t i = 0; i < tetras.size(); ++i)
+  {
+    soft_body_->appendTetra(tetras[i].node_indices[0],
+      tetras[i].node_indices[1],
+      tetras[i].node_indices[2],
+      tetras[i].node_indices[3]);
+  }
 }

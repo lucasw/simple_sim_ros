@@ -176,6 +176,9 @@ class SoftBody
 {
   BulletServer* parent_;
   tf::TransformBroadcaster* br_;
+  ros::Publisher* marker_array_pub_;
+  visualization_msgs::MarkerArray marker_array_;
+  const std::string name_;
 public:
   SoftBody(BulletServer* parent,
       const std::string name,
@@ -185,8 +188,10 @@ public:
       const std::vector<bullet_server::Face>& faces,
       const std::vector<bullet_server::Tetra>& tetras,
       btSoftRigidDynamicsWorld* dynamics_world,
-      tf::TransformBroadcaster* br);
+      tf::TransformBroadcaster* br,
+      ros::Publisher* marker_array_pub);
   ~SoftBody();
+  void update();
   btSoftBody* soft_body_;
 };
 
@@ -668,7 +673,7 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
   soft_bodies_[msg->name] = new SoftBody(this, msg->name,
       &soft_body_world_info_,
       msg->node, msg->link, msg->face, msg->tetra,
-      dynamics_world_, &br_);
+      dynamics_world_, &br_, &marker_array_pub_);
 }
 
 
@@ -760,9 +765,16 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 
 void BulletServer::update()
 {
+  // TODO(lucasw) make these parameters dynamically configurable
   dynamics_world_->stepSimulation(period_, 10);
+
   for (std::map<std::string, Body*>::iterator it = bodies_.begin();
       it != bodies_.end(); ++it)
+  {
+    it->second->update();
+  }
+  for (std::map<std::string, SoftBody*>::iterator it = soft_bodies_.begin();
+      it != soft_bodies_.end(); ++it)
   {
     it->second->update();
   }
@@ -1374,7 +1386,11 @@ SoftBody::SoftBody(BulletServer* parent,
     const std::vector<bullet_server::Face>& faces,
     const std::vector<bullet_server::Tetra>& tetras,
     btSoftRigidDynamicsWorld* dynamics_world,
-    tf::TransformBroadcaster* br)
+    tf::TransformBroadcaster* br,
+    ros::Publisher* marker_array_pub) :
+  name_(name),
+  br_(br),
+  marker_array_pub_(marker_array_pub)
 {
   soft_body_ = new btSoftBody(soft_body_world_info);
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -1401,9 +1417,56 @@ SoftBody::SoftBody(BulletServer* parent,
       tetras[i].node_indices[2],
       tetras[i].node_indices[3]);
   }
+
+  {
+    visualization_msgs::Marker marker;
+    // TODO(lucasw) also have a LINES and TRIANGLE_LIST marker
+    marker.type = visualization_msgs::Marker::POINTS;
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.ns = "nodes";
+    // marker_.header.stamp = ros::Time::now();
+    marker.frame_locked = true;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration();
+
+    // TODO(lucasw) could turn this into function
+    marker.id = hash(name_.c_str());
+    marker.header.frame_id = "map";
+    marker.color.r = 0.45;
+    marker.color.g = 0.4;
+    marker.color.b = 0.65;
+    marker_array_.markers.push_back(marker);
+  }
 }
 
 SoftBody::~SoftBody()
 {
   delete soft_body_;
+}
+
+void SoftBody::update()
+{
+  // TODO(lucasw) getAabb
+  btSoftBody::tNodeArray& nodes(soft_body_->m_nodes);
+
+  marker_array_.markers[0].points.clear();
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    geometry_msgs::Point pt;
+    pt.x = nodes[i].m_x.getX();
+    pt.y = nodes[i].m_x.getY();
+    pt.z = nodes[i].m_x.getZ();
+    marker_array_.markers[0].points.push_back(pt);
+  }
+  marker_array_pub_->publish(marker_array_);
+
+  // TODO(lucasw) also do something with links between points
 }

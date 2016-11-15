@@ -5,7 +5,7 @@ import math
 import rospy
 import tf
 
-from bullet_server.msg import Body, Face, Link, Node, SoftBody, Tetra
+from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, Tetra
 from bullet_server.srv import *
 
 
@@ -102,9 +102,15 @@ class SoftBodyDemo:
         l1.node_indices[1] = 3
         body.link.append(l1)
 
+        mat = Material()
+        mat.kLST = 0.2
+        mat.kVST = 0.1
+        mat.kAST = 0.1
+        body.material.append(mat)
+
         add_compound_request.soft_body.append(body)
 
-        if True:
+        if False:
             # make the top cylinder plate
             top_plate = Body()
             top_plate.name = "top_plate"

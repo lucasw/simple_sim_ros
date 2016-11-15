@@ -33,6 +33,7 @@
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
 #include <bullet_server/SoftBody.h>
+#include <bullet_server/Material.h>
 #include <bullet_server/Node.h>
 #include <bullet_server/Link.h>
 #include <bullet_server/Face.h>
@@ -188,6 +189,7 @@ public:
       const std::vector<bullet_server::Link>& links,
       const std::vector<bullet_server::Face>& faces,
       const std::vector<bullet_server::Tetra>& tetras,
+      const std::vector<bullet_server::Material>& materials,
       btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub);
@@ -679,6 +681,7 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
   soft_bodies_[msg->name] = new SoftBody(this, msg->name,
       &soft_body_world_info_,
       msg->node, msg->link, msg->face, msg->tetra,
+      msg->material,
       dynamics_world_, &br_, &marker_array_pub_);
 
   dynamics_world_->addSoftBody(soft_bodies_[msg->name]->soft_body_);
@@ -1396,6 +1399,7 @@ SoftBody::SoftBody(BulletServer* parent,
     const std::vector<bullet_server::Link>& links,
     const std::vector<bullet_server::Face>& faces,
     const std::vector<bullet_server::Tetra>& tetras,
+    const std::vector<bullet_server::Material>& materials,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
@@ -1421,10 +1425,23 @@ SoftBody::SoftBody(BulletServer* parent,
   delete[] points;
   delete[] masses;
 
+  btSoftBody::Material* pm = NULL;
+  for (size_t i = 0; i < materials.size(); ++i)
+  {
+    // btSoftBody::Material*
+    pm = soft_body_->appendMaterial();
+    pm->m_kLST = materials[i].kLST;
+    pm->m_kAST = materials[i].kAST;
+    pm->m_kVST = materials[i].kVST;
+    // const int distance = 1;
+    // soft_body_->generateBendingConstraints(distance, pm);
+    ROS_INFO_STREAM(name_ << " " << pm->m_kLST);
+  }
+
   for (size_t i = 0; i < links.size(); ++i)
   {
     soft_body_->appendLink(links[i].node_indices[0],
-      links[i].node_indices[1]);
+      links[i].node_indices[1], pm);
   }
   for (size_t i = 0; i < faces.size(); ++i)
   {
@@ -1439,6 +1456,19 @@ SoftBody::SoftBody(BulletServer* parent,
       tetras[i].node_indices[2],
       tetras[i].node_indices[3]);
   }
+
+#if 0
+  for (size_t i = 0; i < materials.size(); ++i)
+  {
+    btSoftBody::Material* pm = soft_body_->appendMaterial();
+    pm->m_kLST = materials[i].kLST;
+    pm->m_kAST = materials[i].kAST;
+    pm->m_kVST = materials[i].kVST;
+    const int distance = 1;
+    soft_body_->generateBendingConstraints(distance, pm);
+    ROS_INFO_STREAM(name_ << " " << pm->m_kLST);
+  }
+#endif
 
   {
     visualization_msgs::Marker marker;

@@ -63,6 +63,7 @@ add_message_files(
   Impulse.msg
   Heightfield.msg
   Link.msg
+  Material.msg
   Node.msg
   SoftBody.msg
   Tetra.msg

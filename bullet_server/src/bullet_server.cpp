@@ -1440,9 +1440,9 @@ SoftBody::SoftBody(BulletServer* parent,
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.2;
-    marker.scale.y = 0.2;
-    marker.scale.z = 0.2;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
     marker.ns = "nodes";
     // marker_.header.stamp = ros::Time::now();
     marker.frame_locked = true;
@@ -1458,6 +1458,34 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.b = 0.65;
     marker_array_.markers.push_back(marker);
   }
+
+  {
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::LINE_LIST;
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+    marker.ns = "nodes";
+    // marker_.header.stamp = ros::Time::now();
+    marker.frame_locked = true;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration();
+
+    // TODO(lucasw) could turn this into function
+    marker.id = hash((name_ + "lines").c_str());
+    marker.header.frame_id = "map";
+    marker.color.r = 0.3;
+    marker.color.g = 0.67;
+    marker.color.b = 0.65;
+    marker_array_.markers.push_back(marker);
+  }
+
 }
 
 SoftBody::~SoftBody()
@@ -1473,7 +1501,6 @@ void SoftBody::update()
 {
   // TODO(lucasw) getAabb
   btSoftBody::tNodeArray& nodes(soft_body_->m_nodes);
-
   marker_array_.markers[0].points.clear();
   for (size_t i = 0; i < nodes.size(); ++i)
   {
@@ -1482,6 +1509,23 @@ void SoftBody::update()
     pt.y = nodes[i].m_x.getY();
     pt.z = nodes[i].m_x.getZ();
     marker_array_.markers[0].points.push_back(pt);
+  }
+
+  btSoftBody::tLinkArray& links(soft_body_->m_links);
+  marker_array_.markers[1].points.clear();
+  for (size_t i = 0; i < links.size(); ++i)
+  {
+    geometry_msgs::Point pt1;
+    pt1.x = links[i].m_n[0]->m_x.getX();
+    pt1.y = links[i].m_n[0]->m_x.getY();
+    pt1.z = links[i].m_n[0]->m_x.getZ();
+    marker_array_.markers[1].points.push_back(pt1);
+
+    geometry_msgs::Point pt2;
+    pt2.x = links[i].m_n[1]->m_x.getX();
+    pt2.y = links[i].m_n[1]->m_x.getY();
+    pt2.z = links[i].m_n[1]->m_x.getZ();
+    marker_array_.markers[1].points.push_back(pt2);
   }
   marker_array_pub_->publish(marker_array_);
 

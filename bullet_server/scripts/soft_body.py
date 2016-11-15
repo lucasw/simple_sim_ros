@@ -65,6 +65,11 @@ class SoftBodyDemo:
 
         l1 = Link()
         l1.node_indices[0] = 1
+        l1.node_indices[1] = 2
+        body.link.append(l1)
+
+        l1 = Link()
+        l1.node_indices[0] = 1
         l1.node_indices[1] = 3
         body.link.append(l1)
 

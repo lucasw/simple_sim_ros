@@ -16,35 +16,59 @@ class SoftBodyDemo:
         add_compound_request = AddCompoundRequest()
         add_compound_request.remove = rospy.get_param('~remove', False)
 
-        zs = 1.0
+        xs = rospy.get_param("~x", 0.0)
+        ys = rospy.get_param("~y", 0.0)
+        zs = rospy.get_param("~z", 1.0)
+
+        # Ground
+        if True:
+            # make the top cylinder plate
+            ground = Body()
+            ground.name = "ground"
+            ground.mass = 0.0
+            rot90 = tf.transformations.quaternion_from_euler(0, 0, 0)
+            radius = 50
+            thickness = 1.0
+            ground.pose.orientation.x = rot90[0]
+            ground.pose.orientation.y = rot90[1]
+            ground.pose.orientation.z = rot90[2]
+            ground.pose.orientation.w = rot90[3]
+            ground.pose.position.z = -thickness
+            ground.type = Body.BOX
+            ground.scale.x = radius
+            ground.scale.y = radius
+            ground.scale.z = thickness
+            add_compound_request.body.append(ground)
+
 
         body = SoftBody()
 
+        mass = 0.5
         n1 = Node()
-        n1.mass = 0.1
-        n1.position.x = 0.0
-        n1.position.y = 0.0
+        n1.mass = mass
+        n1.position.x = xs
+        n1.position.y = ys
         n1.position.z = zs
         body.node.append(n1)
 
         n1 = Node()
-        n1.mass = 0.1
-        n1.position.x = 1.0
-        n1.position.y = 0.0
+        n1.mass = mass
+        n1.position.x = xs + 1.0
+        n1.position.y = ys
         n1.position.z = zs
         body.node.append(n1)
 
         n1 = Node()
-        n1.mass = 0.1
-        n1.position.x = 0.0
-        n1.position.y = 1.0
+        n1.mass = mass
+        n1.position.x = xs
+        n1.position.y = ys + 1.0
         n1.position.z = zs
         body.node.append(n1)
 
         n1 = Node()
-        n1.mass = 0.1
-        n1.position.x = 0.0
-        n1.position.y = 0.0
+        n1.mass = mass
+        n1.position.x = xs
+        n1.position.y = ys
         n1.position.z = zs + 1.0
         body.node.append(n1)
 
@@ -80,23 +104,24 @@ class SoftBodyDemo:
 
         add_compound_request.soft_body.append(body)
 
-        # make the top cylinder plate
-        top_plate = Body()
-        top_plate.name = "top_plate"
-        top_plate.mass = 0.3
-        rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
-        radius = 1.0
-        thickness = 0.5
-        top_plate.pose.orientation.x = rot90[0]
-        top_plate.pose.orientation.y = rot90[1]
-        top_plate.pose.orientation.z = rot90[2]
-        top_plate.pose.orientation.w = rot90[3]
-        top_plate.pose.position.z = zs + 1.7
-        top_plate.type = Body.CYLINDER
-        top_plate.scale.x = radius
-        top_plate.scale.y = thickness
-        top_plate.scale.z = radius
-        add_compound_request.body.append(top_plate)
+        if True:
+            # make the top cylinder plate
+            top_plate = Body()
+            top_plate.name = "top_plate"
+            top_plate.mass = 0.3
+            rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
+            radius = 1.5
+            thickness = 0.5
+            top_plate.pose.orientation.x = rot90[0]
+            top_plate.pose.orientation.y = rot90[1]
+            top_plate.pose.orientation.z = rot90[2]
+            top_plate.pose.orientation.w = rot90[3]
+            top_plate.pose.position.z = 1.7
+            top_plate.type = Body.CYLINDER
+            top_plate.scale.x = radius
+            top_plate.scale.y = thickness
+            top_plate.scale.z = radius
+            add_compound_request.body.append(top_plate)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

@@ -558,20 +558,21 @@ int BulletServer::init()
   soft_body_world_info_.m_sparsesdf.Initialize();
 
   // TODO(lucasw) make a service set where the ground plane is, if any
-  ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 0);
-  btTransform transform;
-  transform.setIdentity();
-  transform.setOrigin(btVector3(0, 0, 0));
-  ground_motion_state_ = new btDefaultMotionState(transform);
-  // setting inertia to zero makes the body static
-  const btVector3 inertia(0, 0, 0);
-  btRigidBody::btRigidBodyConstructionInfo
-      ground_rigid_body_ci(0, ground_motion_state_, ground_shape_, inertia);
-  ground_rigid_body_ = new btRigidBody(ground_rigid_body_ci);
-  // ground_rigid_body_ = createRigidBody(0, transform, ground_shape_);
-
-  ground_rigid_body_->setFriction(1.4);
-  dynamics_world_->addRigidBody(ground_rigid_body_);
+  if (false)
+  {
+    ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 0);
+    btTransform transform;
+    transform.setIdentity();
+    transform.setOrigin(btVector3(0, 0, 0));
+    ground_motion_state_ = new btDefaultMotionState(transform);
+    // setting inertia to zero makes the body static
+    const btVector3 inertia(0, 0, 0);
+    btRigidBody::btRigidBodyConstructionInfo
+        ground_rigid_body_ci(0, ground_motion_state_, ground_shape_, inertia);
+    ground_rigid_body_ = new btRigidBody(ground_rigid_body_ci);
+    ground_rigid_body_->setFriction(1.4);
+    dynamics_world_->addRigidBody(ground_rigid_body_);
+  }
 
   period_ = 1.0 / 60.0;
 
@@ -820,10 +821,13 @@ BulletServer::~BulletServer()
     delete it->second;
   }
 
+  if (false)
+  {
   dynamics_world_->removeRigidBody(ground_rigid_body_);
   delete ground_rigid_body_->getMotionState();
   delete ground_rigid_body_;
   delete ground_shape_;
+  }
 
   delete dynamics_world_;
   delete solver_;

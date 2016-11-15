@@ -175,6 +175,7 @@ public:
 class SoftBody
 {
   BulletServer* parent_;
+  btSoftRigidDynamicsWorld* dynamics_world_;
   tf::TransformBroadcaster* br_;
   ros::Publisher* marker_array_pub_;
   visualization_msgs::MarkerArray marker_array_;
@@ -1389,6 +1390,7 @@ SoftBody::SoftBody(BulletServer* parent,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
+  dynamics_world_(dynamics_world),
   name_(name),
   br_(br),
   marker_array_pub_(marker_array_pub)
@@ -1403,7 +1405,7 @@ SoftBody::SoftBody(BulletServer* parent,
     // soft_body_->appendNode(pos, mass);
     points[i] = pos;
     masses[i] = mass;
-    ROS_INFO_STREAM(pos << mass);
+    // ROS_INFO_STREAM(pos << " " << mass);
   }
 
   soft_body_ = new btSoftBody(soft_body_world_info, nodes.size(), points, masses);
@@ -1460,7 +1462,11 @@ SoftBody::SoftBody(BulletServer* parent,
 
 SoftBody::~SoftBody()
 {
-  delete soft_body_;
+  if (soft_body_)
+  {
+    dynamics_world_->removeSoftBody(soft_body_);
+    delete soft_body_;
+  }
 }
 
 void SoftBody::update()

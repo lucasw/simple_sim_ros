@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # Copyright Lucas Walter 2016
 
+import math
 import rospy
+import tf
 
-from bullet_server.msg import Face, Link, Node, SoftBody, Tetra
+from bullet_server.msg import Body, Face, Link, Node, SoftBody, Tetra
 from bullet_server.srv import *
 
 
@@ -72,6 +74,24 @@ class SoftBodyDemo:
         body.link.append(l1)
 
         add_compound_request.soft_body.append(body)
+
+        # make the top cylinder plate
+        top_plate = Body()
+        top_plate.name = "top_plate"
+        top_plate.mass = 0.3
+        rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
+        radius = 1.0
+        thickness = 0.5
+        top_plate.pose.orientation.x = rot90[0]
+        top_plate.pose.orientation.y = rot90[1]
+        top_plate.pose.orientation.z = rot90[2]
+        top_plate.pose.orientation.w = rot90[3]
+        top_plate.pose.position.z = zs + 1.7
+        top_plate.type = Body.CYLINDER
+        top_plate.scale.x = radius
+        top_plate.scale.y = thickness
+        top_plate.scale.z = radius
+        add_compound_request.body.append(top_plate)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

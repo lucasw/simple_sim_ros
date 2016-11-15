@@ -557,15 +557,20 @@ int BulletServer::init()
   soft_body_world_info_.water_normal    = btVector3(0,0,0);
   soft_body_world_info_.m_sparsesdf.Initialize();
 
-  ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
   // TODO(lucasw) make a service set where the ground plane is, if any
-  ground_motion_state_ = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),
-      btVector3(0, 0, -1.0)));
+  ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 0);
+  btTransform transform;
+  transform.setIdentity();
+  transform.setOrigin(btVector3(0, 0, 0));
+  ground_motion_state_ = new btDefaultMotionState(transform);
   // setting inertia to zero makes the body static
   const btVector3 inertia(0, 0, 0);
   btRigidBody::btRigidBodyConstructionInfo
-    ground_rigid_body_CI(0, ground_motion_state_, ground_shape_, inertia);
-  ground_rigid_body_ = new btRigidBody(ground_rigid_body_CI);
+      ground_rigid_body_ci(0, ground_motion_state_, ground_shape_, inertia);
+  ground_rigid_body_ = new btRigidBody(ground_rigid_body_ci);
+  // ground_rigid_body_ = createRigidBody(0, transform, ground_shape_);
+
+  ground_rigid_body_->setFriction(1.4);
   dynamics_world_->addRigidBody(ground_rigid_body_);
 
   period_ = 1.0 / 60.0;
@@ -1467,9 +1472,9 @@ SoftBody::SoftBody(BulletServer* parent,
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
-    marker.scale.z = 0.1;
+    marker.scale.x = 0.05;
+    marker.scale.y = 0.05;
+    marker.scale.z = 0.05;
     marker.ns = "nodes";
     // marker_.header.stamp = ros::Time::now();
     marker.frame_locked = true;

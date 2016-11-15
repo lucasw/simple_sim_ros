@@ -550,12 +550,11 @@ int BulletServer::init()
   soft_body_world_info_.m_gravity = gravity;
   // sdf -> 'signed distance field'
   // sparse version of soft body to make collision detection easier
-  soft_body_world_info_.m_sparsesdf.Initialize();
   soft_body_world_info_.air_density   = (btScalar)1.2;
   soft_body_world_info_.water_density = 0;
   soft_body_world_info_.water_offset    = 0;
   soft_body_world_info_.water_normal    = btVector3(0,0,0);
-
+  soft_body_world_info_.m_sparsesdf.Initialize();
 
   ground_shape_ = new btStaticPlaneShape(btVector3(0, 0, 1), 1);
   // TODO(lucasw) make a service set where the ground plane is, if any
@@ -674,6 +673,8 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
       &soft_body_world_info_,
       msg->node, msg->link, msg->face, msg->tetra,
       dynamics_world_, &br_, &marker_array_pub_);
+
+  dynamics_world_->addSoftBody(soft_bodies_[msg->name]->soft_body_);
 }
 
 
@@ -1392,13 +1393,23 @@ SoftBody::SoftBody(BulletServer* parent,
   br_(br),
   marker_array_pub_(marker_array_pub)
 {
-  soft_body_ = new btSoftBody(soft_body_world_info);
+  btVector3* points = new btVector3[nodes.size()];
+  btScalar* masses = new btScalar[nodes.size()];
   for (size_t i = 0; i < nodes.size(); ++i)
   {
     btVector3 pos(nodes[i].position.x, nodes[i].position.y, nodes[i].position.z);
     btScalar mass(nodes[i].mass);
-    soft_body_->appendNode(pos, mass);
+    // this was segfaulting
+    // soft_body_->appendNode(pos, mass);
+    points[i] = pos;
+    masses[i] = mass;
+    ROS_INFO_STREAM(pos << mass);
   }
+
+  soft_body_ = new btSoftBody(soft_body_world_info, nodes.size(), points, masses);
+  delete[] points;
+  delete[] masses;
+
   for (size_t i = 0; i < links.size(); ++i)
   {
     soft_body_->appendLink(links[i].node_indices[0],

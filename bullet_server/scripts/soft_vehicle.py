@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # Copyright Lucas Walter 2016
 
+import copy
 import math
 import rospy
 import tf
 
-from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, Tetra
+from bullet_server.msg import Body, Constraint, Face, Link, Material, Node, SoftBody, Tetra
 from bullet_server.srv import *
 
 def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht):
@@ -20,6 +21,26 @@ def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht):
     body.scale.x = wd
     body.scale.y = ln
     body.scale.z = ht
+    return body
+
+def make_rigid_cylinder(name, mass, xs, ys, zs, radius, thickness,
+                        roll=math.pi/2.0, pitch=0, yaw=0):
+    # make the top cylinder plate
+    body = Body()
+    body.name = name
+    body.mass = mass
+    rot90 = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+    body.pose.orientation.x = rot90[0]
+    body.pose.orientation.y = rot90[1]
+    body.pose.orientation.z = rot90[2]
+    body.pose.orientation.w = rot90[3]
+    body.pose.position.x = xs
+    body.pose.position.y = ys
+    body.pose.position.z = zs
+    body.type = Body.CYLINDER
+    body.scale.x = radius
+    body.scale.y = thickness
+    body.scale.z = radius
     return body
 
 def make_soft_cube(name, xs, ys, zs):
@@ -127,29 +148,46 @@ class SoftVehicle:
         chassis = make_rigid_box("chassis", 1.0, xs, ys, zs, 0.6, 0.5, 0.3)
         add_compound_request.body.append(chassis)
 
-        left_wheel = make_soft_cube("left_wheel", xs, ys + 1.8, zs)
-        add_compound_request.soft_body.append(left_wheel)
-        right_wheel = make_soft_cube("right_wheel", xs, ys - 1.8, zs)
-        add_compound_request.soft_body.append(right_wheel)
+        motor_y = 0.8
+        left_motor = make_rigid_cylinder("left_motor", 0.3,
+                                         xs, ys - motor_y, zs, 0.3, 0.1,
+                                         0, 0, 0)
+        add_compound_request.body.append(left_motor)
+        right_motor = make_rigid_cylinder("right_motor", 0.3,
+                                          xs, ys + motor_y, zs, 0.3, 0.1,
+                                          0, 0, 0)
+        add_compound_request.body.append(right_motor)
 
-        if False:
-            # make the top cylinder plate
-            top_plate = Body()
-            top_plate.name = "top_plate"
-            top_plate.mass = 0.3
-            rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
-            radius = 1.5
-            thickness = 0.5
-            top_plate.pose.orientation.x = rot90[0]
-            top_plate.pose.orientation.y = rot90[1]
-            top_plate.pose.orientation.z = rot90[2]
-            top_plate.pose.orientation.w = rot90[3]
-            top_plate.pose.position.z = 1.7
-            top_plate.type = Body.CYLINDER
-            top_plate.scale.x = radius
-            top_plate.scale.y = thickness
-            top_plate.scale.z = radius
-            add_compound_request.body.append(top_plate)
+        hinge = Constraint()
+        hinge.name = "left_motor_hinge"
+        hinge.body_a = "chassis"
+        hinge.body_b = "left_motor"
+        hinge.type = Constraint.HINGE
+        hinge.pivot_in_a.x = 0
+        hinge.pivot_in_a.y = -motor_y
+        hinge.pivot_in_a.z = 0
+        hinge.pivot_in_b.x = 0
+        hinge.pivot_in_b.y = 0
+        hinge.pivot_in_b.z = 0
+        hinge.axis_in_a.x = 0
+        hinge.axis_in_a.y = 1.0
+        hinge.axis_in_a.z = 0
+        hinge.axis_in_b.x = 0
+        hinge.axis_in_b.y = 1.0
+        hinge.axis_in_b.z = 0
+        hinge.max_motor_impulse = 5000.0
+        add_compound_request.constraint.append(hinge)
+
+        hinge2 = copy.deepcopy(hinge)
+        hinge2.name = "right_motor_hinge"
+        hinge2.body_b = "right_motor"
+        hinge2.pivot_in_a.y = motor_y
+        add_compound_request.constraint.append(hinge2)
+
+        left_wheel = make_soft_cube("left_wheel", xs, ys + 3, zs)
+        add_compound_request.soft_body.append(left_wheel)
+        right_wheel = make_soft_cube("right_wheel", xs, ys - 3, zs)
+        add_compound_request.soft_body.append(right_wheel)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

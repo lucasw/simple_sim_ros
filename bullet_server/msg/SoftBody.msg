@@ -5,11 +5,16 @@ bullet_server/Link[] link
 bullet_server/Face[] face
 bullet_server/Tetra[] tetra
 bullet_server/Material[] material
+# these can attach the softbody to an already
+# existing rigid body - TODO(lucasw) may need an addAnchor service
+# to handle cases where the rigid body doesn't exist yet.
+bullet_server/Anchor[] anchor
 # bullet_server/Anchor[] anchor
 # not sure about these
 # bool randomize_constraints
 # uint8 bending_contraints_distance
 # uint8 piterations
+# TODO(lucasw) put these into another msg
 float32 kVCF # 1  Velocities correction factor (Baumgarte)
 float32 kDP # 0  Damping coefficient [0,1]
 float32 kDG # 0  Drag coefficient [0,+inf]

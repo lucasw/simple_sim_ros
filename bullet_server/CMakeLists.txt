@@ -57,6 +57,7 @@ roslint_python()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  Anchor.msg
   Body.msg
   Constraint.msg
   Face.msg

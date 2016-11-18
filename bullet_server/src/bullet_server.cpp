@@ -212,6 +212,7 @@ class Constraint
   std::map<std::string, ros::Publisher> pubs_;
   std::map<std::string, ros::Subscriber> subs_;
   visualization_msgs::MarkerArray marker_array_;
+  float max_motor_impulse_;
   void commandCallback(const std_msgs::Float64::ConstPtr msg, const std::string motor_name);
 public:
   Constraint(
@@ -260,6 +261,7 @@ Constraint::Constraint(
     name_(name),
     body_a_(body_a),
     body_b_(body_b),
+    max_motor_impulse_(max_motor_impulse),
     dynamics_world_(dynamics_world),
     marker_array_pub_(marker_array_pub)
 {
@@ -274,13 +276,26 @@ Constraint::Constraint(
   // subclasses
   if (type == bullet_server::Constraint::HINGE)
   {
-    constraint_ = new btHingeConstraint(
+    // TODO(lucasw) what about hinge2?
+    btHingeConstraint* hinge = new btHingeConstraint(
         *body_a->rigid_body_,
         *body_b->rigid_body_,
         pivot_in_a_bt,
         pivot_in_b_bt,
         axis_in_a_bt,
         axis_in_b_bt);
+
+    // need flag to set no limits?
+    hinge->setLimit(lower_ang_lim, upper_ang_lim);
+    pubs_["angular_pos"] = nh_.advertise<std_msgs::Float64>("angular_pos", 1);
+    const std::string motor_name = "target_ang_motor_vel";
+    command_[motor_name] = 0;
+    subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
+                                                         boost::bind(&Constraint::commandCallback,
+                                                                     this, _1, motor_name));
+
+
+    constraint_ = hinge;
   }
   else if (type == bullet_server::Constraint::SLIDER)
   {
@@ -508,9 +523,22 @@ void Constraint::update()
     msg.data = slider->getLinearPos();
     pubs_["linear_pos"].publish(msg);
 
+    // TODO(lucasw) need to be able to disable the motor
     const float vel = command_["target_lin_motor_vel"];
     slider->setTargetLinMotorVelocity(btScalar(vel));
     ROS_DEBUG_STREAM(name_ << " slider " << vel);
+  }
+  btHingeConstraint* hinge = dynamic_cast<btHingeConstraint*>(constraint_);
+  if (hinge)
+  {
+    // TODO(lucasw) detect roll-over and make this continuous
+    // rather than -pi to pi
+    std_msgs::Float64 msg;
+    msg.data = hinge->getHingeAngle();
+    pubs_["angular_pos"].publish(msg);
+
+    const float vel = command_["target_ang_motor_vel"];
+    hinge->enableAngularMotor(true, vel, max_motor_impulse_);
   }
 }
 
@@ -518,6 +546,8 @@ void Constraint::commandCallback(const std_msgs::Float64::ConstPtr msg,
                                  const std::string motor_name)
 {
   ROS_DEBUG_STREAM(name_ << ": " << motor_name << " " << msg->data);
+  if (command_.count(motor_name) == 0)
+    ROS_WARN_STREAM(motor_name << " is not in command");
   command_[motor_name] = msg->data;
   body_a_->rigid_body_->activate();
   body_b_->rigid_body_->activate();

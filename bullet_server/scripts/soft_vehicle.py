@@ -148,13 +148,16 @@ class SoftVehicle:
         chassis = make_rigid_box("chassis", 1.0, xs, ys, zs, 0.6, 0.5, 0.3)
         add_compound_request.body.append(chassis)
 
+        motor_mass = 0.2
+        motor_thickness = 0.1
+        motor_radius = 0.2
         motor_y = 0.8
-        left_motor = make_rigid_cylinder("left_motor", 0.3,
-                                         xs, ys - motor_y, zs, 0.3, 0.1,
+        left_motor = make_rigid_cylinder("left_motor", motor_mass,
+                                         xs, ys - motor_y, zs, motor_radius, motor_thickness,
                                          0, 0, 0)
         add_compound_request.body.append(left_motor)
         right_motor = make_rigid_cylinder("right_motor", 0.3,
-                                          xs, ys + motor_y, zs, 0.3, 0.1,
+                                          xs, ys + motor_y, zs, motor_radius, motor_thickness,
                                           0, 0, 0)
         add_compound_request.body.append(right_motor)
 
@@ -175,7 +178,10 @@ class SoftVehicle:
         hinge.axis_in_b.x = 0
         hinge.axis_in_b.y = 1.0
         hinge.axis_in_b.z = 0
-        hinge.max_motor_impulse = 5000.0
+        # These have to be < -pi and > pi to be unlimited
+        hinge.lower_ang_lim = -3.2  # -math.pi
+        hinge.upper_ang_lim = 3.2  # math.pi
+        hinge.max_motor_impulse = 25000.0
         add_compound_request.constraint.append(hinge)
 
         hinge2 = copy.deepcopy(hinge)

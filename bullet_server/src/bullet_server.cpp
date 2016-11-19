@@ -1551,6 +1551,7 @@ SoftBody::SoftBody(BulletServer* parent,
     marker_array_.markers.push_back(marker);
   }
 
+  // link markers
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -1559,10 +1560,10 @@ SoftBody::SoftBody(BulletServer* parent,
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.05;
-    marker.scale.y = 0.05;
-    marker.scale.z = 0.05;
-    marker.ns = "nodes";
+    marker.scale.x = 0.015;
+    marker.scale.y = 0.015;
+    marker.scale.z = 0.015;
+    marker.ns = "links";
     // marker_.header.stamp = ros::Time::now();
     marker.frame_locked = true;
     marker.action = visualization_msgs::Marker::ADD;
@@ -1578,6 +1579,40 @@ SoftBody::SoftBody(BulletServer* parent,
     marker_array_.markers.push_back(marker);
   }
 
+  // anchor markers
+  {
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::LINE_LIST;
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.01;
+    marker.scale.y = 0.01;
+    marker.scale.z = 0.01;
+    marker.ns = "anchors";
+    // marker_.header.stamp = ros::Time::now();
+    marker.frame_locked = true;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration();
+
+    // TODO(lucasw) could turn this into function
+    marker.id = hash((name_ + "anchors").c_str());
+    marker.header.frame_id = "map";
+    marker.color.r = 0.67;
+    marker.color.g = 0.17;
+    marker.color.b = 0.95;
+    marker_array_.markers.push_back(marker);
+
+    marker.ns = "anchor_pivots";
+    marker.color.r = 0.67;
+    marker.color.g = 0.87;
+    marker.color.b = 0.45;
+    marker_array_.markers.push_back(marker);
+
+  }
 }
 
 SoftBody::~SoftBody()
@@ -1619,7 +1654,37 @@ void SoftBody::update()
     pt2.z = links[i].m_n[1]->m_x.getZ();
     marker_array_.markers[1].points.push_back(pt2);
   }
-  marker_array_pub_->publish(marker_array_);
 
-  // TODO(lucasw) also do something with links between points
+  // TODO(lucasw) also do something with faces and tetras
+
+  btSoftBody::tAnchorArray& anchors(soft_body_->m_anchors);
+  marker_array_.markers[2].points.clear();
+  marker_array_.markers[3].points.clear();
+  for (size_t i = 0; i < anchors.size(); ++i)
+  {
+    geometry_msgs::Point pt1;
+    pt1.x = anchors[i].m_node->m_x.getX();
+    pt1.y = anchors[i].m_node->m_x.getY();
+    pt1.z = anchors[i].m_node->m_x.getZ();
+    marker_array_.markers[2].points.push_back(pt1);
+
+    btTransform trans;
+    anchors[i].m_body->getMotionState()->getWorldTransform(trans);
+
+    btVector3 world_point = trans * anchors[i].m_local;
+    geometry_msgs::Point pt2;
+    pt2.x = world_point.getX();
+    pt2.y = world_point.getY();
+    pt2.z = world_point.getZ();
+    marker_array_.markers[2].points.push_back(pt2);
+    marker_array_.markers[3].points.push_back(pt2);
+
+    geometry_msgs::Point pt3;
+    pt3.x = trans.getOrigin().getX();
+    pt3.y = trans.getOrigin().getY();
+    pt3.z = trans.getOrigin().getZ();
+    marker_array_.markers[3].points.push_back(pt3);
+  }
+
+  marker_array_pub_->publish(marker_array_);
 }

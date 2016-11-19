@@ -6,7 +6,7 @@ import math
 import rospy
 import tf
 
-from bullet_server.msg import Body, Constraint, Face, Link, Material, Node, SoftBody, Tetra
+from bullet_server.msg import Anchor, Body, Constraint, Face, Link, Material, Node, SoftBody, Tetra
 from bullet_server.srv import *
 
 def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht):
@@ -43,71 +43,36 @@ def make_rigid_cylinder(name, mass, xs, ys, zs, radius, thickness,
     body.scale.z = radius
     return body
 
-def make_soft_cube(name, xs, ys, zs):
+def make_soft_cube(name, node_mass, xs, ys, zs, ln,
+                   nx=4, ny=4, nz=4):
     body = SoftBody()
     body.name = name
 
-    mass = 0.5
-    n1 = Node()
-    n1.mass = mass
-    n1.position.x = xs
-    n1.position.y = ys
-    n1.position.z = zs
-    body.node.append(n1)
+    for i in range(nx):
+        for j in range(ny):
+            for k in range(nz):
+                n1 = Node()
+                n1.mass = node_mass
+                n1.position.x = xs + (i - 0.5) * ln
+                n1.position.y = ys + (j - 0.5) * ln
+                n1.position.z = zs + (k - 0.5) * ln
+                body.node.append(n1)
 
-    n1 = Node()
-    n1.mass = mass
-    n1.position.x = xs + 1.0
-    n1.position.y = ys
-    n1.position.z = zs
-    body.node.append(n1)
-
-    n1 = Node()
-    n1.mass = mass
-    n1.position.x = xs
-    n1.position.y = ys + 1.0
-    n1.position.z = zs
-    body.node.append(n1)
-
-    n1 = Node()
-    n1.mass = mass
-    n1.position.x = xs
-    n1.position.y = ys
-    n1.position.z = zs + 1.0
-    body.node.append(n1)
-
-    l1 = Link()
-    l1.node_indices[0] = 0
-    l1.node_indices[1] = 1
-    body.link.append(l1)
-
-    l1 = Link()
-    l1.node_indices[0] = 0
-    l1.node_indices[1] = 2
-    body.link.append(l1)
-
-    l1 = Link()
-    l1.node_indices[0] = 0
-    l1.node_indices[1] = 3
-    body.link.append(l1)
-
-    l1 = Link()
-    l1.node_indices[0] = 1
-    l1.node_indices[1] = 2
-    body.link.append(l1)
-
-    l1 = Link()
-    l1.node_indices[0] = 1
-    l1.node_indices[1] = 3
-    body.link.append(l1)
-
-    l1 = Link()
-    l1.node_indices[0] = 2
-    l1.node_indices[1] = 3
-    body.link.append(l1)
+    for ind1 in range(len(body.node)):
+        for i in range(2):
+            for j in range(2):
+                for k in range(2):
+                    if i == 0 and j == 0 and k == 0:
+                        continue
+                    ind2 = ind1 + i * ny * nz + j * nz + k
+                    if ind2 < len(body.node):
+                        l1 = Link()
+                        l1.node_indices[0] = ind1
+                        l1.node_indices[1] = ind2
+                        body.link.append(l1)
 
     mat = Material()
-    mat.kLST = 0.2
+    mat.kLST = 0.12
     mat.kVST = 0.1
     mat.kAST = 0.1
     body.material.append(mat)
@@ -127,22 +92,13 @@ class SoftVehicle:
 
         # Ground
         if True:
-            # make the top cylinder plate
-            ground = Body()
-            ground.name = "ground"
-            ground.mass = 0.0
-            rot90 = tf.transformations.quaternion_from_euler(0, 0, 0)
-            radius = 50
-            thickness = 1.0
-            ground.pose.orientation.x = rot90[0]
-            ground.pose.orientation.y = rot90[1]
-            ground.pose.orientation.z = rot90[2]
-            ground.pose.orientation.w = rot90[3]
-            ground.pose.position.z = -thickness
-            ground.type = Body.BOX
-            ground.scale.x = radius
-            ground.scale.y = radius
-            ground.scale.z = thickness
+            ground_radius = 50
+            ground_thickness = 1.0
+            ground_mass = 0.0
+            ground = make_rigid_cylinder("ground", ground_mass,
+                                         0, 0, -ground_thickness, ground_radius,
+                                         ground_thickness,
+                                         math.pi/2.0, 0, 0)
             add_compound_request.body.append(ground)
 
         chassis = make_rigid_box("chassis", 1.0, xs, ys, zs, 0.6, 0.5, 0.3)
@@ -190,9 +146,38 @@ class SoftVehicle:
         hinge2.pivot_in_a.y = motor_y
         add_compound_request.constraint.append(hinge2)
 
-        left_wheel = make_soft_cube("left_wheel", xs, ys + 3, zs)
+        wheel_offset = 1.5
+        nx = 4
+        ny = 4
+        nz = 4
+        soft_length = 0.5
+        node_mass = 0.1
+        left_wheel = make_soft_cube("left_wheel", node_mass, xs, ys - wheel_offset, zs, soft_length,
+                                    nx, ny, nz)
+
+        # attach the rigid motor wheel to the soft wheel
+        if True:
+            for i in range(2):
+                for j in range(2):
+                    for k in range(2):
+                        x = (i - 0.5) * soft_length
+                        y = (j - 0.5) * soft_length
+                        z = (k - 0.5) * soft_length
+
+                        anchor = Anchor()
+                        anchor.node_index = (i + int(nx/2)) * 4 + (j + int(ny/2)) * 2 + (k + int(nz/2))
+                        anchor.rigid_body_name = "left_motor"
+                        anchor.local_pivot.x = x
+                        anchor.local_pivot.y = y - wheel_offset - motor_y
+                        anchor.local_pivot.z = z
+                        anchor.disable_collision_between_linked_bodies = False
+                        anchor.influence = 0.8
+                        left_wheel.anchor.append(anchor)
+
         add_compound_request.soft_body.append(left_wheel)
-        right_wheel = make_soft_cube("right_wheel", xs, ys - 3, zs)
+
+        right_wheel = make_soft_cube("right_wheel", node_mass, xs, ys + 1.5, zs, 0.5,
+                                     nx, ny, nz)
         add_compound_request.soft_body.append(right_wheel)
 
         try:

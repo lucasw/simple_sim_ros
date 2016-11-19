@@ -1560,9 +1560,9 @@ SoftBody::SoftBody(BulletServer* parent,
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.015;
-    marker.scale.y = 0.015;
-    marker.scale.z = 0.015;
+    marker.scale.x = 0.005;
+    marker.scale.y = 0.005;
+    marker.scale.z = 0.005;
     marker.ns = "links";
     // marker_.header.stamp = ros::Time::now();
     marker.frame_locked = true;

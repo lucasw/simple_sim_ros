@@ -53,9 +53,9 @@ def make_soft_cube(name, node_mass, xs, ys, zs, ln,
             for k in range(nz):
                 n1 = Node()
                 n1.mass = node_mass
-                n1.position.x = xs + (i - 0.5) * ln
-                n1.position.y = ys + (j - 0.5) * ln
-                n1.position.z = zs + (k - 0.5) * ln
+                n1.position.x = xs + (i - nx/2 + 0.5) * ln
+                n1.position.y = ys + (j - ny/2 + 0.5) * ln
+                n1.position.z = zs + (k - nz/2 + 0.5) * ln
                 body.node.append(n1)
 
     for ind1 in range(len(body.node)):
@@ -72,7 +72,7 @@ def make_soft_cube(name, node_mass, xs, ys, zs, ln,
                         body.link.append(l1)
 
     mat = Material()
-    mat.kLST = 0.12
+    mat.kLST = 0.15
     mat.kVST = 0.1
     mat.kAST = 0.1
     body.material.append(mat)
@@ -150,7 +150,7 @@ class SoftVehicle:
         nx = 4
         ny = 4
         nz = 4
-        soft_length = 0.5
+        soft_length = 0.4
         node_mass = 0.1
         left_wheel = make_soft_cube("left_wheel", node_mass, xs, ys - wheel_offset, zs, soft_length,
                                     nx, ny, nz)
@@ -158,20 +158,27 @@ class SoftVehicle:
         # attach the rigid motor wheel to the soft wheel
         if True:
             for i in range(2):
-                for j in range(2):
+                for j in range(3):
                     for k in range(2):
-                        x = (i - 0.5) * soft_length
-                        y = (j - 0.5) * soft_length
-                        z = (k - 0.5) * soft_length
 
                         anchor = Anchor()
-                        anchor.node_index = (i + int(nx/2)) * 4 + (j + int(ny/2)) * 2 + (k + int(nz/2))
+                        xi = i + 1  # int(nx/2)
+                        yi = j + 1  # + int(ny/2)
+                        zi = k + 1  # int(nz/2)
+                        ind = xi * ny * nz + yi * nz + zi
+                        if ind >= len(left_wheel.node):
+                            continue
+                        anchor.node_index = ind
                         anchor.rigid_body_name = "left_motor"
-                        anchor.local_pivot.x = x
-                        anchor.local_pivot.y = y - wheel_offset - motor_y
-                        anchor.local_pivot.z = z
+                        anchor.local_pivot.x = left_wheel.node[ind].position.x - xs  # left_motor.pose.position.x
+                        anchor.local_pivot.y = left_wheel.node[ind].position.y - ys + 0.8  # left_motor.pose.position.y
+                        anchor.local_pivot.z = left_wheel.node[ind].position.z - zs  # left_motor.pose.position.z
+                        print anchor.local_pivot
                         anchor.disable_collision_between_linked_bodies = False
-                        anchor.influence = 0.8
+                        # the weaker the influence, the longer the spring between
+                        # the local_pivot and the node
+                        anchor.influence = 1.0
+
                         left_wheel.anchor.append(anchor)
 
         add_compound_request.soft_body.append(left_wheel)

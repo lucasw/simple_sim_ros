@@ -6,7 +6,8 @@ import math
 import rospy
 import tf
 
-from bullet_server.msg import Anchor, Body, Constraint, Face, Link, Material, Node, SoftBody, Tetra
+from bullet_server.msg import Anchor, Body, Constraint, Face, Link
+from bullet_server.msg import Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
 
 def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht,
@@ -49,10 +50,33 @@ def make_rigid_cylinder(name, mass, xs, ys, zs, radius, thickness,
     body.scale.z = radius
     return body
 
+# load in default values since otherwise the default is zero
+def make_soft_config():
+    config = SoftConfig()
+    config.kVCF = 1.0
+    config.kDF = 0.2
+    config.kCHR = 1.0
+    config.kKHR = 0.1
+    config.kSHR = 1.0
+    config.kAHR = 0.7
+    config.kSRHR_CL = 0.1
+    config.kSKHR_CL = 1.0
+    config.kSSHR_CL = 0.5
+    config.kSR_SPLT_CL = 0.5
+    config.kSK_SPLT_CL = 0.5
+    config.kSS_SPLT_CL = 0.5
+    config.maxvolume = 1.0
+    config.timescale = 1.0
+    return config
+
 def make_soft_cube(name, node_mass, xs, ys, zs, ln,
                    nx=4, ny=4, nz=4, flip=1.0):
     body = SoftBody()
+    body.config = make_soft_config()
     body.name = name
+
+    # dynamic friction
+    body.config.kDF = 0.9
 
     for i in range(nx):
         for j in range(ny):
@@ -180,13 +204,13 @@ class SoftVehicle:
 
             # obstacles
             obstacle = make_rigid_cylinder("obstacle1", ground_mass,
-                                           -6.0, 1.0, -ground_thickness + 0.5,
+                                           -10.0, 1.0, -ground_thickness + 0.4,
                                            3.0,
                                            ground_thickness,
                                            math.pi/2.0, 0, 0)
             add_compound_request.body.append(obstacle)
             obstacle = make_rigid_box("obstacle2", ground_mass,
-                                      -12.0, 1.5, 0.5,
+                                      -15.0, 1.5, 0.2,
                                       3.0, 1.0, 0.5,
                                       0.1, 0.05, 0.01)
             add_compound_request.body.append(obstacle)

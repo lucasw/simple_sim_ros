@@ -5,7 +5,7 @@ import math
 import rospy
 import tf
 
-from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, Tetra
+from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
 
 
@@ -39,7 +39,6 @@ class SoftBodyDemo:
             ground.scale.y = radius
             ground.scale.z = thickness
             add_compound_request.body.append(ground)
-
 
         body = SoftBody()
 

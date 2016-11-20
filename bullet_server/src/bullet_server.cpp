@@ -34,6 +34,7 @@
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
 #include <bullet_server/SoftBody.h>
+#include <bullet_server/SoftConfig.h>
 #include <bullet_server/Material.h>
 #include <bullet_server/Node.h>
 #include <bullet_server/Link.h>
@@ -192,6 +193,7 @@ public:
       const std::vector<bullet_server::Tetra>& tetras,
       const std::vector<bullet_server::Material>& materials,
       const std::vector<bullet_server::Anchor>& anchors,
+      const bullet_server::SoftConfig& config,
       btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub);
@@ -714,6 +716,7 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
       &soft_body_world_info_,
       msg->node, msg->link, msg->face, msg->tetra,
       msg->material, msg->anchor,
+      msg->config,
       dynamics_world_, &br_, &marker_array_pub_);
 
   dynamics_world_->addSoftBody(soft_bodies_[msg->name]->soft_body_);
@@ -1433,6 +1436,7 @@ SoftBody::SoftBody(BulletServer* parent,
     const std::vector<bullet_server::Tetra>& tetras,
     const std::vector<bullet_server::Material>& materials,
     const std::vector<bullet_server::Anchor>& anchors,
+    const bullet_server::SoftConfig& config,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
@@ -1457,6 +1461,22 @@ SoftBody::SoftBody(BulletServer* parent,
   soft_body_ = new btSoftBody(soft_body_world_info, nodes.size(), points, masses);
   delete[] points;
   delete[] masses;
+
+  soft_body_->m_cfg.kVCF = config.kVCF;
+  soft_body_->m_cfg.kDP = config.kDP;
+  soft_body_->m_cfg.kDG = config.kDG;
+  soft_body_->m_cfg.kLF = config.kLF;
+  soft_body_->m_cfg.kPR = config.kPR;
+  soft_body_->m_cfg.kVC = config.kVC;
+  soft_body_->m_cfg.kDF = config.kDF;
+  soft_body_->m_cfg.kMT = config.kMT;
+  soft_body_->m_cfg.kCHR = config.kCHR;
+  soft_body_->m_cfg.kKHR = config.kKHR;
+  soft_body_->m_cfg.kSHR = config.kSHR;
+  soft_body_->m_cfg.kAHR = config.kAHR;
+  // TODO(lucasw) cluster stuff
+  soft_body_->m_cfg.maxvolume = config.maxvolume;
+  soft_body_->m_cfg.timescale = config.timescale;
 
   btSoftBody::Material* pm = NULL;
   for (size_t i = 0; i < materials.size(); ++i)

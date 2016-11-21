@@ -25,7 +25,7 @@ include_directories(${BULLET_INCLUDE_DIRS})
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 roslint_cpp()
 roslint_python()
@@ -174,6 +174,8 @@ target_link_libraries(bullet_server
 ## Install ##
 #############
 
+catkin_install_python(PROGRAMS src/bullet_server/utility.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 

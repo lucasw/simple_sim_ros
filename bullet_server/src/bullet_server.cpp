@@ -1631,7 +1631,32 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.g = 0.87;
     marker.color.b = 0.45;
     marker_array_.markers.push_back(marker);
+  }
 
+  // tetra markers
+  {
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.ns = "links";
+    marker.frame_locked = true;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration();
+
+    marker.id = hash((name_ + "tetras").c_str());
+    marker.header.frame_id = "map";
+    marker.color.r = 0.0;
+    marker.color.g = 0.67;
+    marker.color.b = 0.75;
+    marker_array_.markers.push_back(marker);
   }
 }
 
@@ -1647,6 +1672,9 @@ SoftBody::~SoftBody()
 void SoftBody::update()
 {
   // TODO(lucasw) getAabb
+
+  // TODO(lucasw) instead of hardcoded markers indices, do something better
+
   btSoftBody::tNodeArray& nodes(soft_body_->m_nodes);
   marker_array_.markers[0].points.clear();
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -1675,7 +1703,25 @@ void SoftBody::update()
     marker_array_.markers[1].points.push_back(pt2);
   }
 
-  // TODO(lucasw) also do something with faces and tetras
+  btSoftBody::tTetraArray& tetras(soft_body_->m_tetras);
+  marker_array_.markers[4].points.clear();
+  for (size_t i = 0; i < tetras.size(); ++i)
+  {
+    int tr[4][3] = {{0, 1, 2}, {0, 1, 3}, {0, 2, 3}, {1, 2, 3}};
+    for (size_t i = 0; i < 4; ++i)
+    {
+      for (size_t j = 0; j < 3; ++j)
+      {
+        geometry_msgs::Point pt;
+        pt.x = tetras[i].m_c0[tr[i][j]].getX();
+        pt.y = tetras[i].m_c0[tr[i][j]].getY();
+        pt.z = tetras[i].m_c0[tr[i][j]].getZ();
+        marker_array_.markers[4].points.push_back(pt);
+      }
+    }
+  }
+
+  // TODO(lucasw) also do something with faces
 
   btSoftBody::tAnchorArray& anchors(soft_body_->m_anchors);
   marker_array_.markers[2].points.clear();

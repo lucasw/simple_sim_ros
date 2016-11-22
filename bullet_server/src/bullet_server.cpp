@@ -1710,15 +1710,15 @@ void SoftBody::update()
   for (size_t i = 0; i < tetras.size(); ++i)
   {
     int tr[4][3] = {{0, 1, 2}, {0, 1, 3}, {0, 2, 3}, {1, 2, 3}};
-    for (size_t i = 0; i < 4; ++i)
+    for (size_t j = 0; j < 4; ++j)
     {
-      for (size_t j = 0; j < 3; ++j)
+      for (size_t k = 0; k < 3; ++k)
       {
-        const int ind = tr[i][j];
+        const btSoftBody::Node* node = tetras[i].m_n[tr[j][k]];
         geometry_msgs::Point pt;
-        pt.x = tetras[i].m_c0[ind].getX();
-        pt.y = tetras[i].m_c0[ind].getY();
-        pt.z = tetras[i].m_c0[ind].getZ();
+        pt.x = node->m_x.getX();
+        pt.y = node->m_x.getY();
+        pt.z = node->m_x.getZ();
         marker_array_.markers[4].points.push_back(pt);
       }
     }

@@ -1495,21 +1495,23 @@ SoftBody::SoftBody(BulletServer* parent,
   {
     // TODO(lucasw) need to provide an optional material index
     // for each link
+    // With bcheckexist set to true redundant links ought
+    // to be filtered out.
     soft_body_->appendLink(links[i].node_indices[0],
-      links[i].node_indices[1], pm);
+      links[i].node_indices[1], pm, true);
   }
   for (size_t i = 0; i < faces.size(); ++i)
   {
     soft_body_->appendFace(faces[i].node_indices[0],
       faces[i].node_indices[1],
-      faces[i].node_indices[2]);
+      faces[i].node_indices[2], pm);
   }
   for (size_t i = 0; i < tetras.size(); ++i)
   {
     soft_body_->appendTetra(tetras[i].node_indices[0],
       tetras[i].node_indices[1],
       tetras[i].node_indices[2],
-      tetras[i].node_indices[3]);
+      tetras[i].node_indices[3], pm);
   }
 
 #if 0
@@ -1645,7 +1647,7 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.scale.x = 1.0;
     marker.scale.y = 1.0;
     marker.scale.z = 1.0;
-    marker.ns = "links";
+    marker.ns = "tetras";
     marker.frame_locked = true;
     marker.action = visualization_msgs::Marker::ADD;
     marker.color.a = 1.0;
@@ -1712,10 +1714,11 @@ void SoftBody::update()
     {
       for (size_t j = 0; j < 3; ++j)
       {
+        const int ind = tr[i][j];
         geometry_msgs::Point pt;
-        pt.x = tetras[i].m_c0[tr[i][j]].getX();
-        pt.y = tetras[i].m_c0[tr[i][j]].getY();
-        pt.z = tetras[i].m_c0[tr[i][j]].getZ();
+        pt.x = tetras[i].m_c0[ind].getX();
+        pt.y = tetras[i].m_c0[ind].getY();
+        pt.z = tetras[i].m_c0[ind].getZ();
         marker_array_.markers[4].points.push_back(pt);
       }
     }

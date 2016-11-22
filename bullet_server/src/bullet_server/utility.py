@@ -108,6 +108,73 @@ def make_soft_cube(name, node_mass, xs, ys, zs, ln,
 
     return body
 
+def make_tetra(node_indices, make_links=True):
+    tetra = Tetra()
+    tetra.node_indices = node_indices
+    links = []
+    if make_links:
+        for i in range(len(node_indices)):
+            for j in range(i+1, len(node_indices)):
+                link = Link()
+                link.node_indices[0] = node_indices[i]
+                link.node_indices[1] = node_indices[j]
+                links.append(link)
+
+    return tetra, links
+
+def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
+                   nx=2, ny=2, nz=2, flip=1.0):
+    body = SoftBody()
+    body.config = make_soft_config()
+    body.name = name
+
+    # dynamic friction
+    body.config.kDF = 0.9
+
+    for k in range(nz):
+        for j in range(ny):
+            for i in range(nx):
+                n1 = Node()
+                n1.mass = node_mass
+                n1.position.x = xs + (i - nx/2 + 0.5) * ln * flip
+                n1.position.y = ys + (j - ny/2 + 0.5) * ln * flip
+                n1.position.z = zs + (k - nz/2 + 0.5) * ln * flip
+                body.node.append(n1)
+
+    #    6  7
+    #  4   5
+    #
+    #    2  3
+    #  0   1
+    tetra, links = make_tetra([0, 1, 2, 4])
+    body.tetra.append(tetra)
+    for link in links:
+        body.link.append(link)
+    tetra, links = make_tetra([1, 3, 2, 7])
+    body.tetra.append(tetra)
+    for link in links:
+        body.link.append(link)
+    tetra, links = make_tetra([1, 2, 4, 7])
+    body.tetra.append(tetra)
+    for link in links:
+        body.link.append(link)
+    tetra, links = make_tetra([4, 7, 6, 2])
+    body.tetra.append(tetra)
+    for link in links:
+        body.link.append(link)
+    tetra, links = make_tetra([4, 5, 7, 1])
+    body.tetra.append(tetra)
+    for link in links:
+        body.link.append(link)
+
+    mat = Material()
+    mat.kLST = 0.25
+    mat.kAST = 0.1
+    mat.kVST = 0.9
+    body.material.append(mat)
+
+    return body
+
 def make_wheel_assembly(prefix, xs, ys, zs, flip=1.0):
     motor_mass = 0.2
     motor_thickness = 0.1

@@ -173,6 +173,7 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
 
     mat = Material()
     mat.kLST = 0.25
+    # These aren't implemented yet
     mat.kAST = 0.1
     mat.kVST = 0.9
     body.material.append(mat)

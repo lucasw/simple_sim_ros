@@ -31,11 +31,27 @@ class SoftBodyDemo:
         add_compound_request.body.append(ground)
 
         body = make_soft_tetra_cube("soft_tetra_cube", 0.1,
-                                    xs, ys, zs, 0.5)
+                                    xs, ys, zs, 4.0)
 
+        body.material[0].kLST = 0.2
+        # these do nothing
+        body.material[0].kAST = 0.0
+        body.material[0].kVST = 0.9
+
+        # volume preserviing?
+        body.config.kVC = 200
+        # pressure preserving?
+        # body.config.kPR = 2500
         print body
 
         add_compound_request.soft_body.append(body)
+
+        cyl = make_rigid_cylinder("cyl", 0.1,
+                                  0, 0, 1.2,
+                                  0.8,
+                                  0.1,
+                                  math.pi/2.0, 0, 0)
+        # add_compound_request.body.append(cyl)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

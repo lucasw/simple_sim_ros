@@ -146,26 +146,30 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
     #
     #    2  3
     #  0   1
+    # Make the indices go in a right hand rule order
+    # for the base triangle, the first index should be directly
+    # below the 4th.
     tetra, links = make_tetra([0, 1, 2, 4])
     body.tetra.append(tetra)
     for link in links:
         body.link.append(link)
-    tetra, links = make_tetra([1, 3, 2, 7])
-    body.tetra.append(tetra)
-    for link in links:
-        body.link.append(link)
-    tetra, links = make_tetra([1, 2, 4, 7])
-    body.tetra.append(tetra)
-    for link in links:
-        body.link.append(link)
-    tetra, links = make_tetra([4, 7, 6, 2])
-    body.tetra.append(tetra)
-    for link in links:
-        body.link.append(link)
-    tetra, links = make_tetra([4, 5, 7, 1])
-    body.tetra.append(tetra)
-    for link in links:
-        body.link.append(link)
+    if True:
+        tetra, links = make_tetra([3, 2, 1, 7])
+        body.tetra.append(tetra)
+        for link in links:
+            body.link.append(link)
+        tetra, links = make_tetra([4, 1, 2, 7])
+        body.tetra.append(tetra)
+        for link in links:
+            body.link.append(link)
+        tetra, links = make_tetra([6, 7, 4, 2])
+        body.tetra.append(tetra)
+        for link in links:
+            body.link.append(link)
+        tetra, links = make_tetra([5, 4, 7, 1])
+        body.tetra.append(tetra)
+        for link in links:
+            body.link.append(link)
 
     mat = Material()
     mat.kLST = 0.25

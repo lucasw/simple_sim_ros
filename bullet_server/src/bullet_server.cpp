@@ -1709,7 +1709,9 @@ void SoftBody::update()
   marker_array_.markers[4].points.clear();
   for (size_t i = 0; i < tetras.size(); ++i)
   {
-    int tr[4][3] = {{0, 1, 2}, {0, 1, 3}, {0, 2, 3}, {1, 2, 3}};
+    // the indices ought to be ordered so that
+    // the right hand rule will be an outward normal here.
+    int tr[4][3] = {{0, 2, 1}, {0, 1, 3}, {0, 3, 2}, {1, 2, 3}};
     for (size_t j = 0; j < 4; ++j)
     {
       for (size_t k = 0; k < 3; ++k)

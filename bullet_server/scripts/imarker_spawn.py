@@ -26,7 +26,8 @@ class InteractiveMarkerSpawn:
         self.marker = Marker()
         # TODO(lucasw) make a drop-down that can change this
         self.marker.type = Marker.CUBE
-        self.marker.scale.x = 0.5
+        scale_x = 0.5
+        self.marker.scale.x = scale_x
         self.marker.scale.y = 0.5
         self.marker.scale.z = 0.5
         self.marker.color.r = 0.5
@@ -41,11 +42,36 @@ class InteractiveMarkerSpawn:
         self.move_3d.markers.append(self.marker)
         self.im.controls.append(self.move_3d)
 
+        self.resize_x = InteractiveMarkerControl()
+        self.resize_x.interaction_mode = InteractiveMarkerControl.BUTTON
+        self.resize_x.name = "resize_x"
+        arrow = Marker()
+        arrow.type = Marker.ARROW
+        arrow.pose.position.x = scale_x * 0.5
+        arrow.scale.x = 0.8
+        arrow.scale.y = 0.3
+        arrow.scale.z = 0.3
+        arrow.color.r = 0.1
+        arrow.color.g = 0.9
+        arrow.color.b = 0.15
+        arrow.color.a = 1.0
+        self.resize_x.markers.append(arrow)
+        self.im.controls.append(self.resize_x)
+
         self.server.insert(self.im, self.process_feedback)
         self.server.applyChanges()
 
     def process_feedback(self, feedback):
-        print feedback
+        # print feedback
+        if feedback.control_name == "resize_x":
+            if feedback.event_type == InteractiveMarkerFeedback.MOUSE_DOWN:
+                scale_x = self.im.controls[0].markers[0].scale.x * 1.2
+                # TODO(lucasw) make dict to get rid of hardcoding
+                self.im.controls[0].markers[0].scale.x = scale_x
+                self.im.controls[1].markers[0].pose.position.x = scale_x * 0.5
+                # print "arrow button ", scale_x
+                self.server.insert(self.im, self.process_feedback)
+                self.server.applyChanges()
 
 if __name__ == '__main__':
     rospy.init_node('imarker_spawn')

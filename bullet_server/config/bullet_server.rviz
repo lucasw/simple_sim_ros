@@ -5,8 +5,10 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Marker1/Namespaces1
+        - /TF1
         - /Grid YZ1/Offset1
         - /InteractiveMarkers1
+        - /InteractiveMarkers2
       Splitter Ratio: 0.509293973
     Tree Height: 435
   - Class: rviz/Selection
@@ -48,34 +50,64 @@ Visualization Manager:
       Value: false
       Visual Enabled: true
     - Class: rviz/Axes
-      Enabled: true
+      Enabled: false
       Length: 0.600000024
       Name: Axes
       Radius: 0.150000006
       Reference Frame: top_cylinder_0
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
-        {}
+        bodies: true
       Queue Size: 200
       Value: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: true
-      Marker Scale: 8
+        ground:
+          Value: true
+        imarker_spawned_body_1:
+          Value: true
+        imarker_spawned_body_2:
+          Value: true
+        imarker_spawned_body_3:
+          Value: true
+        imarker_spawned_body_4:
+          Value: true
+        imarker_spawned_body_5:
+          Value: true
+        map:
+          Value: true
+        spawn_frame:
+          Value: true
+      Marker Scale: 2
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        map:
+          ground:
+            {}
+          imarker_spawned_body_1:
+            {}
+          imarker_spawned_body_2:
+            {}
+          imarker_spawned_body_3:
+            {}
+          imarker_spawned_body_4:
+            {}
+          imarker_spawned_body_5:
+            {}
+          spawn_frame:
+            {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Alpha: 0.5
       Cell Size: 1
       Class: rviz/Grid
@@ -157,6 +189,15 @@ Visualization Manager:
       Show Visual Aids: true
       Update Topic: /body_spawn/update
       Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: true
+      Update Topic: /body_spawn/resize_x/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -181,7 +222,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.66942406
+      Distance: 8.07469845
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -193,10 +234,10 @@ Visualization Manager:
         Z: 1.06936002
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.874796271
+      Pitch: 0.559795678
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.888587
+      Yaw: 5.14356613
     Saved: ~
 Window Geometry:
   Displays:
@@ -214,5 +255,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 970
-  X: 925
-  Y: 128
+  X: 727
+  Y: 26

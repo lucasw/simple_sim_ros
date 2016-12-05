@@ -16,7 +16,7 @@ import tf2_ros
 
 from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
-from geometry_msgs.msg import TransformStamped, Twist
+from geometry_msgs.msg import PointStamped, TransformStamped, Twist
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
@@ -197,6 +197,33 @@ class InteractiveMarkerSpawn:
 
     def process_vel_feedback(self, feedback):
         if feedback.control_name == "linear_vel":
+            # need to transform this point into the map frame,
+            # but subtract out the location of the spawn frame
+            try:
+                trans = self.tf_buffer.lookup_transform("map", self.spawn_frame,
+                                                        rospy.Time())
+            except (tf2_ros.LookupException,
+                    tf2_ros.ConnectivityException,
+                    tf2_ros.ExtrapolationException) as e:
+                rospy.logerr("tf2_ros exception")
+                rospy.logerr(e)
+                return
+
+            feedback_pt = PointStamped()
+            feedback_pt.header = feedback.header
+            feedback_pt.point.x = feedback.pose.position.x
+            feedback_pt.point.y = feedback.pose.position.y
+            feedback_pt.point.z = feedback.pose.position.z
+            print feedback_pt
+            try:
+                pt_in_map = self.tf_buffer.transform(feedback_pt, "map",
+                                                     rospy.Duration(2.0), PointStamped)
+            except tf2_ros.TypeException as e:
+                # rospy.logerr(e)
+                print e
+                return
+            print 'output', pt_in_map
+
             self.twist.linear.x = feedback.pose.position.x * 4.0
             self.twist.linear.y = feedback.pose.position.y * 4.0
             self.twist.linear.z = feedback.pose.position.z * 4.0

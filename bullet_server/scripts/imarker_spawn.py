@@ -23,7 +23,9 @@ from visualization_msgs.msg import *
 
 class InteractiveMarkerSpawn:
     def __init__(self):
-        self.br = tf2_ros.TransformBroadcaster()
+        # self.br = tf2_ros.TransformBroadcaster()
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
@@ -120,23 +122,9 @@ class InteractiveMarkerSpawn:
                 # self.just_resized = True
 
     def update(self, event):
-        self.br.sendTransform(self.ts)
-        # self.just_tf_updated = True
-        # print feedback
-        # if self.just_resized:
-        #     self.just_resized = False
+        pass
 
     def process_feedback(self, feedback):
-        # TODO(lucasw) or use an rviz_interactive_marker to generate this tf?
-        self.ts.header.stamp = feedback.header.stamp
-        self.ts.transform.translation.x = feedback.pose.position.x
-        self.ts.transform.translation.y = feedback.pose.position.y
-        self.ts.transform.translation.z = feedback.pose.position.z
-        self.ts.transform.rotation.x = feedback.pose.orientation.x
-        self.ts.transform.rotation.y = feedback.pose.orientation.y
-        self.ts.transform.rotation.z = feedback.pose.orientation.z
-        self.ts.transform.rotation.w = feedback.pose.orientation.w
-
         if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
             # feedback.control_name == "spawn_menu":
             if feedback.menu_entry_id == 1:
@@ -145,13 +133,21 @@ class InteractiveMarkerSpawn:
 		body = Body()
 		body.name = "imarker_spawned_body_" + str(self.count)
 		body.mass = 1.0
-		body.pose.position.x = feedback.pose.position.x
-		body.pose.position.y = feedback.pose.position.y
-		body.pose.position.z = feedback.pose.position.z
-		body.pose.orientation.x = feedback.pose.orientation.x
-		body.pose.orientation.y = feedback.pose.orientation.y
-		body.pose.orientation.z = feedback.pose.orientation.z
-		body.pose.orientation.w = feedback.pose.orientation.w
+                try:
+                    trans = self.tf_buffer.lookup_transform("map", self.spawn_frame,
+                                                            rospy.Time())
+                except (tf2_ros.LookupException,
+                        tf2_ros.ConnectivityException,
+                        tf2_ros.ExtrapolationException) as e:
+                    rospy.logerr("tf2_ros exception")
+                    rospy.logerr(e)
+                    return
+		body.pose.position.x = trans.transform.translation.x
+		body.pose.position.y = trans.transform.translation.y
+		body.pose.position.z = trans.transform.translation.z
+		body.pose.orientation = trans.transform.rotation
+                # TODO(lucasw) add twist linear with another interactive tf,
+                # and twist angular with a second interactive tf?
 		body.type = Body.BOX
 		body.scale.x = self.im.controls[0].markers[0].scale.x / 2.0
 		body.scale.y = self.im.controls[0].markers[0].scale.y / 2.0

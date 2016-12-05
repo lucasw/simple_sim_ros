@@ -9,6 +9,7 @@
 # this may require more than just a simple interactive marker.
 # Later being able to create joints between bodies would be nice.
 
+import copy
 import rospy
 import tf
 import tf2_ros
@@ -35,7 +36,6 @@ class InteractiveMarkerSpawn:
         self.ts.header.frame_id = "map"
         self.ts.child_frame_id = self.spawn_frame
         self.ts.transform.rotation.w = 1.0
-        # self.just_resized = False
         self.timer = rospy.Timer(rospy.Duration(0.1), self.update)
 
 	self.count = 0
@@ -80,9 +80,8 @@ class InteractiveMarkerSpawn:
         # TODO(lucasw) what does this do?
         self.menu_handler.apply(self.server, self.im.name)
 
-        #
+        # resize x
         self.resize_x_server = InteractiveMarkerServer("body_spawn/resize_x")
-
         self.resize_x_im = InteractiveMarker()
         self.resize_x_im.header.frame_id = self.spawn_frame
         self.resize_x_im.name = "body_spawner_resize_x"
@@ -91,35 +90,101 @@ class InteractiveMarkerSpawn:
         self.resize_x = InteractiveMarkerControl()
         self.resize_x.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
         self.resize_x.name = "resize_x"
+        self.resize_x.orientation.w = 1
+        self.resize_x.orientation.x = 1
+        self.resize_x.orientation.y = 0
+        self.resize_x.orientation.z = 0
 
         arrow = Marker()
         arrow.type = Marker.ARROW
-        arrow.pose.position.x = box.scale.x * 0.5
+        # arrow.pose.position.x = box.scale.x * 0.5
         arrow.scale.x = 0.8
         arrow.scale.y = 0.3
         arrow.scale.z = 0.3
-        arrow.color.r = 0.1
-        arrow.color.g = 0.9
+        arrow.color.r = 1.0
+        arrow.color.g = 0.2
         arrow.color.b = 0.15
         arrow.color.a = 1.0
         arrow.frame_locked = True
         self.resize_x.markers.append(arrow)
 
         self.resize_x_im.controls.append(self.resize_x)
-        self.resize_x_server.insert(self.resize_x_im, self.process_resize_x_feedback)
+        self.resize_x_server.insert(self.resize_x_im, self.process_resize_feedback)
         self.resize_x_server.applyChanges()
 
-    def process_resize_x_feedback(self, feedback):
+        # resize y
+        self.resize_y_server = InteractiveMarkerServer("body_spawn/resize_y")
+        self.resize_y_im = InteractiveMarker()
+        self.resize_y_im.header.frame_id = self.spawn_frame
+        self.resize_y_im.name = "body_spawner_resize_y"
+        self.resize_y_im.description = "resize y of new body"
+
+        self.resize_y = InteractiveMarkerControl()
+        self.resize_y.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+        self.resize_y.name = "resize_y"
+        self.resize_y.orientation.w = 1
+        self.resize_y.orientation.x = 0
+        self.resize_y.orientation.y = 0
+        self.resize_y.orientation.z = 1
+
+        arrow_y = copy.deepcopy(arrow)
+        arrow_y.color.r = 0.2
+        arrow_y.color.g = 1.0
+        arrow_y.color.b = 0.15
+        arrow_y.pose.orientation = self.resize_y.orientation
+        self.resize_y.markers.append(arrow_y)
+        self.resize_y_im.controls.append(self.resize_y)
+        self.resize_y_server.insert(self.resize_y_im, self.process_resize_feedback)
+        self.resize_y_server.applyChanges()
+
+        # resize y
+        self.resize_z_server = InteractiveMarkerServer("body_spawn/resize_z")
+        self.resize_z_im = InteractiveMarker()
+        self.resize_z_im.header.frame_id = self.spawn_frame
+        self.resize_z_im.name = "body_spawner_resize_z"
+        self.resize_z_im.description = "resize y of new body"
+
+        self.resize_z = InteractiveMarkerControl()
+        self.resize_z.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
+        self.resize_z.name = "resize_z"
+        self.resize_z.orientation.w = 1
+        self.resize_z.orientation.x = 0
+        self.resize_z.orientation.y = 1
+        self.resize_z.orientation.z = 0
+
+        arrow_z = copy.deepcopy(arrow)
+        arrow_z.color.r = 0.2
+        arrow_z.color.g = 0.04
+        arrow_z.color.b = 1.0
+        arrow_z.pose.orientation = self.resize_z.orientation
+        self.resize_z.markers.append(arrow_z)
+        self.resize_z_im.controls.append(self.resize_z)
+        self.resize_z_server.insert(self.resize_z_im, self.process_resize_feedback)
+        self.resize_z_server.applyChanges()
+
+    def process_resize_feedback(self, feedback):
         if feedback.control_name == "resize_x":
             # if feedback.event_type == InteractiveMarkerFeedback.MOUSE_DOWN:
-            print feedback
-            if True:
-                self.scale_x = 2.0 * abs(feedback.pose.position.x)
-                # TODO(lucasw) make dict to get rid of hardcoding
-                self.im.controls[0].markers[0].scale.x = self.scale_x
-                self.server.insert(self.im, self.process_feedback)
-                self.server.applyChanges()
-                # self.just_resized = True
+            scale_x = 2.0 * abs(feedback.pose.position.x)
+            # TODO(lucasw) make dict to get rid of hardcoding
+            self.im.controls[0].markers[0].scale.x = scale_x
+            self.server.insert(self.im, self.process_feedback)
+            self.server.applyChanges()
+        if feedback.control_name == "resize_y":
+            # if feedback.event_type == InteractiveMarkerFeedback.MOUSE_DOWN:
+            scale_y = 2.0 * abs(feedback.pose.position.y)
+            # TODO(lucasw) make dict to get rid of hardcoding
+            self.im.controls[0].markers[0].scale.y = scale_y
+            self.server.insert(self.im, self.process_feedback)
+            self.server.applyChanges()
+        if feedback.control_name == "resize_z":
+            # if feedback.event_type == InteractiveMarkerFeedback.MOUSE_DOWN:
+            scale_z = 2.0 * abs(feedback.pose.position.z)
+            # TODO(lucasw) make dict to get rid of hardcoding
+            self.im.controls[0].markers[0].scale.z = scale_z
+            self.server.insert(self.im, self.process_feedback)
+            self.server.applyChanges()
+
 
     def update(self, event):
         pass
@@ -129,7 +194,7 @@ class InteractiveMarkerSpawn:
             # feedback.control_name == "spawn_menu":
             if feedback.menu_entry_id == 1:
 		self.count += 1
-		rospy.loginfo(feedback)
+		# rospy.loginfo(feedback)
 		body = Body()
 		body.name = "imarker_spawned_body_" + str(self.count)
 		body.mass = 1.0
@@ -152,6 +217,8 @@ class InteractiveMarkerSpawn:
 		body.scale.x = self.im.controls[0].markers[0].scale.x / 2.0
 		body.scale.y = self.im.controls[0].markers[0].scale.y / 2.0
 		body.scale.z = self.im.controls[0].markers[0].scale.z / 2.0
+
+                rospy.loginfo(body)
 
 		add_compound_request = AddCompoundRequest()
 		add_compound_request.remove = False

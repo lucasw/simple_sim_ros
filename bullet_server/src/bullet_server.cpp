@@ -145,6 +145,7 @@ public:
       unsigned int type,
       const float mass,
       geometry_msgs::Pose pose,
+      geometry_msgs::Twist twist,
       geometry_msgs::Vector3 scale,
       // btDiscreteDynamicsWorld* dynamics_world,
       btSoftRigidDynamicsWorld* dynamics_world,
@@ -700,7 +701,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
   }
 
   bodies_[msg->name] = new Body(this, msg->name, msg->type, msg->mass,
-      msg->pose, msg->scale,
+      msg->pose, msg->twist, msg->scale,
       dynamics_world_, &br_, &marker_array_pub_);
 }
 
@@ -881,6 +882,7 @@ Body::Body(BulletServer* parent,
     unsigned int type,
     const float mass,
     geometry_msgs::Pose pose,
+    geometry_msgs::Twist twist,
     geometry_msgs::Vector3 scale,
     // btDiscreteDynamicsWorld* dynamics_world,
     btSoftRigidDynamicsWorld* dynamics_world,
@@ -1058,6 +1060,11 @@ Body::Body(BulletServer* parent,
       shape_, fallInertia);
   rigid_body_ = new btRigidBody(fallRigidBodyCI);
   dynamics_world_->addRigidBody(rigid_body_);
+
+  // ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
+  const btVector3 point_rel_body(0, 0, 0);
+  const btVector3 impulse(twist.linear.x, twist.linear.y, twist.linear.z);
+  rigid_body_->applyImpulse(impulse, point_rel_body);
 
   // TODO(lucasw) is it more efficient for every marker to have the same ns,
   // and have id be a hash of the name?

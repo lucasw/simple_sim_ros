@@ -142,7 +142,7 @@ class InteractiveMarkerSpawn:
         self.resize_z_im = InteractiveMarker()
         self.resize_z_im.header.frame_id = self.spawn_frame
         self.resize_z_im.name = "body_spawner_resize_z"
-        self.resize_z_im.description = "resize y of new body"
+        self.resize_z_im.description = "resize z of new body"
 
         self.resize_z = InteractiveMarkerControl()
         self.resize_z.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
@@ -167,7 +167,7 @@ class InteractiveMarkerSpawn:
         self.linear_vel_im = InteractiveMarker()
         self.linear_vel_im.header.frame_id = self.spawn_frame
         self.linear_vel_im.name = "body_spawner_linear_vel"
-        self.linear_vel_im.description = "resize y of new body"
+        self.linear_vel_im.description = "add impulse to body"
 
         self.twist = Twist()
         self.linear_vel_control = InteractiveMarkerControl()
@@ -197,9 +197,9 @@ class InteractiveMarkerSpawn:
 
     def process_vel_feedback(self, feedback):
         if feedback.control_name == "linear_vel":
-            self.twist.linear.x = feedback.pose.position.x
-            self.twist.linear.y = feedback.pose.position.y
-            self.twist.linear.z = feedback.pose.position.z
+            self.twist.linear.x = feedback.pose.position.x * 4.0
+            self.twist.linear.y = feedback.pose.position.y * 4.0
+            self.twist.linear.z = feedback.pose.position.z * 4.0
 
     def process_resize_feedback(self, feedback):
         if feedback.control_name == "resize_x":
@@ -235,6 +235,7 @@ class InteractiveMarkerSpawn:
 		# rospy.loginfo(feedback)
 		body = Body()
 		body.name = "imarker_spawned_body_" + str(self.count)
+                # TODO(lucasw)
 		body.mass = 1.0
                 try:
                     trans = self.tf_buffer.lookup_transform("map", self.spawn_frame,

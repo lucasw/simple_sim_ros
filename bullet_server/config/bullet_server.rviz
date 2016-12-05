@@ -192,6 +192,15 @@ Visualization Manager:
       Show Visual Aids: false
       Update Topic: /body_spawn/interactive_tf/update
       Value: false
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: Linear Impulse
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /body_spawn/linear_vel/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -216,22 +225,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 19.3126
+      Distance: 16.5232
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -2.32627
-        Y: -1.08732
-        Z: 6.01386
+        X: 0.624495
+        Y: 3.62196
+        Z: 5.07635
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.464797
+      Pitch: 0.494797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.555348
+      Yaw: 5.25353
     Saved: ~
 Window Geometry:
   Displays:
@@ -249,5 +258,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 970
-  X: 462
-  Y: 17
+  X: 672
+  Y: 20

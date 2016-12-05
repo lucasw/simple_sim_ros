@@ -16,7 +16,7 @@ import tf2_ros
 
 from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, Twist
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
@@ -162,6 +162,45 @@ class InteractiveMarkerSpawn:
         self.resize_z_server.insert(self.resize_z_im, self.process_resize_feedback)
         self.resize_z_server.applyChanges()
 
+        # linear velocity
+        self.linear_vel_server = InteractiveMarkerServer("body_spawn/linear_vel")
+        self.linear_vel_im = InteractiveMarker()
+        self.linear_vel_im.header.frame_id = self.spawn_frame
+        self.linear_vel_im.name = "body_spawner_linear_vel"
+        self.linear_vel_im.description = "resize y of new body"
+
+        self.twist = Twist()
+        self.linear_vel_control = InteractiveMarkerControl()
+        self.linear_vel_control.interaction_mode = InteractiveMarkerControl.MOVE_3D
+        self.linear_vel_control.name = "linear_vel"
+        self.linear_vel_control.orientation.w = 1
+        self.linear_vel_control.orientation.x = 0
+        self.linear_vel_control.orientation.y = 1
+        self.linear_vel_control.orientation.z = 0
+
+        box = Marker()
+        box.header.frame_id = self.spawn_frame
+        box.type = Marker.CUBE
+        box.scale.x = 0.1
+        box.scale.y = 0.1
+        box.scale.z = 0.1
+        box.color.r = 0.8
+        box.color.g = 0.8
+        box.color.b = 0.2
+        box.color.a = 1.0
+        box.frame_locked = True
+        self.linear_vel_control.markers.append(box)
+
+        self.linear_vel_im.controls.append(self.linear_vel_control)
+        self.linear_vel_server.insert(self.linear_vel_im, self.process_vel_feedback)
+        self.linear_vel_server.applyChanges()
+
+    def process_vel_feedback(self, feedback):
+        if feedback.control_name == "linear_vel":
+            self.twist.linear.x = feedback.pose.position.x
+            self.twist.linear.y = feedback.pose.position.y
+            self.twist.linear.z = feedback.pose.position.z
+
     def process_resize_feedback(self, feedback):
         if feedback.control_name == "resize_x":
             # if feedback.event_type == InteractiveMarkerFeedback.MOUSE_DOWN:
@@ -184,7 +223,6 @@ class InteractiveMarkerSpawn:
             self.im.controls[0].markers[0].scale.z = scale_z
             self.server.insert(self.im, self.process_feedback)
             self.server.applyChanges()
-
 
     def update(self, event):
         pass
@@ -211,6 +249,8 @@ class InteractiveMarkerSpawn:
 		body.pose.position.y = trans.transform.translation.y
 		body.pose.position.z = trans.transform.translation.z
 		body.pose.orientation = trans.transform.rotation
+
+		body.twist = self.twist
                 # TODO(lucasw) add twist linear with another interactive tf,
                 # and twist angular with a second interactive tf?
 		body.type = Body.BOX

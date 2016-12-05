@@ -267,11 +267,11 @@ class InteractiveMarkerSpawn:
                 if False:
                     feedback_pt = PointStamped()
                     feedback_pt.header = feedback.header
-                    feedback_pt.point.x = feedback.pose.position.x
-                    feedback_pt.point.y = feedback.pose.position.y
-                    feedback_pt.point.z = feedback.pose.position.z
-                    print feedback_pt
+                    feedback_pt.point.x = self.linear_vel_pt[0]
+                    feedback_pt.point.y = self.linear_vel_pt[1]
+                    feedback_pt.point.z = self.linear_vel_pt[2]
 
+                    self.tf_buffer.registration.print_me()
                     try:
                         pt_in_map = self.tf_buffer.transform(feedback_pt, "map",
                                                              rospy.Duration(2.0), PointStamped)

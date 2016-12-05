@@ -28,70 +28,22 @@ class InteractiveMarkerSpawn:
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
 
-        # Ground
-        if True:
-            add_compound_request = AddCompoundRequest()
-            add_compound_request.remove = False
-            # make the top cylinder plate
-            ground = Body()
-            ground.name = "ground"
-            ground.mass = 0.0
-            rot90 = tf.transformations.quaternion_from_euler(0, 0, 0)
-            radius = 50
-            thickness = 1.0
-            ground.pose.orientation.x = rot90[0]
-            ground.pose.orientation.y = rot90[1]
-            ground.pose.orientation.z = rot90[2]
-            ground.pose.orientation.w = rot90[3]
-            ground.pose.position.z = -thickness
-            ground.type = Body.BOX
-            ground.scale.x = radius
-            ground.scale.y = radius
-            ground.scale.z = thickness
-            add_compound_request.body.append(ground)
-
-	    try:
-		add_compound_response = self.add_compound(add_compound_request)
-		rospy.loginfo(add_compound_response)
-	    except rospy.service.ServiceException as e:
-		rospy.logerr(e)
-
         self.spawn_frame = rospy.get_param("~frame", "spawn_frame")
         self.ts = TransformStamped()
         self.ts.header.frame_id = "map"
         self.ts.child_frame_id = self.spawn_frame
         self.ts.transform.rotation.w = 1.0
         # self.just_resized = False
-        self.first_resize = True
         self.timer = rospy.Timer(rospy.Duration(0.1), self.update)
 
 	self.count = 0
         self.server = InteractiveMarkerServer("body_spawn")
         self.im = InteractiveMarker()
-        self.im.header.frame_id = "map"
+        self.im.header.frame_id = self.spawn_frame
         self.im.name = "body_spawner"
         self.im.description = "Spawn a new body"
 
         self.menu_handler = MenuHandler()
-
-        self.marker = Marker()
-        # TODO(lucasw) make a drop-down that can change this
-        self.marker.type = Marker.CUBE
-        self.scale_x = 0.5
-        self.marker.scale.x = self.scale_x
-        self.marker.scale.y = 0.5
-        self.marker.scale.z = 0.5
-        self.marker.color.r = 0.5
-        self.marker.color.g = 0.5
-        self.marker.color.b = 0.5
-        self.marker.color.a = 1.0
-
-        self.move_3d = InteractiveMarkerControl()
-        self.move_3d.name = "body_spawn"
-        self.move_3d.always_visible = True
-        self.move_3d.interaction_mode = InteractiveMarkerControl.MOVE_3D
-        self.move_3d.markers.append(self.marker)
-        self.im.controls.append(self.move_3d)
 
         # TODO(lucasw) click and drag resizing will be best served
         # by and interactive marker child that has a frame tf defined
@@ -99,11 +51,24 @@ class InteractiveMarkerSpawn:
 
         menu = InteractiveMarkerControl()
         menu.interaction_mode = InteractiveMarkerControl.MENU
-        menu.description = "Spawn"
+        menu.description = "spawn"
         menu.name = "spawn_menu"
+
+        box = Marker()
+        box.header.frame_id = self.spawn_frame
+        box.type = Marker.CUBE
+        box.scale.x = 0.5
+        box.scale.y = 0.5
+        box.scale.z = 0.5
+        box.color.r = 0.8
+        box.color.g = 0.8
+        box.color.b = 0.8
+        box.color.a = 1.0
+        box.frame_locked = True
+        menu.markers.append(box)
         self.im.controls.append(menu)
 
-        self.menu_handler.insert("Spawn", callback=self.process_feedback)
+        self.menu_handler.insert("spawn", callback=self.process_feedback)
         # TODO(lucasw) have a submenu that is updated with a list
         # of all tf frames, and selecting one will cause that tf to
         # be the parent of this marker.
@@ -127,7 +92,7 @@ class InteractiveMarkerSpawn:
 
         arrow = Marker()
         arrow.type = Marker.ARROW
-        arrow.pose.position.x = self.scale_x * 0.5
+        arrow.pose.position.x = box.scale.x * 0.5
         arrow.scale.x = 0.8
         arrow.scale.y = 0.3
         arrow.scale.z = 0.3
@@ -135,6 +100,7 @@ class InteractiveMarkerSpawn:
         arrow.color.g = 0.9
         arrow.color.b = 0.15
         arrow.color.a = 1.0
+        arrow.frame_locked = True
         self.resize_x.markers.append(arrow)
 
         self.resize_x_im.controls.append(self.resize_x)
@@ -148,18 +114,6 @@ class InteractiveMarkerSpawn:
             if True:
                 self.scale_x = 2.0 * abs(feedback.pose.position.x)
                 # TODO(lucasw) make dict to get rid of hardcoding
-                # the move_3d box marker
-                # Have to set the marker to where it already is, otherwise
-                # the initial values will overwrite it.
-                # But only do it first time
-                if self.first_resize:
-                    self.first_resize = False
-                    # if self.im.controls[0].markers[0].pose.position.x == 0 and
-                    #         self.im.controls[0].markers[0].pose.position.y == 0
-                    #         self.im.controls[0].markers[0].pose.position.z == 0:
-                    self.im.controls[0].markers[0].pose.position.x = self.ts.transform.translation.x
-                    self.im.controls[0].markers[0].pose.position.y = self.ts.transform.translation.y
-                    self.im.controls[0].markers[0].pose.position.z = self.ts.transform.translation.z
                 self.im.controls[0].markers[0].scale.x = self.scale_x
                 self.server.insert(self.im, self.process_feedback)
                 self.server.applyChanges()
@@ -171,7 +125,7 @@ class InteractiveMarkerSpawn:
         # print feedback
         # if self.just_resized:
         #     self.just_resized = False
-         
+
     def process_feedback(self, feedback):
         # TODO(lucasw) or use an rviz_interactive_marker to generate this tf?
         self.ts.header.stamp = feedback.header.stamp
@@ -182,14 +136,6 @@ class InteractiveMarkerSpawn:
         self.ts.transform.rotation.y = feedback.pose.orientation.y
         self.ts.transform.rotation.z = feedback.pose.orientation.z
         self.ts.transform.rotation.w = feedback.pose.orientation.w
-
-        self.first_resize = True
-        if False:
-            self.im.controls[0].markers[0].pose.position.x = 0
-            self.im.controls[0].markers[0].pose.position.y = 0
-            self.im.controls[0].markers[0].pose.position.z = 0
-            self.server.insert(self.im, self.process_feedback)
-            self.server.applyChanges()
 
         if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
             # feedback.control_name == "spawn_menu":

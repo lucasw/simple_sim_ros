@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="itf" pkg="rviz_interactive_tf" type="interactive_tf" ns="body_spawn">
+    <param name="parent_frame" value="map"/>
+    <param name="frame" value="spawn_frame"/>
+  </node>
+
+  <node pkg="bullet_server" type="init_sim.py" name="init_sim"
+      output="screen">
+  </node>
+
+  <node pkg="bullet_server" type="imarker_spawn.py" name="imarker_spawn"
+      output="screen">
+    <param name="frame" value="spawn_frame"/>
+  </node>
+
+</launch>

@@ -5,11 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Marker1/Namespaces1
-        - /TF1
         - /Grid YZ1/Offset1
         - /InteractiveMarkers1
-        - /InteractiveMarkers2
-      Splitter Ratio: 0.509293973
+      Splitter Ratio: 0.543605
     Tree Height: 435
   - Class: rviz/Selection
     Name: Selection
@@ -19,7 +17,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.588679
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -51,9 +49,9 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz/Axes
       Enabled: false
-      Length: 0.600000024
+      Length: 0.6
       Name: Axes
-      Radius: 0.150000006
+      Radius: 0.15
       Reference Frame: top_cylinder_0
       Value: false
     - Class: rviz/Marker
@@ -71,16 +69,6 @@ Visualization Manager:
         All Enabled: true
         ground:
           Value: true
-        imarker_spawned_body_1:
-          Value: true
-        imarker_spawned_body_2:
-          Value: true
-        imarker_spawned_body_3:
-          Value: true
-        imarker_spawned_body_4:
-          Value: true
-        imarker_spawned_body_5:
-          Value: true
         map:
           Value: true
         spawn_frame:
@@ -94,16 +82,6 @@ Visualization Manager:
         map:
           ground:
             {}
-          imarker_spawned_body_1:
-            {}
-          imarker_spawned_body_2:
-            {}
-          imarker_spawned_body_3:
-            {}
-          imarker_spawned_body_4:
-            {}
-          imarker_spawned_body_5:
-            {}
           spawn_frame:
             {}
       Update Interval: 0
@@ -114,7 +92,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: false
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid XZ
       Normal Cell Count: 0
@@ -132,7 +110,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -150,7 +128,7 @@ Visualization Manager:
       Color: 120; 120; 124
       Enabled: false
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid YZ
       Normal Cell Count: 0
@@ -168,7 +146,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: false
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.03
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -192,11 +170,20 @@ Visualization Manager:
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
       Enabled: true
-      Name: InteractiveMarkers
+      Name: Resize
       Show Axes: false
       Show Descriptions: true
       Show Visual Aids: true
       Update Topic: /body_spawn/resize_x/update
+      Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: Interactive TF
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /body_spawn/interactive_tf/update
       Value: true
   Enabled: true
   Global Options:
@@ -222,22 +209,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.07469845
+      Distance: 4.55216
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.602279305
-        Y: 0.338442326
-        Z: 1.06936002
+        X: 0.602279
+        Y: 0.338442
+        Z: 1.06936
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.559795678
+      Near Clip Distance: 0.01
+      Pitch: 0.599796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.14356613
+      Yaw: 4.96856
     Saved: ~
 Window Geometry:
   Displays:
@@ -245,7 +232,7 @@ Window Geometry:
   Height: 881
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000002cefc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000041000002ce000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006100000001a7000001450000000000000000fb0000000c00430061006d0065007200610100000373000000160000000000000000000000010000010f00000348fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004100000348000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003ca0000003efc0100000002fb0000000800540069006d00650100000000000003ca0000030000fffffffb0000000800540069006d006501000000000000045000000000000000000000025a000002ce00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a000002cefc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000041000002ce000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006100000001a7000001450000000000000000fb0000000c00430061006d0065007200610100000373000000160000000000000000000000010000010f00000348fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004100000348000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003ca0000003efc0100000002fb0000000800540069006d00650100000000000003ca000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000025a000002ce00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -255,5 +242,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 970
-  X: 727
-  Y: 26
+  X: 936
+  Y: 25

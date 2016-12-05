@@ -10,6 +10,7 @@
 # Later being able to create joints between bodies would be nice.
 
 import copy
+import numpy
 import rospy
 import tf
 import tf2_ros
@@ -169,7 +170,7 @@ class InteractiveMarkerSpawn:
         self.linear_vel_im.name = "body_spawner_linear_vel"
         self.linear_vel_im.description = "add impulse to body"
 
-        self.twist = Twist()
+        self.linear_vel_pt = [0, 0, 0, 0]
         self.linear_vel_control = InteractiveMarkerControl()
         self.linear_vel_control.interaction_mode = InteractiveMarkerControl.MOVE_3D
         self.linear_vel_control.name = "linear_vel"
@@ -199,34 +200,10 @@ class InteractiveMarkerSpawn:
         if feedback.control_name == "linear_vel":
             # need to transform this point into the map frame,
             # but subtract out the location of the spawn frame
-            try:
-                trans = self.tf_buffer.lookup_transform("map", self.spawn_frame,
-                                                        rospy.Time())
-            except (tf2_ros.LookupException,
-                    tf2_ros.ConnectivityException,
-                    tf2_ros.ExtrapolationException) as e:
-                rospy.logerr("tf2_ros exception")
-                rospy.logerr(e)
-                return
-
-            feedback_pt = PointStamped()
-            feedback_pt.header = feedback.header
-            feedback_pt.point.x = feedback.pose.position.x
-            feedback_pt.point.y = feedback.pose.position.y
-            feedback_pt.point.z = feedback.pose.position.z
-            print feedback_pt
-            try:
-                pt_in_map = self.tf_buffer.transform(feedback_pt, "map",
-                                                     rospy.Duration(2.0), PointStamped)
-            except tf2_ros.TypeException as e:
-                # rospy.logerr(e)
-                print e
-                return
-            print 'output', pt_in_map
-
-            self.twist.linear.x = feedback.pose.position.x * 4.0
-            self.twist.linear.y = feedback.pose.position.y * 4.0
-            self.twist.linear.z = feedback.pose.position.z * 4.0
+            self.linear_vel_pt = [feedback.pose.position.x * 4.0,
+                                  feedback.pose.position.y * 4.0,
+                                  feedback.pose.position.z * 4.0,
+                                  1.0]
 
     def process_resize_feedback(self, feedback):
         if feedback.control_name == "resize_x":
@@ -278,7 +255,6 @@ class InteractiveMarkerSpawn:
 		body.pose.position.z = trans.transform.translation.z
 		body.pose.orientation = trans.transform.rotation
 
-		body.twist = self.twist
                 # TODO(lucasw) add twist linear with another interactive tf,
                 # and twist angular with a second interactive tf?
 		body.type = Body.BOX
@@ -286,7 +262,36 @@ class InteractiveMarkerSpawn:
 		body.scale.y = self.im.controls[0].markers[0].scale.y / 2.0
 		body.scale.z = self.im.controls[0].markers[0].scale.z / 2.0
 
-                rospy.loginfo(body)
+                # can't get this to work
+                # http://answers.ros.org/question/249433/tf2_ros-buffer-transform-pointstamped/
+                if False:
+                    feedback_pt = PointStamped()
+                    feedback_pt.header = feedback.header
+                    feedback_pt.point.x = feedback.pose.position.x
+                    feedback_pt.point.y = feedback.pose.position.y
+                    feedback_pt.point.z = feedback.pose.position.z
+                    print feedback_pt
+
+                    try:
+                        pt_in_map = self.tf_buffer.transform(feedback_pt, "map",
+                                                             rospy.Duration(2.0), PointStamped)
+                    except tf2_ros.TypeException as e:
+                        # rospy.logerr(e)
+                        print e
+                        return
+                    print 'output', pt_in_map
+                else:
+                    quat = [trans.transform.rotation.x,
+                            trans.transform.rotation.y,
+                            trans.transform.rotation.z,
+                            trans.transform.rotation.w]
+                    mat = tf.transformations.quaternion_matrix(quat)
+                    pt_in_map = numpy.dot(mat, self.linear_vel_pt)
+		    body.twist.linear.x = pt_in_map[0]
+		    body.twist.linear.y = pt_in_map[1]
+		    body.twist.linear.z = pt_in_map[2]
+
+                # rospy.loginfo(body.twist.linear)
 
 		add_compound_request = AddCompoundRequest()
 		add_compound_request.remove = False

@@ -17,7 +17,7 @@ import tf2_ros
 
 from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
-from geometry_msgs.msg import PointStamped, TransformStamped, Twist
+from geometry_msgs.msg import Point, PointStamped, TransformStamped, Twist
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
@@ -163,7 +163,7 @@ class InteractiveMarkerSpawn:
         self.resize_z_server.insert(self.resize_z_im, self.process_resize_feedback)
         self.resize_z_server.applyChanges()
 
-        # linear velocity
+        # add linear impulse
         self.linear_vel_server = InteractiveMarkerServer("body_spawn/linear_vel")
         self.linear_vel_im = InteractiveMarker()
         self.linear_vel_im.header.frame_id = self.spawn_frame
@@ -196,6 +196,24 @@ class InteractiveMarkerSpawn:
         self.linear_vel_server.insert(self.linear_vel_im, self.process_vel_feedback)
         self.linear_vel_server.applyChanges()
 
+        self.marker_pub = rospy.Publisher("/body_spawn/misc_markers", Marker, queue_size=1)
+        self.linear_vel_marker = Marker()
+        self.linear_vel_marker.header.frame_id = self.spawn_frame
+        self.linear_vel_marker.type = Marker.LINE_LIST
+        self.linear_vel_marker.scale.x = 0.07
+        self.linear_vel_marker.scale.y = 0.07
+        self.linear_vel_marker.scale.z = 0.07
+        self.linear_vel_marker.color.r = 0.8
+        self.linear_vel_marker.color.g = 0.8
+        self.linear_vel_marker.color.b = 0.2
+        self.linear_vel_marker.color.a = 1.0
+        self.linear_vel_marker.frame_locked = True
+        pt = Point()
+        self.linear_vel_marker.points.append(pt)
+        pt = Point()
+        self.linear_vel_marker.points.append(pt)
+        self.marker_pub.publish(self.linear_vel_marker)
+
     def process_vel_feedback(self, feedback):
         if feedback.control_name == "linear_vel":
             # need to transform this point into the map frame,
@@ -204,6 +222,8 @@ class InteractiveMarkerSpawn:
                                   feedback.pose.position.y * 4.0,
                                   feedback.pose.position.z * 4.0,
                                   1.0]
+            self.linear_vel_marker.points[1] = feedback.pose.position
+            self.marker_pub.publish(self.linear_vel_marker)
 
     def process_resize_feedback(self, feedback):
         if feedback.control_name == "resize_x":

@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /Group1
         - /Group1/Linear Impulse1
-        - /Group1/Marker1/Status1
+        - /Group1/Bullet Viz1/Status1
       Splitter Ratio: 0.543605
     Tree Height: 557
   - Class: rviz/Selection
@@ -72,13 +72,13 @@ Visualization Manager:
       Displays:
         - Class: rviz/InteractiveMarkers
           Enable Transparency: true
-          Enabled: true
+          Enabled: false
           Name: InteractiveMarkers
           Show Axes: false
           Show Descriptions: true
           Show Visual Aids: true
           Update Topic: /body_spawn/update
-          Value: true
+          Value: false
         - Class: rviz/InteractiveMarkers
           Enable Transparency: true
           Enabled: true
@@ -127,7 +127,7 @@ Visualization Manager:
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: visualization_marker
-          Name: Marker
+          Name: Bullet Viz
           Namespaces:
             bodies: true
           Queue Size: 200
@@ -234,22 +234,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 12.5147
+      Distance: 4.58104
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.60069
-        Y: 2.08866
-        Z: 2.56684
+        X: 0.285614
+        Y: 0.41761
+        Z: 2.60444
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.634796
+      Pitch: 1.0598
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.95852
+      Yaw: 5.00351
     Saved: ~
 Window Geometry:
   Displays:
@@ -267,5 +267,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 970
-  X: 902
+  X: 678
   Y: 17

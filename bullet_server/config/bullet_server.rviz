@@ -4,8 +4,9 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Marker1/Namespaces1
-        - /Grid YZ1/Offset1
+        - /Group1
+        - /Group1/Linear Impulse1
+        - /Group1/Marker1/Status1
       Splitter Ratio: 0.543605
     Tree Height: 557
   - Class: rviz/Selection
@@ -53,14 +54,6 @@ Visualization Manager:
       Radius: 0.15
       Reference Frame: top_cylinder_0
       Value: false
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: visualization_marker
-      Name: Marker
-      Namespaces:
-        bodies: true
-      Queue Size: 200
-      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
@@ -75,132 +68,148 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz/Grid
-      Color: 160; 160; 164
-      Enabled: false
-      Line Style:
-        Line Width: 0.03
-        Value: Lines
-      Name: Grid XZ
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: -5
-        Z: 5
-      Plane: XZ
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: false
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz/Grid
-      Color: 255; 255; 255
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/InteractiveMarkers
+          Enable Transparency: true
+          Enabled: true
+          Name: InteractiveMarkers
+          Show Axes: false
+          Show Descriptions: true
+          Show Visual Aids: true
+          Update Topic: /body_spawn/update
+          Value: true
+        - Class: rviz/InteractiveMarkers
+          Enable Transparency: true
+          Enabled: true
+          Name: Interactive TF
+          Show Axes: false
+          Show Descriptions: true
+          Show Visual Aids: false
+          Update Topic: /body_spawn/interactive_tf/update
+          Value: true
+        - Class: rviz/InteractiveMarkers
+          Enable Transparency: true
+          Enabled: true
+          Name: Linear Impulse
+          Show Axes: false
+          Show Descriptions: true
+          Show Visual Aids: false
+          Update Topic: /body_spawn/linear_vel/update
+          Value: true
+        - Class: rviz/InteractiveMarkers
+          Enable Transparency: true
+          Enabled: false
+          Name: Resize Z
+          Show Axes: false
+          Show Descriptions: true
+          Show Visual Aids: false
+          Update Topic: /body_spawn/resize_z/update
+          Value: false
+        - Class: rviz/InteractiveMarkers
+          Enable Transparency: true
+          Enabled: false
+          Name: Resize X
+          Show Axes: false
+          Show Descriptions: true
+          Show Visual Aids: true
+          Update Topic: /body_spawn/resize_x/update
+          Value: false
+        - Class: rviz/InteractiveMarkers
+          Enable Transparency: true
+          Enabled: false
+          Name: Resize Y
+          Show Axes: false
+          Show Descriptions: true
+          Show Visual Aids: false
+          Update Topic: /body_spawn/resize_y/update
+          Value: false
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: visualization_marker
+          Name: Marker
+          Namespaces:
+            bodies: true
+          Queue Size: 200
+          Value: true
       Enabled: true
-      Line Style:
-        Line Width: 0.03
-        Value: Lines
+      Name: Group
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 0.5
+          Cell Size: 50
+          Class: rviz/Grid
+          Color: 160; 160; 164
+          Enabled: false
+          Line Style:
+            Line Width: 0.03
+            Value: Lines
+          Name: Grid
+          Normal Cell Count: 0
+          Offset:
+            X: 0
+            Y: 0
+            Z: -1
+          Plane: XY
+          Plane Cell Count: 10
+          Reference Frame: <Fixed Frame>
+          Value: false
+        - Alpha: 0.5
+          Cell Size: 1
+          Class: rviz/Grid
+          Color: 120; 120; 124
+          Enabled: false
+          Line Style:
+            Line Width: 0.03
+            Value: Lines
+          Name: Grid YZ
+          Normal Cell Count: 0
+          Offset:
+            X: -5
+            Y: 0
+            Z: 5
+          Plane: YZ
+          Plane Cell Count: 10
+          Reference Frame: <Fixed Frame>
+          Value: false
+        - Alpha: 0.5
+          Cell Size: 1
+          Class: rviz/Grid
+          Color: 255; 255; 255
+          Enabled: true
+          Line Style:
+            Line Width: 0.03
+            Value: Lines
+          Name: Grid
+          Normal Cell Count: 0
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Plane: XY
+          Plane Cell Count: 10
+          Reference Frame: <Fixed Frame>
+          Value: true
+        - Alpha: 0.5
+          Cell Size: 1
+          Class: rviz/Grid
+          Color: 160; 160; 164
+          Enabled: false
+          Line Style:
+            Line Width: 0.03
+            Value: Lines
+          Name: Grid XZ
+          Normal Cell Count: 0
+          Offset:
+            X: 0
+            Y: -5
+            Z: 5
+          Plane: XZ
+          Plane Cell Count: 10
+          Reference Frame: <Fixed Frame>
+          Value: false
+      Enabled: true
       Name: Grid
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: true
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz/Grid
-      Color: 120; 120; 124
-      Enabled: false
-      Line Style:
-        Line Width: 0.03
-        Value: Lines
-      Name: Grid YZ
-      Normal Cell Count: 0
-      Offset:
-        X: -5
-        Y: 0
-        Z: 5
-      Plane: YZ
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: false
-    - Alpha: 0.5
-      Cell Size: 50
-      Class: rviz/Grid
-      Color: 160; 160; 164
-      Enabled: false
-      Line Style:
-        Line Width: 0.03
-        Value: Lines
-      Name: Grid
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: 0
-        Z: -1
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: false
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: true
-      Name: InteractiveMarkers
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: true
-      Update Topic: /body_spawn/update
-      Value: true
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: false
-      Name: Resize Y
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /body_spawn/resize_y/update
-      Value: false
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: false
-      Name: Resize X
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: true
-      Update Topic: /body_spawn/resize_x/update
-      Value: false
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: false
-      Name: Resize Z
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /body_spawn/resize_z/update
-      Value: false
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: false
-      Name: Interactive TF
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /body_spawn/interactive_tf/update
-      Value: false
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: true
-      Name: Linear Impulse
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /body_spawn/linear_vel/update
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -225,22 +234,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.5232
+      Distance: 12.5147
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.624495
-        Y: 3.62196
-        Z: 5.07635
+        X: 1.60069
+        Y: 2.08866
+        Z: 2.56684
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.494797
+      Pitch: 0.634796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.25353
+      Yaw: 5.95852
     Saved: ~
 Window Geometry:
   Displays:
@@ -258,5 +267,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 970
-  X: 672
-  Y: 20
+  X: 902
+  Y: 17

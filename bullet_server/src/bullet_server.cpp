@@ -90,15 +90,18 @@ class BulletServer
   // ros::Publisher marker_pub_;
   ros::Publisher marker_array_pub_;
 
+  bool rigid_only_;
   btBroadphaseInterface* broadphase_;
-  // btDefaultCollisionConfiguration* collision_configuration_;
-  btSoftBodyRigidBodyCollisionConfiguration* collision_configuration_;
+
+  btDefaultCollisionConfiguration* collision_configuration_;
+  btSoftBodyRigidBodyCollisionConfiguration* soft_rigid_collision_configuration_;
+
   btCollisionDispatcher* dispatcher_;
   // only used with opencl
   // btSoftBodySolver* soft_body_solver_;
   btSequentialImpulseConstraintSolver* solver_;
-  // btDiscreteDynamicsWorld* dynamics_world_;
-  btSoftRigidDynamicsWorld* dynamics_world_;
+
+  btDiscreteDynamicsWorld* dynamics_world_;
 
   // TODO(lucasw) make this configurable by addCompound
   // instead of hard coded
@@ -136,8 +139,8 @@ class Body
   std::map<std::string, Constraint*> constraints_;
   btCollisionShape* shape_;
   btDefaultMotionState* motion_state_;
-  // btDiscreteDynamicsWorld* dynamics_world_;
-  btSoftRigidDynamicsWorld* dynamics_world_;
+
+  btDiscreteDynamicsWorld* dynamics_world_;
   int state_;
 public:
   Body(BulletServer* parent,
@@ -147,8 +150,7 @@ public:
       geometry_msgs::Pose pose,
       geometry_msgs::Twist twist,
       geometry_msgs::Vector3 scale,
-      // btDiscreteDynamicsWorld* dynamics_world,
-      btSoftRigidDynamicsWorld* dynamics_world,
+      btDiscreteDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub_);
   // heightfield
@@ -161,8 +163,7 @@ public:
     const float resolution,
     const float height_scale,
     const bool flip_quad_edges,
-    // btDiscreteDynamicsWorld* dynamics_world,
-    btSoftRigidDynamicsWorld* dynamics_world,
+    btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub);
   ~Body();
@@ -208,8 +209,7 @@ class Constraint
   ros::NodeHandle nh_;
   btTypedConstraint* constraint_;
 
-  // btDiscreteDynamicsWorld* dynamics_world_;
-  btSoftRigidDynamicsWorld* dynamics_world_;
+  btDiscreteDynamicsWorld* dynamics_world_;
   ros::Publisher* marker_array_pub_;
   std::map<std::string, float> command_;
   std::map<std::string, ros::Publisher> pubs_;
@@ -232,8 +232,7 @@ public:
       const double lower_ang_lim,
       const double upper_ang_lim,
       const float max_motor_impulse,
-      // btDiscreteDynamicsWorld* dynamics_world,
-      btSoftRigidDynamicsWorld* dynamics_world,
+      btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();
 
@@ -257,8 +256,7 @@ Constraint::Constraint(
       const double lower_ang_lim,
       const double upper_ang_lim,
       const float max_motor_impulse,
-      // btDiscreteDynamicsWorld* dynamics_world,
-      btSoftRigidDynamicsWorld* dynamics_world,
+      btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     nh_(name),
     name_(name),
@@ -558,31 +556,51 @@ void Constraint::commandCallback(const std_msgs::Float64::ConstPtr msg,
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-BulletServer::BulletServer()
+BulletServer::BulletServer() :
+  rigid_only_(true),
+  broadphase_(NULL),
+  collision_configuration_(NULL),
+  soft_rigid_collision_configuration_(NULL)
 {
   init();
 }
 
 int BulletServer::init()
 {
-  // TODO(lucasw) can soft body only work with btAxisSweep3?
-  // broadphase_ = new btDbvtBroadphase();
-  const int max_proxies = 32766;
-  btVector3 world_aabb_min(-1000, -1000, -1000);
-  btVector3 world_aabb_max(1000, 1000, 1000);
-  broadphase_ = new btAxisSweep3(world_aabb_min, world_aabb_max, max_proxies);
-  soft_body_world_info_.m_broadphase = broadphase_;
+  ros::param::get("~rigid_only", rigid_only_);
 
-  // collision_configuration_ = new btDefaultCollisionConfiguration();
-  collision_configuration_ = new btSoftBodyRigidBodyCollisionConfiguration();
-  dispatcher_ = new btCollisionDispatcher(collision_configuration_);
-  soft_body_world_info_.m_dispatcher = dispatcher_;
+  // TODO(lucasw) can soft body only work with btAxisSweep3?
+  if (rigid_only_)
+  {
+    broadphase_ = new btDbvtBroadphase();
+    collision_configuration_ = new btDefaultCollisionConfiguration();
+    dispatcher_ = new btCollisionDispatcher(collision_configuration_);
+  }
+  else
+  {
+    const int max_proxies = 32766;
+    btVector3 world_aabb_min(-1000, -1000, -1000);
+    btVector3 world_aabb_max(1000, 1000, 1000);
+    broadphase_ = new btAxisSweep3(world_aabb_min, world_aabb_max, max_proxies);
+    soft_body_world_info_.m_broadphase = broadphase_;
+    soft_rigid_collision_configuration_ = new btSoftBodyRigidBodyCollisionConfiguration();
+    dispatcher_ = new btCollisionDispatcher(soft_rigid_collision_configuration_);
+    soft_body_world_info_.m_dispatcher = dispatcher_;
+  }
+
   solver_ = new btSequentialImpulseConstraintSolver;
-  // dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher, broadphase_,
-  //    solver, collision_configuration_);
-  dynamics_world_ = new btSoftRigidDynamicsWorld(dispatcher_, broadphase_,
-      solver_, collision_configuration_);
- // TODO(lucasw) provide this in ros param
+
+  if (rigid_only_)
+  {
+    dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher_, broadphase_,
+        solver_, collision_configuration_);
+  }
+  else
+  {
+    dynamics_world_ = new btSoftRigidDynamicsWorld(dispatcher_, broadphase_,
+        solver_, soft_rigid_collision_configuration_);
+  }
+  // TODO(lucasw) provide this in ros param
   btVector3 gravity(0.0, 0.0, -10.0);
   dynamics_world_->setGravity(gravity);
   soft_body_world_info_.m_gravity = gravity;
@@ -707,6 +725,15 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
 
 void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg)
 {
+  btSoftRigidDynamicsWorld* soft_rigid_dynamics_world =
+      dynamic_cast<btSoftRigidDynamicsWorld*>(dynamics_world_);
+
+  if (rigid_only_ || (soft_rigid_dynamics_world == NULL))
+  {
+    ROS_ERROR_STREAM("can't create soft body in rigid body mode " + msg->name);
+    return;
+  }
+
   if (soft_bodies_.count(msg->name) > 0)
   {
     delete soft_bodies_[msg->name];
@@ -718,9 +745,10 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
       msg->node, msg->link, msg->face, msg->tetra,
       msg->material, msg->anchor,
       msg->config,
-      dynamics_world_, &br_, &marker_array_pub_);
+      soft_rigid_dynamics_world,
+      &br_, &marker_array_pub_);
 
-  dynamics_world_->addSoftBody(soft_bodies_[msg->name]->soft_body_);
+  soft_rigid_dynamics_world->addSoftBody(soft_bodies_[msg->name]->soft_body_);
 }
 
 
@@ -870,7 +898,12 @@ BulletServer::~BulletServer()
 
   delete dynamics_world_;
   delete solver_;
-  delete collision_configuration_;
+
+  if (collision_configuration_)
+    delete collision_configuration_;
+  if (soft_rigid_collision_configuration_)
+    delete soft_rigid_collision_configuration_;
+
   delete dispatcher_;
   delete broadphase_;
 }
@@ -884,8 +917,7 @@ Body::Body(BulletServer* parent,
     geometry_msgs::Pose pose,
     geometry_msgs::Twist twist,
     geometry_msgs::Vector3 scale,
-    // btDiscreteDynamicsWorld* dynamics_world,
-    btSoftRigidDynamicsWorld* dynamics_world,
+    btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
   parent_(parent),
@@ -1095,8 +1127,7 @@ Body::Body(
     const float resolution,
     const float height_scale,
     const bool flip_quad_edges,
-    // btDiscreteDynamicsWorld* dynamics_world,
-    btSoftRigidDynamicsWorld* dynamics_world,
+    btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
   parent_(parent),

@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="rigid_only" default="true"/>
   <arg name="use_rviz" default="true"/>
 
   <node pkg="rviz" type="rviz" name="rviz"
@@ -7,6 +8,8 @@
       if="$(arg use_rviz)"/>
 
   <node pkg="bullet_server" type="bullet_server" name="bullet_server"
-      output="screen"/>
+      output="screen">
+    <param name="rigid_only" value="$(arg rigid_only)"/>
+  </node>
 
 </launch>

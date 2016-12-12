@@ -57,6 +57,7 @@ class TrackedVehicle:
             trk.pose.orientation.w = rot[3]
 
 	    trk.pose.position.x = radius * math.cos(angle)
+            trk.pose.position.y = -0.5
             trk.pose.position.z = 1.2 * radius + radius * math.sin(angle)
             add_compound_request.body.append(trk)
 
@@ -72,6 +73,43 @@ class TrackedVehicle:
             constraint.axis_in_a.y = 1.0
             constraint.axis_in_b.y = 1.0
             add_compound_request.constraint.append(constraint)
+
+        chassis = Body()
+        chassis.name = "chassis"
+        chassis.type = Body.BOX
+        chassis.mass = 1.0
+        chassis.pose.orientation.w = 1.0
+        chassis.scale.x = 1.0
+        chassis.scale.y = 0.38
+        chassis.scale.z = 0.07
+        chassis.pose.position.z = radius
+        add_compound_request.body.append(chassis)
+
+	wheel = Body()
+        wheel.type = Body.CYLINDER
+        wheel.name = "wheel"
+	wheel.mass = 1.0
+        wheel.pose.orientation.w = 1.0
+	wheel.scale.x = 0.2
+	wheel.scale.y = track_width
+        wheel.scale.z = 0.2
+        wheel.pose.position.y = -0.5
+        wheel.pose.position.z = radius
+        add_compound_request.body.append(wheel)
+
+        axle = Constraint()
+        axle.name = "wheel_motor"
+        axle.body_a = "chassis"
+        axle.body_b = "wheel"
+        axle.type = Constraint.HINGE
+        axle.lower_ang_lim = -4.0
+        axle.upper_ang_lim = 4.0
+        axle.max_motor_impulse = 25000.0
+        axle.pivot_in_a.y = -0.5
+        axle.pivot_in_b.y = 0.0
+        axle.axis_in_a.y = 1.0
+        axle.axis_in_b.y = 1.0
+        add_compound_request.constraint.append(axle)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

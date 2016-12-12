@@ -28,9 +28,20 @@ class TrackedVehicle:
         add_compound_request = AddCompoundRequest()
         add_compound_request.remove = rospy.get_param('~remove', False)
 
+        obstacle = Body()
+        obstacle.name = "obstacle_1"
+        obstacle.type = Body.BOX
+        obstacle.mass = 0.0
+        obstacle.pose.orientation.w = 1.0
+        obstacle.pose.position.x = -2.0
+        obstacle.scale.x = 1.0
+        obstacle.scale.y = 1.0
+        obstacle.scale.z = 0.13
+        add_compound_request.body.append(obstacle)
+
 	num_tracks = rospy.get_param("~num_tracks", 27)
 	track_width = rospy.get_param("~track_width", 0.1)
-	track_length = rospy.get_param("~track_width", 0.04)
+	track_length = rospy.get_param("~track_length", 0.04)
 	track_height = rospy.get_param("~track_height", 0.015)
 	track_mass = rospy.get_param("~track_mass", 0.1)
 
@@ -85,13 +96,13 @@ class TrackedVehicle:
             chassis.mass = 2.0
             chassis.pose.orientation.w = 1.0
             chassis.scale.x = wheel_spacing * 0.55
-            chassis.scale.y = 0.38
+            chassis.scale.y = 0.3
             chassis.scale.z = 0.07
             chassis.pose.position.z = radius
             add_compound_request.body.append(chassis)
 
             tracks_per_circumference = 10
-            wheel_circumference = (track_width + gap / 2.0) * tracks_per_circumference
+            wheel_circumference = (track_length * 2.0 + gap) * tracks_per_circumference
             wheel_radius = wheel_circumference / (2.0 * math.pi)
             for i in range(2):
                 wheel = Body()
@@ -100,7 +111,7 @@ class TrackedVehicle:
                 wheel.mass = 1.0
                 wheel.pose.orientation.w = 1.0
                 wheel.scale.x = wheel_radius
-                wheel.scale.y = track_width
+                wheel.scale.y = track_width * 1.1
                 wheel.scale.z = wheel_radius
                 wheel.pose.position.x = -wheel_spacing / 2.0 + i * wheel_spacing
                 wheel.pose.position.y = -0.5 + 1.0 * k
@@ -121,7 +132,7 @@ class TrackedVehicle:
                     tooth.pose.orientation.z = rot[2]
                     tooth.pose.orientation.w = rot[3]
                     tooth.scale.x = gap * 0.45
-                    tooth.scale.y = track_width * 0.9
+                    tooth.scale.y = track_width
                     tooth.scale.z = gap * 0.45
                     x = wheel_radius * math.cos(angle)
                     z = wheel_radius * math.sin(angle)

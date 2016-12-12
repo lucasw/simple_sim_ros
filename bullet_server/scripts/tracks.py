@@ -39,10 +39,10 @@ class TrackedVehicle:
         obstacle.scale.z = 0.13
         add_compound_request.body.append(obstacle)
 
-	num_tracks = rospy.get_param("~num_tracks", 27)
+	num_tracks = rospy.get_param("~num_tracks", 25)
 	track_width = rospy.get_param("~track_width", 0.1)
 	track_length = rospy.get_param("~track_length", 0.04)
-	track_height = rospy.get_param("~track_height", 0.015)
+	track_height = rospy.get_param("~track_height", 0.02)
 	track_mass = rospy.get_param("~track_mass", 0.1)
 
         gap = rospy.get_param("~gap", 0.04)
@@ -131,9 +131,9 @@ class TrackedVehicle:
                     tooth.pose.orientation.y = rot[1]
                     tooth.pose.orientation.z = rot[2]
                     tooth.pose.orientation.w = rot[3]
-                    tooth.scale.x = gap * 0.45
+                    tooth.scale.x = gap * 0.7
                     tooth.scale.y = track_width
-                    tooth.scale.z = gap * 0.45
+                    tooth.scale.z = gap * 0.35
                     x = wheel_radius * math.cos(angle)
                     z = wheel_radius * math.sin(angle)
                     tooth.pose.position.x = wheel.pose.position.x + x
@@ -174,6 +174,36 @@ class TrackedVehicle:
                 axle.axis_in_a.y = 1.0
                 axle.axis_in_b.y = 1.0
                 add_compound_request.constraint.append(axle)
+
+                # try to constraint the track- could also try two cones
+                cover = Body()
+                cover.type = Body.CYLINDER
+                cover.name = "cover_" + str(k) + "_" + str(i)
+                cover.mass = 1.0
+                cover.pose.orientation.w = 1.0
+                cover.scale.x = wheel_radius * 1.1
+                cover.scale.y = track_width * 0.1
+                cover.scale.z = wheel_radius * 1.1
+                cover.pose.position.x = -wheel_spacing / 2.0 + i * wheel_spacing
+                cover.pose.position.y = -0.5 - track_width + (1.0 + 2.0 * track_width) * k
+                cover.pose.position.z = radius
+                add_compound_request.body.append(cover)
+
+                axle = Constraint()
+                axle.name = "cover_constraint_" + str(k) + "_" + str(i)
+                axle.body_a = wheel.name
+                axle.body_b = cover.name
+                axle.type = Constraint.HINGE
+                axle.lower_ang_lim = -0.05
+                axle.upper_ang_lim = 0.05
+                axle.max_motor_impulse = 0.0
+                axle.pivot_in_a.x = 0.0
+                axle.pivot_in_a.y = cover.pose.position.y - wheel.pose.position.y
+                axle.pivot_in_b.y = 0.0
+                axle.axis_in_a.y = 1.0
+                axle.axis_in_b.y = 1.0
+                add_compound_request.constraint.append(axle)
+
 
         # print add_compound_request
         try:

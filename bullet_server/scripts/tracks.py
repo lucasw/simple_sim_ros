@@ -45,124 +45,126 @@ class TrackedVehicle:
 	track.scale.y = track_width
         track.scale.z = track_height
 
-        add_track = True
-        if add_track:
-            for i in range(num_tracks):
-                trk = copy.deepcopy(track)
-                trk.name = "track_" + str(i)
-                fr = float(i) / float(num_tracks)
-                angle = 2.0 * math.pi * fr
-                rot = tf.transformations.quaternion_from_euler(0, -angle + math.pi/2.0, 0)
-                trk.pose.orientation.x = rot[0]
-                trk.pose.orientation.y = rot[1]
-                trk.pose.orientation.z = rot[2]
-                trk.pose.orientation.w = rot[3]
+        for k in range(2):
 
-                trk.pose.position.x = 1.5 * radius * math.cos(angle)
-                trk.pose.position.y = -0.5
-                trk.pose.position.z = 1.2 * radius + 0.75 * radius * math.sin(angle)
-                add_compound_request.body.append(trk)
+            add_track = True
+            if add_track:
+                for i in range(num_tracks):
+                    trk = copy.deepcopy(track)
+                    trk.name = "track_" + str(k) + "_" + str(i)
+                    fr = float(i) / float(num_tracks)
+                    angle = 2.0 * math.pi * fr
+                    rot = tf.transformations.quaternion_from_euler(0, -angle + math.pi/2.0, 0)
+                    trk.pose.orientation.x = rot[0]
+                    trk.pose.orientation.y = rot[1]
+                    trk.pose.orientation.z = rot[2]
+                    trk.pose.orientation.w = rot[3]
 
-            # add hinges between tracks
-            for i in range(num_tracks):
-                constraint = Constraint()
-                constraint.name = "hinge_" + str(i)
-                constraint.body_a = "track_" + str(i)
-                constraint.body_b = "track_" + str((i + 1) % num_tracks)
-                constraint.type = Constraint.HINGE
-                constraint.pivot_in_a.x = -(track_length / 2.0 + gap)
-                constraint.pivot_in_b.x = (track_length / 2.0 + gap)
-                constraint.axis_in_a.y = 1.0
-                constraint.axis_in_b.y = 1.0
-                add_compound_request.constraint.append(constraint)
+                    trk.pose.position.x = 1.5 * radius * math.cos(angle)
+                    trk.pose.position.y = -0.5 + k * 1.0
+                    trk.pose.position.z = 1.2 * radius + 0.75 * radius * math.sin(angle)
+                    add_compound_request.body.append(trk)
 
-        wheel_spacing = rospy.get_param("~wheel_spacing", 1.2)
-        chassis = Body()
-        chassis.name = "chassis"
-        chassis.type = Body.BOX
-        chassis.mass = 2.0
-        chassis.pose.orientation.w = 1.0
-        chassis.scale.x = wheel_spacing / 2.0
-        chassis.scale.y = 0.38
-        chassis.scale.z = 0.07
-        chassis.pose.position.z = radius
-        add_compound_request.body.append(chassis)
+                # add hinges between tracks
+                for i in range(num_tracks):
+                    constraint = Constraint()
+                    constraint.name = "hinge_" + str(k) + "_" + str(i)
+                    constraint.body_a = "track_" + str(k) + "_" + str(i)
+                    constraint.body_b = "track_" + str(k) + "_" + str((i + 1) % num_tracks)
+                    constraint.type = Constraint.HINGE
+                    constraint.pivot_in_a.x = -(track_length / 2.0 + gap)
+                    constraint.pivot_in_b.x = (track_length / 2.0 + gap)
+                    constraint.axis_in_a.y = 1.0
+                    constraint.axis_in_b.y = 1.0
+                    add_compound_request.constraint.append(constraint)
 
-        tracks_per_circumference = 10
-        wheel_circumference = (track_width + gap / 2.0) * tracks_per_circumference
-        wheel_radius = wheel_circumference / (2.0 * math.pi)
-        for i in range(2):
-            wheel = Body()
-            wheel.type = Body.CYLINDER
-            wheel.name = "wheel_" + str(i)
-            wheel.mass = 1.0
-            wheel.pose.orientation.w = 1.0
-            wheel.scale.x = wheel_radius
-            wheel.scale.y = track_width
-            wheel.scale.z = wheel_radius
-            wheel.pose.position.x = -wheel_spacing / 2.0 + i * wheel_spacing
-            wheel.pose.position.y = -0.5
-            wheel.pose.position.z = radius
-            add_compound_request.body.append(wheel)
+            wheel_spacing = rospy.get_param("~wheel_spacing", 1.1)
+            chassis = Body()
+            chassis.name = "chassis"
+            chassis.type = Body.BOX
+            chassis.mass = 2.0
+            chassis.pose.orientation.w = 1.0
+            chassis.scale.x = wheel_spacing * 0.55
+            chassis.scale.y = 0.38
+            chassis.scale.z = 0.07
+            chassis.pose.position.z = radius
+            add_compound_request.body.append(chassis)
 
-            for j in range(tracks_per_circumference):
-                fr = float(j) / float(tracks_per_circumference)
-                angle = fr * 2.0 * math.pi
-                tooth = Body()
-                tooth.name = "tooth_" + str(i) + "_" + str(j)
-                tooth.type = Body.BOX
-                tooth.mass = 0.1
-                tooth_angle = angle
-                rot = tf.transformations.quaternion_from_euler(0, tooth_angle - math.pi / 2.0, 0)
-                tooth.pose.orientation.x = rot[0]
-                tooth.pose.orientation.y = rot[1]
-                tooth.pose.orientation.z = rot[2]
-                tooth.pose.orientation.w = rot[3]
-                tooth.scale.x = gap * 0.45
-                tooth.scale.y = track_width * 0.9
-                tooth.scale.z = gap * 0.45
-                x = wheel_radius * math.cos(angle)
-                z = wheel_radius * math.sin(angle)
-                tooth.pose.position.x = wheel.pose.position.x + x
-                tooth.pose.position.y = wheel.pose.position.y
-                tooth.pose.position.z = wheel.pose.position.z + z
-                add_compound_request.body.append(tooth)
+            tracks_per_circumference = 10
+            wheel_circumference = (track_width + gap / 2.0) * tracks_per_circumference
+            wheel_radius = wheel_circumference / (2.0 * math.pi)
+            for i in range(2):
+                wheel = Body()
+                wheel.type = Body.CYLINDER
+                wheel.name = "wheel_" + str(k) + "_" + str(i)
+                wheel.mass = 1.0
+                wheel.pose.orientation.w = 1.0
+                wheel.scale.x = wheel_radius
+                wheel.scale.y = track_width
+                wheel.scale.z = wheel_radius
+                wheel.pose.position.x = -wheel_spacing / 2.0 + i * wheel_spacing
+                wheel.pose.position.y = -0.5 + 1.0 * k
+                wheel.pose.position.z = radius
+                add_compound_request.body.append(wheel)
 
-                if True:
-                    fixed = Constraint()
-                    fixed.name = "attach_" + tooth.name
-                    fixed.body_a = wheel.name
-                    fixed.body_b = tooth.name
-                    fixed.type = Constraint.HINGE
-                    # TODO(lucasw) this doesn't match what rot does above- as the sim
-                    # start the tooth rotates to this constraint
-                    fixed.lower_ang_lim = tooth_angle - 0.02
-                    fixed.upper_ang_lim = tooth_angle + 0.02
-                    # TODO(lucasw) Something is broken with fixed
-                    # fixed.type = Constraint.FIXED
-                    fixed.pivot_in_a.x = x
-                    fixed.pivot_in_a.y = 0
-                    fixed.pivot_in_a.z = z
-                    fixed.axis_in_a.y = 1.0
-                    fixed.axis_in_b.y = 1.0
-                    add_compound_request.constraint.append(fixed)
+                for j in range(tracks_per_circumference):
+                    fr = float(j) / float(tracks_per_circumference)
+                    angle = fr * 2.0 * math.pi
+                    tooth = Body()
+                    tooth.name = "tooth_" + str(k) + "_" + str(i) + "_" + str(j)
+                    tooth.type = Body.BOX
+                    tooth.mass = 0.1
+                    tooth_angle = angle
+                    rot = tf.transformations.quaternion_from_euler(0, tooth_angle - math.pi / 2.0, 0)
+                    tooth.pose.orientation.x = rot[0]
+                    tooth.pose.orientation.y = rot[1]
+                    tooth.pose.orientation.z = rot[2]
+                    tooth.pose.orientation.w = rot[3]
+                    tooth.scale.x = gap * 0.45
+                    tooth.scale.y = track_width * 0.9
+                    tooth.scale.z = gap * 0.45
+                    x = wheel_radius * math.cos(angle)
+                    z = wheel_radius * math.sin(angle)
+                    tooth.pose.position.x = wheel.pose.position.x + x
+                    tooth.pose.position.y = wheel.pose.position.y
+                    tooth.pose.position.z = wheel.pose.position.z + z
+                    add_compound_request.body.append(tooth)
 
-            axle = Constraint()
-            axle.name = "wheel_motor_" + str(i)
-            axle.body_a = "chassis"
-            axle.body_b = wheel.name
-            axle.type = Constraint.HINGE
-            axle.lower_ang_lim = -4.0
-            axle.upper_ang_lim = 4.0
-            axle.max_motor_impulse = 25000.0
-            axle.pivot_in_a.x = wheel.pose.position.x
-            axle.pivot_in_a.y = -0.5
-            axle.pivot_in_b.y = 0.0
-            axle.axis_in_a.y = 1.0
-            axle.axis_in_b.y = 1.0
-            add_compound_request.constraint.append(axle)
+                    if True:
+                        fixed = Constraint()
+                        fixed.name = "attach_" + tooth.name
+                        fixed.body_a = wheel.name
+                        fixed.body_b = tooth.name
+                        fixed.type = Constraint.HINGE
+                        # TODO(lucasw) this doesn't match what rot does above- as the sim
+                        # start the tooth rotates to this constraint
+                        fixed.lower_ang_lim = tooth_angle - 0.02
+                        fixed.upper_ang_lim = tooth_angle + 0.02
+                        # TODO(lucasw) Something is broken with fixed
+                        # fixed.type = Constraint.FIXED
+                        fixed.pivot_in_a.x = x
+                        fixed.pivot_in_a.y = 0
+                        fixed.pivot_in_a.z = z
+                        fixed.axis_in_a.y = 1.0
+                        fixed.axis_in_b.y = 1.0
+                        add_compound_request.constraint.append(fixed)
 
-        print add_compound_request
+                axle = Constraint()
+                axle.name = "wheel_motor_" + str(k) + "_" + str(i)
+                axle.body_a = "chassis"
+                axle.body_b = wheel.name
+                axle.type = Constraint.HINGE
+                axle.lower_ang_lim = -4.0
+                axle.upper_ang_lim = 4.0
+                axle.max_motor_impulse = 25000.0
+                axle.pivot_in_a.x = wheel.pose.position.x
+                axle.pivot_in_a.y = -0.5 + 1.0 * k
+                axle.pivot_in_b.y = 0.0
+                axle.axis_in_a.y = 1.0
+                axle.axis_in_b.y = 1.0
+                add_compound_request.constraint.append(axle)
+
+        # print add_compound_request
         try:
             add_compound_response = self.add_compound(add_compound_request)
             rospy.loginfo(add_compound_response)

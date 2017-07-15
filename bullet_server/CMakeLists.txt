@@ -158,7 +158,9 @@ include_directories(
 # add_dependencies(bullet_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(bullet_server src/bullet_server.cpp)
+add_executable(bullet_server
+  src/bullet_server.cpp
+  src/constraint.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2016 Lucas Walter
-# 
+#
 # create a number of bodies and joints in the bullet server
 
 import random
@@ -62,5 +62,3 @@ while not rospy.is_shutdown():
         constraint_pub.publish(axel)
         rospy.loginfo(axel)
         rospy.sleep(sleep_time)
-
-

@@ -111,7 +111,7 @@ class StewartPlatform:
             top_cylinder.scale.z = thickness / 2.3
             add_compound_request.body.append(top_cylinder)
 
-            # connect each top cylinder to paired bottom cylinder with slider constraint 
+            # connect each top cylinder to paired bottom cylinder with slider constraint
             prismatic = Constraint()
             prismatic.name = "prismatic_" + str(i)
             prismatic.body_a = bot_cylinder.name

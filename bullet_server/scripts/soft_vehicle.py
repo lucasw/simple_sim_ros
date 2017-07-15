@@ -48,7 +48,6 @@ class SoftVehicle:
                                       0.1, 0.05, 0.01)
             add_compound_request.body.append(obstacle)
 
-
         chassis = make_rigid_box("chassis", 1.5, xs, ys, zs, 1.8, 0.5, 0.3)
         add_compound_request.body.append(chassis)
 
@@ -79,7 +78,6 @@ class SoftVehicle:
         add_compound_request.body.append(motor)
         add_compound_request.constraint.append(hinge)
         add_compound_request.soft_body.append(wheel)
-
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

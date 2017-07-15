@@ -2,6 +2,8 @@
 
 import rospy
 
+from pyassimp import pyassimp
+
 rospy.init_node("stl")
 
 file_name = rospy.get_param("~file_name")
@@ -15,7 +17,6 @@ if False:
     print polydata.GetPoints()
     print polydata.GetPolys()
 
-from pyassimp import pyassimp
 
 scene = pyassimp.load(file_name)
 print scene

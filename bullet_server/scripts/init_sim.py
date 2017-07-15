@@ -55,4 +55,3 @@ class InteractiveMarkerSpawn:
 if __name__ == '__main__':
     rospy.init_node('init_spawn')
     imarker_spawn = InteractiveMarkerSpawn()
-

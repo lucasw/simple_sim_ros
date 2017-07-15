@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2016 Lucas Walter
-# 
+#
 # create a number of bodies and joints in the bullet server
 
 import rospkg

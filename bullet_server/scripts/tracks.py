@@ -39,21 +39,21 @@ class TrackedVehicle:
         obstacle.scale.z = 0.07
         add_compound_request.body.append(obstacle)
 
-	num_tracks = rospy.get_param("~num_tracks", 25)
-	track_width = rospy.get_param("~track_width", 0.1)
-	track_length = rospy.get_param("~track_length", 0.04)
-	track_height = rospy.get_param("~track_height", 0.02)
-	track_mass = rospy.get_param("~track_mass", 0.1)
+        num_tracks = rospy.get_param("~num_tracks", 25)
+        track_width = rospy.get_param("~track_width", 0.1)
+        track_length = rospy.get_param("~track_length", 0.04)
+        track_height = rospy.get_param("~track_height", 0.02)
+        track_mass = rospy.get_param("~track_mass", 0.1)
 
         gap = rospy.get_param("~gap", 0.04)
         # spawn in a circle for now
         radius = (track_width + gap) * num_tracks / (2.0 * math.pi)
 
-	track = Body()
+        track = Body()
         track.type = Body.BOX
-	track.mass = track_mass
-	track.scale.x = track_length
-	track.scale.y = track_width
+        track.mass = track_mass
+        track.scale.x = track_length
+        track.scale.y = track_width
         track.scale.z = track_height
 
         for k in range(2):

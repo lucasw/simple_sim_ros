@@ -52,6 +52,7 @@
 #include <std_msgs/Float64.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
+#include <vector>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -61,7 +62,7 @@ class SoftBody;
 
 // TODO(lucasw) replace this with something better, numbers aren't random enough
 // http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
-unsigned short hash(const char *str);
+uint16_t hash(const char *str);
 
 class BulletServer
 {

@@ -9,6 +9,7 @@ from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, SoftCo
 from bullet_server.srv import *
 from bullet_server.utility import *
 
+
 class SoftBodyDemo:
     def __init__(self):
         rospy.wait_for_service('add_compound')

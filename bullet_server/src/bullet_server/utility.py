@@ -9,6 +9,7 @@ from bullet_server.msg import Anchor, Body, Constraint, Face, Link
 from bullet_server.msg import Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
 
+
 def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht,
                    roll=0, pitch=0, yaw=0):
     body = Body()
@@ -28,6 +29,7 @@ def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht,
     body.scale.y = ln
     body.scale.z = ht
     return body
+
 
 def make_rigid_cylinder(name, mass, xs, ys, zs, radius, thickness,
                         roll=math.pi/2.0, pitch=0, yaw=0):
@@ -49,6 +51,7 @@ def make_rigid_cylinder(name, mass, xs, ys, zs, radius, thickness,
     body.scale.z = radius
     return body
 
+
 # load in default values since otherwise the default is zero
 def make_soft_config():
     config = SoftConfig()
@@ -67,6 +70,7 @@ def make_soft_config():
     config.maxvolume = 1.0
     config.timescale = 1.0
     return config
+
 
 def make_soft_cube(name, node_mass, xs, ys, zs, ln,
                    nx=4, ny=4, nz=4, flip=1.0):
@@ -108,6 +112,7 @@ def make_soft_cube(name, node_mass, xs, ys, zs, ln,
 
     return body
 
+
 def make_tetra(node_indices, make_links=True):
     tetra = Tetra()
     tetra.node_indices = node_indices
@@ -122,8 +127,9 @@ def make_tetra(node_indices, make_links=True):
 
     return tetra, links
 
+
 def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
-                   nx=2, ny=2, nz=2, flip=1.0):
+                         nx=2, ny=2, nz=2, flip=1.0):
     body = SoftBody()
     body.config = make_soft_config()
     body.name = name
@@ -179,6 +185,7 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
     body.material.append(mat)
 
     return body
+
 
 def make_wheel_assembly(prefix, xs, ys, zs, flip=1.0):
     motor_mass = 0.2
@@ -249,4 +256,3 @@ def make_wheel_assembly(prefix, xs, ys, zs, flip=1.0):
                     wheel.anchor.append(anchor)
 
     return (motor, hinge, wheel)
-

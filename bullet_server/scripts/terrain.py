@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright 2016 Lucas Walter
-# 
+#
 # create a number of bodies and joints in the bullet server
 
 import cv2
@@ -34,4 +34,3 @@ heightfield.image.header.frame_id = "map"
 heightfield_pub.publish(heightfield)
 
 rospy.sleep(sleep_time * 9)
-

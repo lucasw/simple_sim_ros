@@ -39,7 +39,7 @@ class InteractiveMarkerSpawn:
         self.ts.transform.rotation.w = 1.0
         self.timer = rospy.Timer(rospy.Duration(0.1), self.update)
 
-	self.count = 0
+        self.count = 0
         self.server = InteractiveMarkerServer("body_spawn")
         self.im = InteractiveMarker()
         self.im.header.frame_id = self.spawn_frame
@@ -255,12 +255,12 @@ class InteractiveMarkerSpawn:
         if feedback.event_type == InteractiveMarkerFeedback.MENU_SELECT:
             # feedback.control_name == "spawn_menu":
             if feedback.menu_entry_id == 1:
-		self.count += 1
-		# rospy.loginfo(feedback)
-		body = Body()
-		body.name = "imarker_spawned_body_" + str(self.count)
+                self.count += 1
+                # rospy.loginfo(feedback)
+                body = Body()
+                body.name = "imarker_spawned_body_" + str(self.count)
                 # TODO(lucasw)
-		body.mass = 1.0
+                body.mass = 1.0
                 try:
                     trans = self.tf_buffer.lookup_transform("map", self.spawn_frame,
                                                             rospy.Time())
@@ -270,17 +270,17 @@ class InteractiveMarkerSpawn:
                     rospy.logerr("tf2_ros exception")
                     rospy.logerr(e)
                     return
-		body.pose.position.x = trans.transform.translation.x
-		body.pose.position.y = trans.transform.translation.y
-		body.pose.position.z = trans.transform.translation.z
-		body.pose.orientation = trans.transform.rotation
+                body.pose.position.x = trans.transform.translation.x
+                body.pose.position.y = trans.transform.translation.y
+                body.pose.position.z = trans.transform.translation.z
+                body.pose.orientation = trans.transform.rotation
 
                 # TODO(lucasw) add twist linear with another interactive tf,
                 # and twist angular with a second interactive tf?
-		body.type = Body.BOX
-		body.scale.x = self.im.controls[0].markers[0].scale.x / 2.0
-		body.scale.y = self.im.controls[0].markers[0].scale.y / 2.0
-		body.scale.z = self.im.controls[0].markers[0].scale.z / 2.0
+                body.type = Body.BOX
+                body.scale.x = self.im.controls[0].markers[0].scale.x / 2.0
+                body.scale.y = self.im.controls[0].markers[0].scale.y / 2.0
+                body.scale.z = self.im.controls[0].markers[0].scale.z / 2.0
 
                 # can't get this to work
                 # http://answers.ros.org/question/249433/tf2_ros-buffer-transform-pointstamped/
@@ -307,24 +307,23 @@ class InteractiveMarkerSpawn:
                             trans.transform.rotation.w]
                     mat = tf.transformations.quaternion_matrix(quat)
                     pt_in_map = numpy.dot(mat, self.linear_vel_pt)
-		    body.twist.linear.x = pt_in_map[0]
-		    body.twist.linear.y = pt_in_map[1]
-		    body.twist.linear.z = pt_in_map[2]
+                    body.twist.linear.x = pt_in_map[0]
+                    body.twist.linear.y = pt_in_map[1]
+                    body.twist.linear.z = pt_in_map[2]
 
                 # rospy.loginfo(body.twist.linear)
 
-		add_compound_request = AddCompoundRequest()
-		add_compound_request.remove = False
-		add_compound_request.body.append(body)
+                add_compound_request = AddCompoundRequest()
+                add_compound_request.remove = False
+                add_compound_request.body.append(body)
 
-		try:
-		    add_compound_response = self.add_compound(add_compound_request)
-		    rospy.loginfo(add_compound_response)
-		except rospy.service.ServiceException as e:
-		    rospy.logerr(e)
+                try:
+                    add_compound_response = self.add_compound(add_compound_request)
+                    rospy.loginfo(add_compound_response)
+                except rospy.service.ServiceException as e:
+                    rospy.logerr(e)
 
 if __name__ == '__main__':
     rospy.init_node('imarker_spawn')
     imarker_spawn = InteractiveMarkerSpawn()
     rospy.spin()
-

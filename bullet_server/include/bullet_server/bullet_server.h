@@ -112,7 +112,7 @@ public:
   ~BulletServer();
   void update();
   void removeConstraint(const Constraint* constraint,
-      const bool remove_from_bodies = true);
+      const bool remove_from_bodies = false);
   std::map<std::string, Body*> bodies_;
 };
 

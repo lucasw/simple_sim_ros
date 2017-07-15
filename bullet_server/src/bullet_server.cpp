@@ -8,7 +8,7 @@
   ros messages or service calls create body primitives in the simulation.
   Send the position and attitude of each body to tf.
 
-  Maybe publish Markers for rviz, but could leave that to client- ideally 
+  Maybe publish Markers for rviz, but could leave that to client- ideally
   no visualization at all would be done here.
 
   No joints initially, or actuation, or sensors.
@@ -50,6 +50,7 @@
 #include <std_msgs/Float64.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
+#include <vector>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -59,15 +60,17 @@ class SoftBody;
 
 // TODO(lucasw) replace this with something better, numbers aren't random enough
 // http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
-unsigned short hash(const char *str) {
-    unsigned short hash = 5381;
-    int c;
+uint16_t hash(const char *str)
+{
+  uint16_t hash = 5381;
+  int c;
 
-    while (c = *str++) {
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    }
+  while (c = *str++)
+  {
+    hash = ((hash << 5) + hash) + c;  // hash * 33 + c
+  }
 
-    return hash;
+  return hash;
 }
 
 Constraint::Constraint(
@@ -434,10 +437,10 @@ int BulletServer::init()
   soft_body_world_info_.m_gravity = gravity;
   // sdf -> 'signed distance field'
   // sparse version of soft body to make collision detection easier
-  soft_body_world_info_.air_density   = (btScalar)1.2;
+  soft_body_world_info_.air_density = (btScalar)1.2;
   soft_body_world_info_.water_density = 0;
-  soft_body_world_info_.water_offset    = 0;
-  soft_body_world_info_.water_normal    = btVector3(0,0,0);
+  soft_body_world_info_.water_offset = 0;
+  soft_body_world_info_.water_normal = btVector3(0, 0, 0);
   soft_body_world_info_.m_sparsesdf.Initialize();
 
   // TODO(lucasw) make a service set where the ground plane is, if any
@@ -480,7 +483,7 @@ bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
   {
     if (req.remove)
     {
-      // TODO(lucasw) if name doesn't exist, then return false? 
+      // TODO(lucasw) if name doesn't exist, then return false?
       const std::string name = req.body[i].name;
       if (bodies_.count(name) > 0)
       {
@@ -693,7 +696,7 @@ void BulletServer::update()
 }
 
 void BulletServer::removeConstraint(const Constraint* constraint,
-    const bool remove_from_bodies=false)
+    const bool remove_from_bodies = false)
 {
   if (remove_from_bodies)
   {
@@ -702,7 +705,7 @@ void BulletServer::removeConstraint(const Constraint* constraint,
   }
 
   // This doesn't delete the constraint just removes it (most likely
-  // because it is about to be deleted from the a Body it is 
+  // because it is about to be deleted from the a Body it is
   // attached to).
   ROS_DEBUG_STREAM("BulletServer: remove constraint " << constraint->name_);
   constraints_.erase(constraint->name_);
@@ -930,7 +933,7 @@ Body::Body(BulletServer* parent,
   // and have id be a hash of the name?
   for (size_t i = 0; i < marker_array_.markers.size(); ++i)
   {
-    marker_array_.markers[i].ns = "bodies"; // name;
+    marker_array_.markers[i].ns = "bodies";  // name;
     marker_array_.markers[i].id = hash(name.c_str()) + i * 10000;
     marker_array_.markers[i].header.frame_id = name;
     // marker_.header.stamp = ros::Time::now();
@@ -981,7 +984,7 @@ Body::Body(
   // TODO(lucasw) Convert image BGR2GRAY if it isn't already?
   // Also make sure is uchar mono8- support floating types later
 
-  // TODO(lucasw) 
+  // TODO(lucasw)
   // This needs to be true: height_scale * max(image.data) = max_height
   // so enforce that here
   // TODO(lucasw) the terrain may get center automatically,
@@ -1028,7 +1031,7 @@ Body::Body(
 
     ROS_INFO_STREAM("channels " << image.channels());
     // TODO(lucasw) need a height field rviz display type
-    // or at least a triangle strip, this has tons of 
+    // or at least a triangle strip, this has tons of
     // duplicate triangles
     for (size_t y = 0; y < image.size().height - 1; ++y)
     {
@@ -1113,7 +1116,7 @@ Body::Body(
     // create indicies
     ROS_DEBUG_STREAM("channels " << image.channels());
     // TODO(lucasw) need a height field rviz display type
-    // or at least a triangle strip, this has tons of 
+    // or at least a triangle strip, this has tons of
     // duplicate triangles
     int index = 0;
     for (size_t y = 0; y < ht - 1; ++y)
@@ -1165,7 +1168,7 @@ Body::Body(
         indices_,
         index_stride,
         total_vertices,
-        (btScalar*) &vertices_[0].x(),
+        const_cast<btScalar*>(reinterpret_cast<const btScalar*>(&vertices_[0].x())),
         vert_stride);
 
     const bool use_quantized_aabb_compression = true;
@@ -1174,7 +1177,7 @@ Body::Body(
   }
   #endif
 
-  // TODO(lucasw) calculate btTransform from frame_id 
+  // TODO(lucasw) calculate btTransform from frame_id
   motion_state_ = new btDefaultMotionState(tf);
   const btScalar mass = 0.0;
   btVector3 fall_inertia(0, 0, 0);
@@ -1275,7 +1278,7 @@ void Body::addConstraint(Constraint* constraint)
 void Body::removeConstraint(const Constraint* constraint)
 {
   // This doesn't delete the constraint just removes it (most likely
-  // because it is about to be deleted from the other Body it is 
+  // because it is about to be deleted from the other Body it is
   // attached to.
   ROS_DEBUG_STREAM("Body " << name_ << ": remove constraint " << constraint->name_);
   constraints_.erase(constraint->name_);
@@ -1625,3 +1628,4 @@ void SoftBody::update()
 
   marker_array_pub_->publish(marker_array_);
 }
+

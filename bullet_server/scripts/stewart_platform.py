@@ -12,8 +12,10 @@ from bullet_server.srv import *
 
 class StewartPlatform:
     def __init__(self):
+        rospy.loginfo("waiting for server add_compound")
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
+        rospy.loginfo("connected to service")
         add_compound_request = AddCompoundRequest()
         add_compound_request.remove = rospy.get_param('~remove', False)
 

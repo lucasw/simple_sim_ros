@@ -24,8 +24,6 @@
 #include <boost/functional/hash.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-#include <bullet/BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
-#include <bullet/BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <bullet_server/constraint.h>
 #include <bullet_server/AddBody.h>
 #include <bullet_server/AddCompound.h>
@@ -116,34 +114,6 @@ public:
   void removeConstraint(const Constraint* constraint,
       const bool remove_from_bodies = true);
   std::map<std::string, Body*> bodies_;
-};
-
-// TODO(lucasw) make a common base class
-class SoftBody
-{
-  BulletServer* parent_;
-  btSoftRigidDynamicsWorld* dynamics_world_;
-  tf::TransformBroadcaster* br_;
-  ros::Publisher* marker_array_pub_;
-  visualization_msgs::MarkerArray marker_array_;
-  const std::string name_;
-public:
-  SoftBody(BulletServer* parent,
-      const std::string name,
-      btSoftBodyWorldInfo* soft_body_world_info,
-      const std::vector<bullet_server::Node>& nodes,
-      const std::vector<bullet_server::Link>& links,
-      const std::vector<bullet_server::Face>& faces,
-      const std::vector<bullet_server::Tetra>& tetras,
-      const std::vector<bullet_server::Material>& materials,
-      const std::vector<bullet_server::Anchor>& anchors,
-      const bullet_server::SoftConfig& config,
-      btSoftRigidDynamicsWorld* dynamics_world,
-      tf::TransformBroadcaster* br,
-      ros::Publisher* marker_array_pub);
-  ~SoftBody();
-  void update();
-  btSoftBody* soft_body_;
 };
 
 #endif  // BULLET_SERVER_BULLET_SERVER_H

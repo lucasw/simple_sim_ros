@@ -161,7 +161,8 @@ include_directories(
 add_executable(bullet_server
   src/body.cpp
   src/bullet_server.cpp
-  src/constraint.cpp)
+  src/constraint.cpp
+  src/soft_body.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

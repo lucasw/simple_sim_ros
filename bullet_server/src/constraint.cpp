@@ -40,6 +40,7 @@
 #include <bullet_server/SoftBody.h>
 #include <bullet_server/SoftConfig.h>
 #include <bullet_server/Tetra.h>
+#include <bullet_server/body.h>
 #include <bullet_server/bullet_server.h>
 #include <bullet_server/constraint.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -54,10 +55,6 @@
 #include <vector>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-
-class Body;
-class Constraint;
-class SoftBody;
 
 Constraint::Constraint(
       const std::string name,

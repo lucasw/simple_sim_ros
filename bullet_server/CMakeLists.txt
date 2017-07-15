@@ -159,6 +159,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(bullet_server
+  src/body.cpp
   src/bullet_server.cpp
   src/constraint.cpp)
 

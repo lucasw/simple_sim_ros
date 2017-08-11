@@ -87,6 +87,8 @@ class TrackedVehicle:
                     constraint.pivot_in_b.x = (track_length / 2.0 + gap)
                     constraint.axis_in_a.y = 1.0
                     constraint.axis_in_b.y = 1.0
+                    constraint.enable_pos_pub = False
+                    constraint.enable_motor_sub = False
                     add_compound_request.constraint.append(constraint)
 
             wheel_spacing = rospy.get_param("~wheel_spacing", 1.1)
@@ -158,6 +160,8 @@ class TrackedVehicle:
                         fixed.pivot_in_a.z = z
                         fixed.axis_in_a.y = 1.0
                         fixed.axis_in_b.y = 1.0
+                        fixed.enable_pos_pub = False
+                        fixed.enable_motor_sub = False
                         add_compound_request.constraint.append(fixed)
 
                 axle = Constraint()
@@ -173,6 +177,8 @@ class TrackedVehicle:
                 axle.pivot_in_b.y = 0.0
                 axle.axis_in_a.y = 1.0
                 axle.axis_in_b.y = 1.0
+                axle.enable_pos_pub = True
+                axle.enable_motor_sub = True
                 add_compound_request.constraint.append(axle)
 
                 # try to constraint the track- could also try two cones
@@ -204,6 +210,8 @@ class TrackedVehicle:
                 axle.pivot_in_b.y = 0.0
                 axle.axis_in_a.y = 1.0
                 axle.axis_in_b.y = 1.0
+                axle.enable_pos_pub = False
+                axle.enable_motor_sub = False
                 add_compound_request.constraint.append(axle)
 
                 # Inner cover
@@ -233,6 +241,8 @@ class TrackedVehicle:
                 axle.pivot_in_b.y = 0.0
                 axle.axis_in_a.y = 1.0
                 axle.axis_in_b.y = 1.0
+                axle.enable_pos_pub = False
+                axle.enable_motor_sub = False
                 add_compound_request.constraint.append(axle)
 
         # print add_compound_request

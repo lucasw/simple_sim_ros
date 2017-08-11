@@ -67,7 +67,9 @@ class Constraint
   btDiscreteDynamicsWorld* dynamics_world_;
   ros::Publisher* marker_array_pub_;
   std::map<std::string, float> command_;
+  const bool enable_pos_pub_;
   std::map<std::string, ros::Publisher> pubs_;
+  const bool enable_motor_sub_;
   std::map<std::string, ros::Subscriber> subs_;
   visualization_msgs::MarkerArray marker_array_;
   float max_motor_impulse_;
@@ -87,6 +89,8 @@ public:
       const double lower_ang_lim,
       const double upper_ang_lim,
       const float max_motor_impulse,
+      const bool enable_pos_pub,
+      const bool enable_motor_sub,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();

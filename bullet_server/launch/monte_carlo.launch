@@ -11,6 +11,7 @@
       <arg name="tf_prefix" value="sim1/"/>
     </include>
   </group>
+  <group if="false">
   <group ns="sim2">
     <include file="$(find bullet_server)/launch/track.launch">
       <arg name="tf_prefix" value="sim2/"/>
@@ -30,6 +31,7 @@
     <include file="$(find bullet_server)/launch/track.launch">
       <arg name="tf_prefix" value="sim5/"/>
     </include>
+  </group>
   </group>
 
   <node pkg="rviz" type="rviz" name="rviz"

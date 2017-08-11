@@ -309,6 +309,8 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       msg->lower_ang_lim,
       msg->upper_ang_lim,
       msg->max_motor_impulse,
+      msg->enable_pos_pub,
+      msg->enable_motor_sub,
       dynamics_world_,
       &marker_array_pub_);
 

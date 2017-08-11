@@ -70,6 +70,8 @@ Constraint::Constraint(
       const double lower_ang_lim,
       const double upper_ang_lim,
       const float max_motor_impulse,
+      const bool enable_pos_pub,
+      const bool enable_motor_sub,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     nh_(name),
@@ -77,6 +79,8 @@ Constraint::Constraint(
     body_a_(body_a),
     body_b_(body_b),
     max_motor_impulse_(max_motor_impulse),
+    enable_pos_pub_(enable_pos_pub),
+    enable_motor_sub_(enable_motor_sub),
     dynamics_world_(dynamics_world),
     marker_array_pub_(marker_array_pub)
 {
@@ -102,12 +106,14 @@ Constraint::Constraint(
 
     // need flag to set no limits?
     hinge->setLimit(lower_ang_lim, upper_ang_lim);
-    pubs_["angular_pos"] = nh_.advertise<std_msgs::Float64>("angular_pos", 1);
+    if (enable_pos_pub_)
+      pubs_["angular_pos"] = nh_.advertise<std_msgs::Float64>("angular_pos", 1);
     const std::string motor_name = "target_ang_motor_vel";
     command_[motor_name] = 0;
-    subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
-                                                         boost::bind(&Constraint::commandCallback,
-                                                                     this, _1, motor_name));
+    if (enable_motor_sub_)
+      subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
+                                                           boost::bind(&Constraint::commandCallback,
+                                                                       this, _1, motor_name));
 
 
     constraint_ = hinge;
@@ -128,13 +134,15 @@ Constraint::Constraint(
         frame_in_b,
         use_linear_reference_frame_a);
 
-    pubs_["linear_pos"] = nh_.advertise<std_msgs::Float64>("linear_pos", 1);
+    if (enable_pos_pub_)
+      pubs_["linear_pos"] = nh_.advertise<std_msgs::Float64>("linear_pos", 1);
     // body_sub_ = nh_.subscribe("add_body", 10, &BulletServer::bodyCallback, this);
     const std::string motor_name = "target_lin_motor_vel";
     command_[motor_name] = 0;
-    subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
-                                                         boost::bind(&Constraint::commandCallback,
-                                                                     this, _1, motor_name));
+    if (enable_motor_sub_)
+      subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
+                                                           boost::bind(&Constraint::commandCallback,
+                                                                       this, _1, motor_name));
 
     // TODO(lucasw) make these controllable via service (or topic?)
     slider->setLowerAngLimit(lower_ang_lim);
@@ -336,7 +344,8 @@ void Constraint::update()
   {
     std_msgs::Float64 msg;
     msg.data = slider->getLinearPos();
-    pubs_["linear_pos"].publish(msg);
+    if (enable_pos_pub_)
+      pubs_["linear_pos"].publish(msg);
 
     // TODO(lucasw) need to be able to disable the motor
     const float vel = command_["target_lin_motor_vel"];
@@ -350,7 +359,8 @@ void Constraint::update()
     // rather than -pi to pi
     std_msgs::Float64 msg;
     msg.data = hinge->getHingeAngle();
-    pubs_["angular_pos"].publish(msg);
+    if (enable_pos_pub_)
+      pubs_["angular_pos"].publish(msg);
 
     const float vel = command_["target_ang_motor_vel"];
     hinge->enableAngularMotor(true, vel, max_motor_impulse_);

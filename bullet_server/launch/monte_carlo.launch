@@ -7,23 +7,29 @@
   the same tree so they can be visualized concurrently. -->
 
   <group ns="sim1">
-    <include file="$(find bullet_server)/launch/bullet_server.launch">
-      <arg name="use_rviz" value="false"/>
+    <include file="$(find bullet_server)/launch/track.launch">
       <arg name="tf_prefix" value="sim1/"/>
     </include>
-    <node pkg="bullet_server" type="init_sim.py" name="init_sim"
-        output="screen">
-    </node>
   </group>
-
   <group ns="sim2">
-    <include file="$(find bullet_server)/launch/bullet_server.launch">
-      <arg name="use_rviz" value="false"/>
+    <include file="$(find bullet_server)/launch/track.launch">
       <arg name="tf_prefix" value="sim2/"/>
     </include>
-    <node pkg="bullet_server" type="init_sim.py" name="init_sim"
-        output="screen">
-    </node>
+  </group>
+  <group ns="sim3">
+    <include file="$(find bullet_server)/launch/track.launch">
+      <arg name="tf_prefix" value="sim3/"/>
+    </include>
+  </group>
+  <group ns="sim4">
+    <include file="$(find bullet_server)/launch/track.launch">
+      <arg name="tf_prefix" value="sim4/"/>
+    </include>
+  </group>
+  <group ns="sim5">
+    <include file="$(find bullet_server)/launch/track.launch">
+      <arg name="tf_prefix" value="sim5/"/>
+    </include>
   </group>
 
   <node pkg="rviz" type="rviz" name="rviz"

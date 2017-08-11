@@ -84,6 +84,7 @@ BulletServer::BulletServer() :
 int BulletServer::init()
 {
   ros::param::get("~rigid_only", rigid_only_);
+  ros::param::get("~tf_prefix", tf_prefix_);
 
   // TODO(lucasw) can soft body only work with btAxisSweep3?
   if (rigid_only_)
@@ -236,7 +237,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
 
   bodies_[msg->name] = new Body(this, msg->name, msg->type, msg->mass,
       msg->pose, msg->twist, msg->scale,
-      dynamics_world_, &br_, &marker_array_pub_);
+      dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
 }
 
 void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg)
@@ -350,7 +351,7 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 
   bodies_[msg->name] = new Body(this, msg->name,
       cv_ptr->image, msg->resolution, msg->height_scale, msg->flip_quad_edges,
-      dynamics_world_, &br_, &marker_array_pub_);
+      dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
 }
 
 

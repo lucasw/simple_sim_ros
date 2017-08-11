@@ -41,6 +41,7 @@ class Constraint;
 class Body
 {
   BulletServer* parent_;
+  std::string tf_prefix_;
   tf::TransformBroadcaster* br_;
   // ros::Publisher* marker_pub_;
   ros::Publisher* marker_array_pub_;
@@ -68,7 +69,8 @@ public:
       geometry_msgs::Vector3 scale,
       btDiscreteDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
-      ros::Publisher* marker_array_pub_);
+      ros::Publisher* marker_array_pub_,
+      const std::string tf_prefix);
   // heightfield
   Body(BulletServer* parent,
     const std::string name,
@@ -81,7 +83,8 @@ public:
     const bool flip_quad_edges,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
-    ros::Publisher* marker_array_pub);
+    ros::Publisher* marker_array_pub,
+    const std::string tf_prefix);
   ~Body();
 
   // keep track of constraints attached to this body

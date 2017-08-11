@@ -78,6 +78,7 @@ class BulletServer
   ros::Subscriber heightfield_sub_;
   void heightfieldCallback(const bullet_server::Heightfield::ConstPtr& msg);
 
+  std::string tf_prefix_;
   tf::TransformBroadcaster br_;
   float period_;
   // ros::Publisher marker_pub_;

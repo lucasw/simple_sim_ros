@@ -62,7 +62,8 @@ Body::Body(BulletServer* parent,
     geometry_msgs::Vector3 scale,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
-    ros::Publisher* marker_array_pub) :
+    ros::Publisher* marker_array_pub,
+    const std::string tf_prefix) :
   parent_(parent),
   vertices_(NULL),
   indices_(NULL),
@@ -73,6 +74,7 @@ Body::Body(BulletServer* parent,
   dynamics_world_(dynamics_world),
   br_(br),
   marker_array_pub_(marker_array_pub),
+  tf_prefix_(tf_prefix),
   state_(-1)
 {
   ROS_DEBUG_STREAM("new Body " << name << " " << type);  // << " " << pose);
@@ -99,6 +101,7 @@ Body::Body(BulletServer* parent,
     marker.scale.x = scale.x * 2;
     marker.scale.y = scale.y * 2;
     marker.scale.z = scale.z * 2;
+    marker.pose.orientation.w = 1.0;
     marker_array_.markers.push_back(marker);
   }
   else if (type == bullet_server::Body::CYLINDER)
@@ -171,6 +174,7 @@ Body::Body(BulletServer* parent,
       marker.pose.position.y = -scale.y + scale.x;
       // marker.pose.orientation.x = 0.70710678;
       // marker.pose.orientation.w = 0.70710678;
+      marker.pose.orientation.w = 0.70710678;
       marker.scale.x = scale.x * 2;
       marker.scale.y = scale.x * 2;
       marker.scale.z = scale.x * 2;
@@ -186,6 +190,7 @@ Body::Body(BulletServer* parent,
       marker.pose.position.y = scale.y - scale.x;
       // marker.pose.orientation.x = 0.70710678;
       // marker.pose.orientation.w = 0.70710678;
+      marker.pose.orientation.w = 0.70710678;
       marker.scale.x = scale.x * 2;
       marker.scale.y = scale.x * 2;
       marker.scale.z = scale.x * 2;
@@ -248,7 +253,7 @@ Body::Body(BulletServer* parent,
   {
     marker_array_.markers[i].ns = "bodies";  // name;
     marker_array_.markers[i].id = hash(name.c_str()) + i * 10000;
-    marker_array_.markers[i].header.frame_id = name;
+    marker_array_.markers[i].header.frame_id = tf_prefix_ + name;
     // marker_.header.stamp = ros::Time::now();
     marker_array_.markers[i].frame_locked = true;
     marker_array_.markers[i].action = visualization_msgs::Marker::ADD;
@@ -273,7 +278,8 @@ Body::Body(
     const bool flip_quad_edges,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
-    ros::Publisher* marker_array_pub) :
+    ros::Publisher* marker_array_pub,
+    const std::string tf_prefix) :
   parent_(parent),
   shape_(NULL),
   rigid_body_(NULL),
@@ -283,7 +289,8 @@ Body::Body(
   index_vertex_arrays_(NULL),
   dynamics_world_(dynamics_world),
   br_(br),
-  marker_array_pub_(marker_array_pub)
+  marker_array_pub_(marker_array_pub),
+  tf_prefix_(tf_prefix)
 {
   // TODO(lucasw) some indications that 2.8x heightfield is screwy
   // also btBvhTriangleMeshShape looks like proper efficient way to do big terrains
@@ -563,8 +570,9 @@ void Body::update()
       trans.getRotation().getY(),
       trans.getRotation().getZ(),
       trans.getRotation().getW()));
+  // TODO(lucasw) "map" also should be a parameter
   br_->sendTransform(tf::StampedTransform(transform, ros::Time::now(),
-    "map", name_));
+    "map", tf_prefix_ + name_));
 
   const int state = rigid_body_->getActivationState();
   if (state != state_)

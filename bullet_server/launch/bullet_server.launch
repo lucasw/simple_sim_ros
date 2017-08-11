@@ -2,6 +2,7 @@
 <launch>
   <arg name="rigid_only" default="true"/>
   <arg name="use_rviz" default="true"/>
+  <arg name="tf_prefix" default=""/>
 
   <node pkg="rviz" type="rviz" name="rviz"
       args="-d $(find bullet_server)/config/bullet_server.rviz"
@@ -10,6 +11,7 @@
   <node pkg="bullet_server" type="bullet_server" name="bullet_server"
       output="screen">
     <param name="rigid_only" value="$(arg rigid_only)"/>
+    <param name="tf_prefix" value="$(arg tf_prefix)"/>
   </node>
 
 </launch>

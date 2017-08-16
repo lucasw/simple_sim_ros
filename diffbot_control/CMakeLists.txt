@@ -4,6 +4,7 @@ project(diffbot_control)
 find_package(catkin REQUIRED
   COMPONENTS
   ros_control_boilerplate
+  std_msgs
 )
 
 catkin_package(

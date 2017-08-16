@@ -41,6 +41,7 @@
 #define RRBOT_CONTROL__RRBOT_HW_INTERFACE_H
 
 #include <ros_control_boilerplate/generic_hw_interface.h>
+#include <vector>
 
 namespace diffbot_control
 {
@@ -63,7 +64,8 @@ public:
 
   /** \breif Enforce limits for all values before writing */
   virtual void enforceLimits(ros::Duration &period);
-
+private:
+  std::vector<ros::Publisher> pubs_;
 };  // class
 
 }  // namespace

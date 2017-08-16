@@ -38,27 +38,27 @@
 */
 
 #include <diffbot_control/diffbot_hw_interface.h>
+#include <std_msgs/Float64.h>
 
 namespace diffbot_control
 {
 
 RRBotHWInterface::RRBotHWInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
-  : ros_control_boilerplate::GenericHWInterface(nh, urdf_model)
+  : ros_control_boilerplate::GenericHWInterface(nh, urdf_model, false)
 {
   ROS_INFO_NAMED("diffbot_hw_interface", "RRBotHWInterface Ready.");
+  for (std::size_t joint_id = 0; joint_id < num_joints_; ++joint_id)
+  {
+    std::stringstream ss;
+    ss << "joint_" << joint_id;
+    pubs_.push_back(nh.advertise<std_msgs::Float64>(ss.str(), 2));
+  }
 }
 
 void RRBotHWInterface::read(ros::Duration &elapsed_time)
 {
-  // ----------------------------------------------------
-  // ----------------------------------------------------
-  // ----------------------------------------------------
-  //
-  // FILL IN YOUR READ COMMAND FROM USB/ETHERNET/ETHERCAT/SERIAL ETC HERE
-  //
-  // ----------------------------------------------------
-  // ----------------------------------------------------
-  // ----------------------------------------------------
+  // TODO(lucasw) a subscriber will set the current joint angle, don't
+  // really need to read it here at all.
 }
 
 void RRBotHWInterface::write(ros::Duration &elapsed_time)
@@ -66,24 +66,16 @@ void RRBotHWInterface::write(ros::Duration &elapsed_time)
   // Safety
   enforceLimits(elapsed_time);
 
-  // ----------------------------------------------------
-  // ----------------------------------------------------
-  // ----------------------------------------------------
-  //
-  // FILL IN YOUR WRITE COMMAND TO USB/ETHERNET/ETHERCAT/SERIAL ETC HERE
-  //
-  // FOR A EASY SIMULATION EXAMPLE, OR FOR CODE TO CALCULATE
-  // VELOCITY FROM POSITION WITH SMOOTHING, SEE
-  // sim_hw_interface.cpp IN THIS PACKAGE
-  //
+  // TODO(lucasw) publish the value to set Float64 topic
   // DUMMY PASS-THROUGH CODE
   for (std::size_t joint_id = 0; joint_id < num_joints_; ++joint_id)
-    joint_position_[joint_id] += joint_position_command_[joint_id];
+  {
+    std_msgs::Float64 msg;
+    msg.data = joint_position_command_[joint_id];
+    pubs_[joint_id].publish(msg);
+  }
+  //   joint_position_[joint_id] += joint_position_command_[joint_id];
   // END DUMMY CODE
-  //
-  // ----------------------------------------------------
-  // ----------------------------------------------------
-  // ----------------------------------------------------
 }
 
 void RRBotHWInterface::enforceLimits(ros::Duration &period)

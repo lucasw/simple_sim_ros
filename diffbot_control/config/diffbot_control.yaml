@@ -1,3 +1,9 @@
+hardware_interface:
+  joints: ['front_left_wheel', 'rear_left_wheel', 'front_right_wheel', 'rear_right_wheel']
+generic_hw_control_loop:
+  loop_hz: 20
+  cycle_time_error_threshold: 1.0
+
 diffbot_velocity_controller:
   type: "diff_drive_controller/DiffDriveController"
   left_wheel: ['front_left_wheel', 'rear_left_wheel']

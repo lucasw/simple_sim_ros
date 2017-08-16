@@ -25,11 +25,13 @@
   <build_depend>ros_control_boilerplate</build_depend>
   <build_depend>roslint</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
   <run_depend>controller_manager</run_depend>
   <run_depend>ros_control_boilerplate</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslint</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
 
   <export>
   </export>

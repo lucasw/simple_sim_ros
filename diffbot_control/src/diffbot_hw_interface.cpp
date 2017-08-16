@@ -47,12 +47,6 @@ RRBotHWInterface::RRBotHWInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
   : ros_control_boilerplate::GenericHWInterface(nh, urdf_model, false)
 {
   ROS_INFO_NAMED("diffbot_hw_interface", "RRBotHWInterface Ready.");
-  for (std::size_t joint_id = 0; joint_id < num_joints_; ++joint_id)
-  {
-    std::stringstream ss;
-    ss << "joint_" << joint_id;
-    pubs_.push_back(nh.advertise<std_msgs::Float64>(ss.str(), 2));
-  }
 }
 
 void RRBotHWInterface::read(ros::Duration &elapsed_time)
@@ -66,16 +60,23 @@ void RRBotHWInterface::write(ros::Duration &elapsed_time)
   // Safety
   enforceLimits(elapsed_time);
 
-  // TODO(lucasw) publish the value to set Float64 topic
-  // DUMMY PASS-THROUGH CODE
   for (std::size_t joint_id = 0; joint_id < num_joints_; ++joint_id)
   {
+    if (pubs_.size() <= joint_id)
+    {
+      std::stringstream ss;
+      ss << "joint_" << joint_id;
+      pubs_.push_back(nh_.advertise<std_msgs::Float64>(ss.str(), 2));
+    }
+
     std_msgs::Float64 msg;
     msg.data = joint_position_command_[joint_id];
     pubs_[joint_id].publish(msg);
+
+    // TODO(lucasw) make this optional, in the other case subscribe
+    // to joint positions.
+    joint_position_[joint_id] += joint_position_command_[joint_id];
   }
-  //   joint_position_[joint_id] += joint_position_command_[joint_id];
-  // END DUMMY CODE
 }
 
 void RRBotHWInterface::enforceLimits(ros::Duration &period)

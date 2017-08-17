@@ -20,4 +20,7 @@
     <remap from="/joint_states" to="/diffbot/joint_states" />
   </node>
 
+  <node name="rqt" pkg="rqt_gui" type="rqt_gui"
+      args="--perspective-file $(find diffbot_control)/config/diffbot.perspective"/>
+
 </launch>

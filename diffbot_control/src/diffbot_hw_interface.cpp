@@ -62,20 +62,22 @@ void RRBotHWInterface::write(ros::Duration &elapsed_time)
 
   for (std::size_t joint_id = 0; joint_id < num_joints_; ++joint_id)
   {
-    if (pubs_.size() <= joint_id)
+    const std::string name = joint_names_[joint_id];
+    if (pubs_.count(name) == 0)
     {
-      std::stringstream ss;
-      ss << "joint_" << joint_id;
-      pubs_.push_back(nh_.advertise<std_msgs::Float64>(ss.str(), 2));
+      pubs_[name] = nh_.advertise<std_msgs::Float64>(name, 2);
     }
 
+    // TODO(lucasw) this happens to be a velocity controller
+    // (as defined in the yaml), but what if that changes?
+    // have a pub for each possible type, or detect the type?
     std_msgs::Float64 msg;
-    msg.data = joint_position_command_[joint_id];
-    pubs_[joint_id].publish(msg);
+    msg.data = joint_velocity_command_[joint_id];
+    pubs_[name].publish(msg);
 
     // TODO(lucasw) make this optional, in the other case subscribe
     // to joint positions.
-    joint_position_[joint_id] += joint_position_command_[joint_id];
+    joint_position_[joint_id] += joint_velocity_command_[joint_id] * elapsed_time.toSec();
   }
 }
 

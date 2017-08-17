@@ -15,7 +15,8 @@ diffbot_velocity_controller:
 
   # Odometry fused with IMU is published by robot_localization, so
   # no need to publish a TF based on encoders alone.
-  enable_odom_tf: false
+  # (unless robot localization isn't running)
+  enable_odom_tf: true
 
   # setting these will prevent the controller from parsing the urdf
   # but will it still complain about no urdf?

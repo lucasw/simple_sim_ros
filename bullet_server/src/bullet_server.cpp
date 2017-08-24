@@ -159,7 +159,19 @@ int BulletServer::init()
 
   add_compound_ = nh_.advertiseService("add_compound", &BulletServer::addCompound, this);
 
+  republish_markers_sub_ = nh_.subscribe("republish_markers", 3,
+      &BulletServer::republishMarkers, this);
+
   return 0;
+}
+
+void BulletServer::republishMarkers(const std_msgs::Empty::ConstPtr&)
+{
+  // loop through all bodies and have them republish their markers
+  // std::map<std::string, Body*> bodies_;
+  // std::map<std::string, SoftBody*> soft_bodies_;
+  for (const auto& body : bodies_)
+    body.second->publishMarker();
 }
 
 bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,

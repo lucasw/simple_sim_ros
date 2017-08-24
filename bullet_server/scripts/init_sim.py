@@ -2,12 +2,7 @@
 # Copyright (c) 2016 Lucas Walter
 # November 2016
 
-# Use interactive markers to create objects of supported shapes,
-# size them, give them physical properties and then spawn them in
-# the physics server.
-# Need to be able to click on an object and get the marker for it-
-# this may require more than just a simple interactive marker.
-# Later being able to create joints between bodies would be nice.
+# create a ground object
 
 import rospy
 import tf
@@ -21,7 +16,7 @@ from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 
 
-class InteractiveMarkerSpawn:
+class GroundPlane:
     def __init__(self):
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
@@ -53,5 +48,5 @@ class InteractiveMarkerSpawn:
             rospy.logerr(e)
 
 if __name__ == '__main__':
-    rospy.init_node('init_spawn')
-    imarker_spawn = InteractiveMarkerSpawn()
+    rospy.init_node('ground_plane')
+    ground_plane = GroundPlane()

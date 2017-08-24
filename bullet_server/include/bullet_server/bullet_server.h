@@ -48,6 +48,7 @@
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
+#include <std_msgs/Empty.h>
 #include <std_msgs/Float64.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
@@ -77,6 +78,8 @@ class BulletServer
   void impulseCallback(const bullet_server::Impulse::ConstPtr& msg);
   ros::Subscriber heightfield_sub_;
   void heightfieldCallback(const bullet_server::Heightfield::ConstPtr& msg);
+  ros::Subscriber republish_markers_sub_;
+  void republishMarkers(const std_msgs::Empty::ConstPtr&);
 
   std::string tf_prefix_;
   tf::TransformBroadcaster br_;

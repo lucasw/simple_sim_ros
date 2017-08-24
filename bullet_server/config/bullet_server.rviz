@@ -74,7 +74,7 @@ Visualization Manager:
       Marker Topic: visualization_marker
       Name: Bullet Viz
       Namespaces:
-        bodies: true
+        {}
       Queue Size: 200
       Value: true
     - Class: rviz/Group
@@ -222,7 +222,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: chassis
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -253,6 +253,8 @@ Visualization Manager:
         X: -1.06708956
         Y: -0.499464393
         Z: -6.40749931e-07
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
       Pitch: 0.52979809
@@ -276,5 +278,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 994
-  X: 842
-  Y: 24
+  X: 264
+  Y: 36

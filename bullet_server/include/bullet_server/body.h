@@ -87,6 +87,8 @@ public:
     const std::string tf_prefix);
   ~Body();
 
+  void publishMarker();
+
   // keep track of constraints attached to this body
   void addConstraint(Constraint* constraint);
   void removeConstraint(const Constraint* constraint);

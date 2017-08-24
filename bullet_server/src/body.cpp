@@ -262,7 +262,7 @@ Body::Body(BulletServer* parent,
     marker_array_.markers[i].color.a = 1.0;
     marker_array_.markers[i].lifetime = ros::Duration();
   }
-  marker_array_pub_->publish(marker_array_);
+  publishMarker();
 }
 
 // make a static height map
@@ -386,7 +386,7 @@ Body::Body(
       }
     }
     marker_array_.markers.push_back(marker);
-    marker_array_pub_->publish(marker_array_);
+    publishMarker();
   }
   #else
 
@@ -480,7 +480,7 @@ Body::Body(
       }
     }
     marker_array_.markers.push_back(marker);
-    marker_array_pub_->publish(marker_array_);
+    publishMarker();
 
     const int vert_stride = sizeof(btVector3);
     const int index_stride = 3 * sizeof(int);
@@ -584,9 +584,14 @@ void Body::update()
       marker_array_.markers[i].color.g = 0.7 - state * 0.1;
       marker_array_.markers[i].color.b = 1.0 - state * 0.2;
     }
-    marker_array_pub_->publish(marker_array_);
+    publishMarker();
   }
   // ROS_INFO_STREAM("sphere height: " << trans.getOrigin().getY());
+}
+
+void Body::publishMarker()
+{
+  marker_array_pub_->publish(marker_array_);
 }
 
 void Body::addConstraint(Constraint* constraint)

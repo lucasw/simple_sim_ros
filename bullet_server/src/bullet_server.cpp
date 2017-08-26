@@ -171,7 +171,10 @@ void BulletServer::republishMarkers(const std_msgs::Empty::ConstPtr&)
   // std::map<std::string, Body*> bodies_;
   // std::map<std::string, SoftBody*> soft_bodies_;
   for (const auto& body : bodies_)
+  {
     body.second->publishMarker();
+    ros::Duration(0.05).sleep();
+  }
 }
 
 bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,

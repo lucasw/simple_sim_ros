@@ -117,6 +117,8 @@ class StewartPlatform:
             prismatic.body_a = bot_cylinder.name
             prismatic.body_b = top_cylinder.name
             prismatic.type = Constraint.SLIDER
+            prismatic.enable_pos_pub = True
+            prismatic.enable_motor_sub = True
             prismatic.pivot_in_a.x = 0
             prismatic.pivot_in_a.y = -0.1
             prismatic.pivot_in_a.z = 0

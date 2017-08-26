@@ -5,9 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Group1
-        - /Grid1
-        - /Grid1/Grid2
       Splitter Ratio: 0.54360503
     Tree Height: 499
   - Class: rviz/Selection
@@ -146,6 +143,24 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Alpha: 0.5
+          Cell Size: 1
+          Class: rviz/Grid
+          Color: 120; 120; 124
+          Enabled: false
+          Line Style:
+            Line Width: 0.0299999993
+            Value: Lines
+          Name: Grid YZ
+          Normal Cell Count: 0
+          Offset:
+            X: -5
+            Y: 0
+            Z: 5
+          Plane: YZ
+          Plane Cell Count: 10
+          Reference Frame: <Fixed Frame>
+          Value: false
+        - Alpha: 0.5
           Cell Size: 50
           Class: rviz/Grid
           Color: 160; 160; 164
@@ -166,25 +181,7 @@ Visualization Manager:
         - Alpha: 0.5
           Cell Size: 1
           Class: rviz/Grid
-          Color: 120; 120; 124
-          Enabled: false
-          Line Style:
-            Line Width: 0.0299999993
-            Value: Lines
-          Name: Grid YZ
-          Normal Cell Count: 0
-          Offset:
-            X: -5
-            Y: 0
-            Z: 5
-          Plane: YZ
-          Plane Cell Count: 10
-          Reference Frame: <Fixed Frame>
-          Value: false
-        - Alpha: 0.5
-          Cell Size: 1
-          Class: rviz/Grid
-          Color: 255; 255; 255
+          Color: 0; 0; 0
           Enabled: true
           Line Style:
             Line Width: 0.0299999993
@@ -221,7 +218,7 @@ Visualization Manager:
       Name: Grid
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 255; 255; 255
     Fixed Frame: map
     Frame Rate: 30
   Name: root
@@ -243,7 +240,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.26102555
+      Distance: 8.5715332
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -257,10 +254,10 @@ Visualization Manager:
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.52979809
+      Pitch: 0.199798122
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 3.47993064
+      Yaw: 3.14993
     Saved: ~
 Window Geometry:
   Displays:
@@ -278,5 +275,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 994
-  X: 264
-  Y: 36
+  X: 82
+  Y: 27

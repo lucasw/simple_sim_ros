@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="rigid_only" default="true"/>
+  <arg name="rigid_only" default="true" doc="set to false to allow soft bodies"/>
   <arg name="use_rviz" default="true"/>
   <arg name="tf_prefix" default=""/>
 

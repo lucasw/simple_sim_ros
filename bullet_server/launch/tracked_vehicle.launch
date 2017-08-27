@@ -6,7 +6,7 @@
     <arg name="use_rviz" value="false"/>
     <arg name="tf_prefix" value="$(arg tf_prefix)"/>
   </include>
-  <node pkg="bullet_server" type="init_sim.py" name="init_sim"
+  <node pkg="bullet_server" type="ground_plane.py" name="ground_plane"
       output="screen">
   </node>
   <node pkg="bullet_server" type="tracks.py" name="tracked_vehicle"

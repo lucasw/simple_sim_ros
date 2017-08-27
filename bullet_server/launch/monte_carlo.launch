@@ -7,31 +7,47 @@
   the same tree so they can be visualized concurrently. -->
 
   <group ns="sim1">
-    <include file="$(find bullet_server)/launch/track.launch">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
       <arg name="tf_prefix" value="sim1/"/>
     </include>
   </group>
-  <group if="false">
+  <group if="true">
   <group ns="sim2">
-    <include file="$(find bullet_server)/launch/track.launch">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
       <arg name="tf_prefix" value="sim2/"/>
     </include>
   </group>
   <group ns="sim3">
-    <include file="$(find bullet_server)/launch/track.launch">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
       <arg name="tf_prefix" value="sim3/"/>
     </include>
   </group>
   <group ns="sim4">
-    <include file="$(find bullet_server)/launch/track.launch">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
       <arg name="tf_prefix" value="sim4/"/>
     </include>
   </group>
   <group ns="sim5">
-    <include file="$(find bullet_server)/launch/track.launch">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
       <arg name="tf_prefix" value="sim5/"/>
     </include>
   </group>
+  <group ns="sim6">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
+      <arg name="tf_prefix" value="sim6/"/>
+    </include>
+  </group>
+  <group ns="sim7">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
+      <arg name="tf_prefix" value="sim7/"/>
+    </include>
+  </group>
+  <group ns="sim8">
+    <include file="$(find bullet_server)/launch/tracked_vehicle.launch">
+      <arg name="tf_prefix" value="sim8/"/>
+    </include>
+  </group>
+
   </group>
 
   <node pkg="rviz" type="rviz" name="rviz"

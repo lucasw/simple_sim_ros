@@ -27,8 +27,8 @@ if __name__ == '__main__':
     size_y = rospy.get_param("~size_y", 0.3)
     size_z = rospy.get_param("~size_z", 0.15)
     mass = rospy.get_param("~mass", 0.2)
-    margin_x = rospy.get_param("~margin_x", 0.0001)
-    margin_z = rospy.get_param("~margin_z", 0.00001)
+    margin_x = rospy.get_param("~margin_x", 0.00001)
+    margin_z = rospy.get_param("~margin_z", 0.01)
 
     add_compound_request = AddCompoundRequest()
     add_compound_request.remove = False
@@ -69,7 +69,8 @@ if __name__ == '__main__':
                 angle = (float(i) + (j % 2) * 0.5) / float(num_x) * 2.0 * math.pi
                 body.pose.position.x = x + radius * math.cos(angle)
                 body.pose.position.y = y + radius * math.sin(angle)
-                body.pose.position.z = size_z / 2.0 + margin_z + j * (size_z + margin_z)
+                # body.pose.position.z = size_z / 2.0 + margin_z + j * (size_z + margin_z)
+                body.pose.position.z = margin_z + j * (size_z + margin_z)
                 quat = tf.transformations.quaternion_from_euler(0, 0, angle + math.pi/2.0)
                 body.pose.orientation.x = quat[0]
                 body.pose.orientation.y = quat[1]

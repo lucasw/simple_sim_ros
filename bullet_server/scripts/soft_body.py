@@ -20,26 +20,6 @@ class SoftBodyDemo:
         ys = rospy.get_param("~y", 0.0)
         zs = rospy.get_param("~z", 1.0)
 
-        # Ground
-        if True:
-            # make the top cylinder plate
-            ground = Body()
-            ground.name = "ground"
-            ground.mass = 0.0
-            rot90 = tf.transformations.quaternion_from_euler(0, 0, 0)
-            radius = 50
-            thickness = 1.0
-            ground.pose.orientation.x = rot90[0]
-            ground.pose.orientation.y = rot90[1]
-            ground.pose.orientation.z = rot90[2]
-            ground.pose.orientation.w = rot90[3]
-            ground.pose.position.z = -thickness
-            ground.type = Body.BOX
-            ground.scale.x = radius
-            ground.scale.y = radius
-            ground.scale.z = thickness
-            add_compound_request.body.append(ground)
-
         body = SoftBody()
 
         mass = 0.5

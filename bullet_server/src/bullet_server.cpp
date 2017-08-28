@@ -180,6 +180,7 @@ void BulletServer::republishMarkers(const std_msgs::Empty::ConstPtr&)
 bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
                                bullet_server::AddCompound::Response& res)
 {
+  res.success = true;
   for (size_t i = 0; i < req.body.size(); ++i)
   {
     if (req.remove)
@@ -216,7 +217,8 @@ bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
     {
       // TODO(lucasw) need a return value for each of these
       bullet_server::SoftBody::ConstPtr body_ptr(new bullet_server::SoftBody(req.soft_body[i]));
-      softBodyCallback(body_ptr);
+      if (!softBodyCallback(body_ptr))
+        res.success = false;
     }
   }
 
@@ -239,8 +241,7 @@ bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
     }
   }
 
-  res.success = true;
-  return true;
+  return res.success;
 }
 
 void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
@@ -255,7 +256,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
       dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
 }
 
-void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg)
+bool BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg)
 {
   btSoftRigidDynamicsWorld* soft_rigid_dynamics_world =
       dynamic_cast<btSoftRigidDynamicsWorld*>(dynamics_world_);
@@ -263,7 +264,7 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
   if (rigid_only_ || (soft_rigid_dynamics_world == NULL))
   {
     ROS_ERROR_STREAM("can't create soft body in rigid body mode " + msg->name);
-    return;
+    return false;
   }
 
   if (soft_bodies_.count(msg->name) > 0)
@@ -281,6 +282,8 @@ void BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
       &br_, &marker_array_pub_);
 
   soft_rigid_dynamics_world->addSoftBody(soft_bodies_[msg->name]->soft_body_);
+
+  return true;
 }
 
 

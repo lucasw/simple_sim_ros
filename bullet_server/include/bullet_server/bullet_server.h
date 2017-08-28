@@ -71,7 +71,7 @@ class BulletServer
                    bullet_server::AddCompound::Response& res);
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
-  void softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg);
+  bool softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg);
   ros::Subscriber constraint_sub_;
   void constraintCallback(const bullet_server::Constraint::ConstPtr& msg);
   ros::Subscriber impulse_sub_;

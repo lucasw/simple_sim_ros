@@ -2,14 +2,17 @@
 <launch>
   <arg name="tf_prefix" default=""/>
 
+  <group if="false">
   <include file="$(find bullet_server)/launch/bullet_server.launch">
     <arg name="use_rviz" value="false"/>
     <arg name="tf_prefix" value="$(arg tf_prefix)"/>
   </include>
+  </group>
   <node pkg="bullet_server" type="ground_plane.py" name="ground_plane"
       output="screen"
       if="false">
   </node>
+
   <node pkg="bullet_server" type="tracks.py" name="tracked_vehicle"
       output="screen">
   </node>

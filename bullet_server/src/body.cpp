@@ -408,7 +408,7 @@ Body::Body(
     marker.color.a = 1.0;
     marker.pose.position.x = -static_cast<float>(wd) * resolution / 2.0;
     marker.pose.position.y = -static_cast<float>(ht) * resolution / 2.0;
-    marker.pose.position.z = -(max_height - min_height) / 2.0;
+    marker.pose.position.z = -max_height;
     tf.setOrigin(btVector3(marker.pose.position.x,
         marker.pose.position.y,
         marker.pose.position.z));
@@ -428,10 +428,12 @@ Body::Body(
     {
       for (size_t x = 0; x < wd - 1; ++x)
       {
+        const float height = image.at<uchar>(y, x) * height_scale - max_height;
+        ROS_INFO_STREAM(height);
         vertices_[x + y * wd].setValue(
             x * resolution,
             y * resolution,
-            image.at<uchar>(y, x) * height_scale);
+            height);
       }
     }
 

@@ -7,7 +7,8 @@
     <arg name="tf_prefix" value="$(arg tf_prefix)"/>
   </include>
   <node pkg="bullet_server" type="ground_plane.py" name="ground_plane"
-      output="screen">
+      output="screen"
+      if="false">
   </node>
   <node pkg="bullet_server" type="tracks.py" name="tracked_vehicle"
       output="screen">

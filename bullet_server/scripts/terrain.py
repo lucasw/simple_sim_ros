@@ -24,8 +24,8 @@ bridge = cv_bridge.CvBridge()
 rospack = rospkg.RosPack()
 heightfield = Heightfield()
 heightfield.name = "jpg_test"
-# name = "heightfield_small2.jpg"
-name = "heightfield.jpg"
+name = "heightfield_small2.jpg"
+# name = "heightfield.jpg"
 image = cv2.imread(rospack.get_path('bullet_server') + "/data/" + name, 0)
 # cv2.imshow("image", image)
 # cv2.waitKey(0)

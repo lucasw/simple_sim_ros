@@ -428,8 +428,7 @@ Body::Body(
     {
       for (size_t x = 0; x < wd - 1; ++x)
       {
-        const float height = image.at<uchar>(y, x) * height_scale - max_height;
-        ROS_INFO_STREAM(height);
+        const float height = image.at<uchar>(y, x) * height_scale;
         vertices_[x + y * wd].setValue(
             x * resolution,
             y * resolution,

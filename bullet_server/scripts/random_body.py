@@ -28,6 +28,7 @@ while not rospy.is_shutdown():
     wheel.name = "random_body_" + postfix + "_" + str(count)
     bodies[count] = wheel.name
     wheel.type = random.randint(0, 4)  # Body.CYLINDER
+    wheel.mass = 1.0
     wheel.pose.position.x = random.uniform(-0.1, 0.1)
     wheel.pose.position.y = random.uniform(-0.1, 0.1)
     wheel.pose.position.z = z_height + random.uniform(0, 4.0)

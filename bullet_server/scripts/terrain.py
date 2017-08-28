@@ -24,12 +24,14 @@ bridge = cv_bridge.CvBridge()
 rospack = rospkg.RosPack()
 heightfield = Heightfield()
 heightfield.name = "jpg_test"
-image = cv2.imread(rospack.get_path('bullet_server') + "/data/heightfield_small2.jpg", 0)
+# name = "heightfield_small2.jpg"
+name = "heightfield.jpg"
+image = cv2.imread(rospack.get_path('bullet_server') + "/data/" + name, 0)
 # cv2.imshow("image", image)
 # cv2.waitKey(0)
 heightfield.image = bridge.cv2_to_imgmsg(image, encoding="mono8")
 heightfield.resolution = 64.0 / image.shape[0]
-heightfield.height_scale = 10.0 / 255.0
+heightfield.height_scale = 6.0 / 255.0
 heightfield.image.header.frame_id = "map"
 heightfield_pub.publish(heightfield)
 

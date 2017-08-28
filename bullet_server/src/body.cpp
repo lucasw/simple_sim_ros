@@ -394,6 +394,8 @@ Body::Body(
   {
     const size_t wd = image.size().width;
     const size_t ht = image.size().height;
+    ROS_INFO_STREAM("making heightfield terrain " << wd << " " << ht
+        << " " << resolution);
 
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
@@ -404,9 +406,9 @@ Body::Body(
     marker.color.r = 1.0;
     marker.color.g = 0.6;
     marker.color.a = 1.0;
-    marker.pose.position.x = -wd * resolution / 2.0;
-    marker.pose.position.y = -ht * resolution / 2.0;
-    marker.pose.position.z = -(max_height - min_height)/2.0;
+    marker.pose.position.x = -static_cast<float>(wd) * resolution / 2.0;
+    marker.pose.position.y = -static_cast<float>(ht) * resolution / 2.0;
+    marker.pose.position.z = -(max_height - min_height) / 2.0;
     tf.setOrigin(btVector3(marker.pose.position.x,
         marker.pose.position.y,
         marker.pose.position.z));

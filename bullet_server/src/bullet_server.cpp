@@ -267,6 +267,12 @@ bool BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
     return false;
   }
 
+  if (msg->name == "")
+  {
+    ROS_ERROR_STREAM("empty name");
+    return false;
+  }
+
   if (soft_bodies_.count(msg->name) > 0)
   {
     delete soft_bodies_[msg->name];

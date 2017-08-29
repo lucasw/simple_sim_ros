@@ -21,6 +21,7 @@ class SoftBodyDemo:
         zs = rospy.get_param("~z", 1.0)
 
         body = SoftBody()
+        body.name = "pyramid"
 
         mass = 0.5
         n1 = Node()
@@ -101,6 +102,8 @@ class SoftBodyDemo:
             top_plate.pose.orientation.y = rot90[1]
             top_plate.pose.orientation.z = rot90[2]
             top_plate.pose.orientation.w = rot90[3]
+            top_plate.pose.position.x = 0
+            top_plate.pose.position.y = 0
             top_plate.pose.position.z = 1.7
             top_plate.type = Body.CYLINDER
             top_plate.scale.x = radius
@@ -108,6 +111,7 @@ class SoftBodyDemo:
             top_plate.scale.z = radius
             add_compound_request.body.append(top_plate)
 
+        rospy.loginfo(add_compound_request)
         try:
             add_compound_response = self.add_compound(add_compound_request)
             rospy.loginfo(add_compound_response)

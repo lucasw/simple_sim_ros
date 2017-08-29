@@ -80,6 +80,13 @@ SoftBody::SoftBody(BulletServer* parent,
   for (size_t i = 0; i < nodes.size(); ++i)
   {
     btVector3 pos(nodes[i].position.x, nodes[i].position.y, nodes[i].position.z);
+    if (std::isnan(pos.x()) || std::isnan(pos.y()) || std::isnan(pos.z()))
+    {
+      ROS_ERROR_STREAM("bad position " << pos);
+      delete[] points;
+      delete[] masses;
+      return;
+    }
     btScalar mass(nodes[i].mass);
     // this was segfaulting
     // soft_body_->appendNode(pos, mass);
@@ -204,6 +211,7 @@ SoftBody::SoftBody(BulletServer* parent,
   }
 
   // link markers
+  if (links.size() > 0)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -232,6 +240,7 @@ SoftBody::SoftBody(BulletServer* parent,
   }
 
   // anchor markers
+  if (anchors.size() > 0)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -266,6 +275,7 @@ SoftBody::SoftBody(BulletServer* parent,
   }
 
   // tetra markers
+  if (tetras.size() > 0)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
@@ -316,6 +326,12 @@ void SoftBody::update()
     pt.y = nodes[i].m_x.getY();
     pt.z = nodes[i].m_x.getZ();
     marker_array_.markers[0].points.push_back(pt);
+
+    if (std::isnan(pt.x) || std::isnan(pt.y) || std::isnan(pt.z))
+    {
+      ROS_ERROR_STREAM(name_ << " bad node " << i << " " << pt);
+      return;
+    }
   }
 
   btSoftBody::tLinkArray& links(soft_body_->m_links);
@@ -333,6 +349,13 @@ void SoftBody::update()
     pt2.y = links[i].m_n[1]->m_x.getY();
     pt2.z = links[i].m_n[1]->m_x.getZ();
     marker_array_.markers[1].points.push_back(pt2);
+
+    if (std::isnan(pt1.x) || std::isnan(pt1.y) || std::isnan(pt1.z) ||
+        std::isnan(pt2.x) || std::isnan(pt2.y) || std::isnan(pt2.z))
+    {
+      ROS_ERROR_STREAM("bad link " << i << " " << pt1 << " " << pt2);
+      return;
+    }
   }
 
   btSoftBody::tTetraArray& tetras(soft_body_->m_tetras);

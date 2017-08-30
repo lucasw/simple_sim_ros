@@ -182,6 +182,7 @@ SoftBody::SoftBody(BulletServer* parent,
       anchors[i].influence);
   }
 
+  marker_array_.markers.resize(COUNT);
   {
     visualization_msgs::Marker marker;
     // TODO(lucasw) also have a LINES and TRIANGLE_LIST marker
@@ -207,11 +208,10 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.r = 0.45;
     marker.color.g = 0.4;
     marker.color.b = 0.65;
-    marker_array_.markers.push_back(marker);
+    marker_array_.markers[NODES] = marker;
   }
 
   // link markers
-  if (links.size() > 0)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -236,11 +236,10 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.r = 0.3;
     marker.color.g = 0.67;
     marker.color.b = 0.65;
-    marker_array_.markers.push_back(marker);
+    marker_array_.markers[LINKS] = marker;
   }
 
   // anchor markers
-  if (anchors.size() > 0)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -265,17 +264,16 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.r = 0.67;
     marker.color.g = 0.17;
     marker.color.b = 0.95;
-    marker_array_.markers.push_back(marker);
+    marker_array_.markers[ANCHORS] = marker;
 
     marker.ns = "anchor_pivots";
     marker.color.r = 0.67;
     marker.color.g = 0.87;
     marker.color.b = 0.45;
-    marker_array_.markers.push_back(marker);
+    marker_array_.markers[ANCHOR_PIVOTS] = marker;
   }
 
   // tetra markers
-  if (tetras.size() > 0)
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
@@ -298,7 +296,7 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.r = 0.0;
     marker.color.g = 0.67;
     marker.color.b = 0.75;
-    marker_array_.markers.push_back(marker);
+    marker_array_.markers[TETRAS] = marker;
   }
 }
 
@@ -315,17 +313,15 @@ void SoftBody::update()
 {
   // TODO(lucasw) getAabb
 
-  // TODO(lucasw) instead of hardcoded markers indices, do something better
-
   btSoftBody::tNodeArray& nodes(soft_body_->m_nodes);
-  marker_array_.markers[0].points.clear();
+  marker_array_.markers[NODES].points.clear();
   for (size_t i = 0; i < nodes.size(); ++i)
   {
     geometry_msgs::Point pt;
     pt.x = nodes[i].m_x.getX();
     pt.y = nodes[i].m_x.getY();
     pt.z = nodes[i].m_x.getZ();
-    marker_array_.markers[0].points.push_back(pt);
+    marker_array_.markers[NODES].points.push_back(pt);
 
     if (std::isnan(pt.x) || std::isnan(pt.y) || std::isnan(pt.z))
     {
@@ -335,20 +331,20 @@ void SoftBody::update()
   }
 
   btSoftBody::tLinkArray& links(soft_body_->m_links);
-  marker_array_.markers[1].points.clear();
+  marker_array_.markers[LINKS].points.clear();
   for (size_t i = 0; i < links.size(); ++i)
   {
     geometry_msgs::Point pt1;
     pt1.x = links[i].m_n[0]->m_x.getX();
     pt1.y = links[i].m_n[0]->m_x.getY();
     pt1.z = links[i].m_n[0]->m_x.getZ();
-    marker_array_.markers[1].points.push_back(pt1);
+    marker_array_.markers[LINKS].points.push_back(pt1);
 
     geometry_msgs::Point pt2;
     pt2.x = links[i].m_n[1]->m_x.getX();
     pt2.y = links[i].m_n[1]->m_x.getY();
     pt2.z = links[i].m_n[1]->m_x.getZ();
-    marker_array_.markers[1].points.push_back(pt2);
+    marker_array_.markers[LINKS].points.push_back(pt2);
 
     if (std::isnan(pt1.x) || std::isnan(pt1.y) || std::isnan(pt1.z) ||
         std::isnan(pt2.x) || std::isnan(pt2.y) || std::isnan(pt2.z))
@@ -359,7 +355,7 @@ void SoftBody::update()
   }
 
   btSoftBody::tTetraArray& tetras(soft_body_->m_tetras);
-  marker_array_.markers[4].points.clear();
+  marker_array_.markers[TETRAS].points.clear();
   for (size_t i = 0; i < tetras.size(); ++i)
   {
     // the indices ought to be ordered so that
@@ -374,7 +370,7 @@ void SoftBody::update()
         pt.x = node->m_x.getX();
         pt.y = node->m_x.getY();
         pt.z = node->m_x.getZ();
-        marker_array_.markers[4].points.push_back(pt);
+        marker_array_.markers[TETRAS].points.push_back(pt);
       }
     }
   }
@@ -382,15 +378,15 @@ void SoftBody::update()
   // TODO(lucasw) also do something with faces
 
   btSoftBody::tAnchorArray& anchors(soft_body_->m_anchors);
-  marker_array_.markers[2].points.clear();
-  marker_array_.markers[3].points.clear();
+  marker_array_.markers[ANCHORS].points.clear();
+  marker_array_.markers[ANCHOR_PIVOTS].points.clear();
   for (size_t i = 0; i < anchors.size(); ++i)
   {
     geometry_msgs::Point pt1;
     pt1.x = anchors[i].m_node->m_x.getX();
     pt1.y = anchors[i].m_node->m_x.getY();
     pt1.z = anchors[i].m_node->m_x.getZ();
-    marker_array_.markers[2].points.push_back(pt1);
+    marker_array_.markers[ANCHORS].points.push_back(pt1);
 
     btTransform trans;
     anchors[i].m_body->getMotionState()->getWorldTransform(trans);
@@ -400,14 +396,14 @@ void SoftBody::update()
     pt2.x = world_point.getX();
     pt2.y = world_point.getY();
     pt2.z = world_point.getZ();
-    marker_array_.markers[2].points.push_back(pt2);
-    marker_array_.markers[3].points.push_back(pt2);
+    marker_array_.markers[ANCHORS].points.push_back(pt2);
+    marker_array_.markers[ANCHOR_PIVOTS].points.push_back(pt2);
 
     geometry_msgs::Point pt3;
     pt3.x = trans.getOrigin().getX();
     pt3.y = trans.getOrigin().getY();
     pt3.z = trans.getOrigin().getZ();
-    marker_array_.markers[3].points.push_back(pt3);
+    marker_array_.markers[ANCHOR_PIVOTS].points.push_back(pt3);
   }
 
   marker_array_pub_->publish(marker_array_);

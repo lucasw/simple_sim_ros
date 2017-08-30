@@ -84,6 +84,16 @@ public:
   ~SoftBody();
   void update();
   btSoftBody* soft_body_;
+
+  enum MarkerInd
+  {
+    NODES = 0,
+    LINKS,
+    ANCHORS,
+    ANCHOR_PIVOTS,
+    TETRAS,
+    COUNT
+  };
 };
 
 #endif  // BULLET_SERVER_SOFT_BODY_H

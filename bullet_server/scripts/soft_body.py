@@ -7,6 +7,7 @@ import tf
 
 from bullet_server.msg import Body, Face, Link, Material, Node, SoftBody, SoftConfig, Tetra
 from bullet_server.srv import *
+from bullet_server.utility import *
 
 
 class SoftBodyDemo:
@@ -22,6 +23,7 @@ class SoftBodyDemo:
 
         body = SoftBody()
         body.name = "pyramid"
+        body.config = make_soft_config()
 
         mass = 0.5
         n1 = Node()

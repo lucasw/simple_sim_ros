@@ -21,16 +21,6 @@ class SoftBodyDemo:
         ys = rospy.get_param("~y", 0.0)
         zs = rospy.get_param("~z", 1.0)
 
-        ground_radius = 10
-        ground_thickness = 1.0
-        ground_mass = 0.0
-        ground = make_rigid_cylinder("ground", ground_mass,
-                                     0, 0, -ground_thickness,
-                                     ground_radius,
-                                     ground_thickness,
-                                     math.pi/2.0, 0, 0)
-        add_compound_request.body.append(ground)
-
         body = make_soft_tetra_cube("soft_tetra_cube", 0.1,
                                     xs, ys, zs, 4.0)
 

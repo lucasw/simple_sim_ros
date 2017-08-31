@@ -105,7 +105,7 @@ def make_soft_cube(name, node_mass, xs, ys, zs, ln,
                         body.link.append(l1)
 
     mat = Material()
-    mat.kLST = 0.25
+    mat.kLST = 0.15  # 0.25
     mat.kVST = 0.1
     mat.kAST = 0.1
     body.material.append(mat)
@@ -218,6 +218,8 @@ def make_wheel_assembly(prefix, xs, ys, zs, flip=1.0):
     hinge.lower_ang_lim = -3.2  # -math.pi
     hinge.upper_ang_lim = 3.2  # math.pi
     hinge.max_motor_impulse = 25000.0
+    hinge.enable_pos_pub = True
+    hinge.enable_motor_sub = True
 
     wheel_offset = 1.5
     nx = 4

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>sim_clock</name>
+  <version>0.0.0</version>
+  <description>Generate a clock message, have controls to change rate vs. wall time
+  </description>
+
+  <maintainer email="wsacul@gmail.com">Lucas Walter</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+
+</package>

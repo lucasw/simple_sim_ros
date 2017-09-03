@@ -31,10 +31,13 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "test");
   ros::NodeHandle n;
 
-  start = ros::Time::now();
+  // ros::WallTime wall_start0 = ros::WallTime::now();
   // don't get the wall time until a clock has been received
   ros::Duration(0.0001).sleep();
+  start = ros::Time::now();
   wall_start = ros::WallTime::now();
+  ROS_INFO_STREAM(", wall: " << wall_start  // - wall_start0
+        << ", now: " << start);
 
   ros::Timer timer1 = n.createTimer(ros::Duration(0.1), callback1);
   ros::Timer timer2 = n.createTimer(ros::Duration(1.0), callback2);

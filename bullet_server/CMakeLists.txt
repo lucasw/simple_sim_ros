@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   shape_msgs
   sensor_msgs
   tf
+  tf2_ros
   visualization_msgs
 )
 

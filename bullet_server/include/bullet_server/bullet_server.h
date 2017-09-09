@@ -53,6 +53,7 @@
 #include <std_msgs/Float64.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 #include <vector>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -87,7 +88,10 @@ class BulletServer
   void republishMarkers(const std_msgs::Empty::ConstPtr&);
 
   std::string tf_prefix_;
+  // TODO(lucasw) update to tf2
   tf::TransformBroadcaster br_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
   float period_;
   // ros::Publisher marker_pub_;
   ros::Publisher marker_array_pub_;

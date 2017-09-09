@@ -1,6 +1,7 @@
 # rotate point and direction in frame_id frame to sim world space
 string frame_id
 string name
+string topic_name
 geometry_msgs/Point start
 geometry_msgs/Point end
 ---

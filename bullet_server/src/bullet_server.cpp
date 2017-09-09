@@ -78,7 +78,8 @@ BulletServer::BulletServer() :
   rigid_only_(true),
   broadphase_(NULL),
   collision_configuration_(NULL),
-  soft_rigid_collision_configuration_(NULL)
+  soft_rigid_collision_configuration_(NULL),
+  tf_listener_(tf_buffer_)
 {
   init();
 }
@@ -256,7 +257,10 @@ bool BulletServer::addRaycast(bullet_server::AddRaycast::Request& req,
   }
 
   raycasts_[req.name] = new Raycast(req.name, req.frame_id,
-      req.start, req.end);
+      req.start, req.end,
+      req.topic_name,
+      nh_,
+      dynamics_world_);
 
   return true;
 }
@@ -418,6 +422,11 @@ void BulletServer::update()
       it != constraints_.end(); ++it)
   {
     it->second->update();
+  }
+
+  for (auto it : raycasts_)
+  {
+    it.second->update(tf_buffer_);
   }
 
   ros::spinOnce();

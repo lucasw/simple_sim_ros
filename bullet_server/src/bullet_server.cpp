@@ -28,6 +28,7 @@
 #include <bullet_server/AddConstraint.h>
 #include <bullet_server/AddHeightfield.h>
 #include <bullet_server/AddImpulse.h>
+#include <bullet_server/AddRaycast.h>
 #include <bullet_server/Anchor.h>
 #include <bullet_server/Body.h>
 #include <bullet_server/Constraint.h>
@@ -43,6 +44,7 @@
 #include <bullet_server/bullet_server.h>
 #include <bullet_server/body.h>
 #include <bullet_server/constraint.h>
+#include <bullet_server/raycast.h>
 #include <bullet_server/soft_body.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -158,6 +160,7 @@ int BulletServer::init()
   impulse_sub_ = nh_.subscribe("add_impulse", 10, &BulletServer::impulseCallback, this);
 
   add_compound_ = nh_.advertiseService("add_compound", &BulletServer::addCompound, this);
+  add_raycast_ = nh_.advertiseService("add_raycast", &BulletServer::addRaycast, this);
 
   republish_markers_sub_ = nh_.subscribe("republish_markers", 3,
       &BulletServer::republishMarkers, this);
@@ -242,6 +245,20 @@ bool BulletServer::addCompound(bullet_server::AddCompound::Request& req,
   }
 
   return res.success;
+}
+
+bool BulletServer::addRaycast(bullet_server::AddRaycast::Request& req,
+                              bullet_server::AddRaycast::Response& res)
+{
+  if (raycasts_.count(req.name) > 0)
+  {
+    delete raycasts_[req.name];
+  }
+
+  raycasts_[req.name] = new Raycast(req.name, req.frame_id,
+      req.start, req.end);
+
+  return true;
 }
 
 void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)

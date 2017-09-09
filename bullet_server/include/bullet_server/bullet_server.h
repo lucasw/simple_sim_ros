@@ -30,6 +30,7 @@
 #include <bullet_server/AddConstraint.h>
 #include <bullet_server/AddHeightfield.h>
 #include <bullet_server/AddImpulse.h>
+#include <bullet_server/AddRaycast.h>
 #include <bullet_server/Anchor.h>
 #include <bullet_server/Body.h>
 #include <bullet_server/Constraint.h>
@@ -58,6 +59,7 @@
 
 class Body;
 class SoftBody;
+struct Raycast;
 
 // TODO(lucasw) replace this with something better, numbers aren't random enough
 // http://stackoverflow.com/questions/2535284/how-can-i-hash-a-string-to-an-int-using-c
@@ -69,6 +71,9 @@ class BulletServer
   ros::ServiceServer add_compound_;
   bool addCompound(bullet_server::AddCompound::Request& req,
                    bullet_server::AddCompound::Response& res);
+  ros::ServiceServer add_raycast_;
+  bool addRaycast(bullet_server::AddRaycast::Request& req,
+                  bullet_server::AddRaycast::Response& res);
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   bool softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg);
@@ -109,6 +114,7 @@ class BulletServer
   btSoftBodyWorldInfo soft_body_world_info_;
   std::map<std::string, SoftBody*> soft_bodies_;
   std::map<std::string, Constraint*> constraints_;
+  std::map<std::string, Raycast*> raycasts_;
 
   int init();
 public:

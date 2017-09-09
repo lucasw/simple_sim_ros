@@ -81,6 +81,7 @@ add_service_files(
     AddConstraint.srv
     AddImpulse.srv
     AddHeightfield.srv
+    AddRaycast.srv
     # SoftBody.srv
 )
 
@@ -164,6 +165,7 @@ add_executable(bullet_server
   src/body.cpp
   src/bullet_server.cpp
   src/constraint.cpp
+  src/raycast.cpp
   src/soft_body.cpp)
 
 ## Add cmake target dependencies of the executable

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find bullet_server)/launch/imarker.launch"/>
+
+  <node pkg="bullet_server" type="raycast.py" name="raycast"
+      output="screen">
+    <param name="frame" value="spawn_frame"/>
+  </node>
+
+</launch>

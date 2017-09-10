@@ -257,7 +257,7 @@ bool BulletServer::addRaycast(bullet_server::AddRaycast::Request& req,
   }
 
   raycasts_[req.name] = new Raycast(req.name, req.frame_id,
-      req.start, req.end,
+      req.lines,
       req.topic_name,
       nh_,
       dynamics_world_);

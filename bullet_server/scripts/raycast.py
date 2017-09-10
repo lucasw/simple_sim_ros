@@ -8,8 +8,10 @@
 # 
 # Create the range sensor with the tf frame of that object as frame_id.
 
+import math
 import rospy
 
+from bullet_server.msg import Line
 from bullet_server.srv import *
 
 
@@ -21,12 +23,21 @@ if __name__ == '__main__':
     add_raycast_request.frame_id = rospy.get_param('~frame', "foo")
     add_raycast_request.name = "laser_range"
     add_raycast_request.topic_name = "laser_range"
-    add_raycast_request.start.x = 0.1
-    add_raycast_request.start.y = 0.0
-    add_raycast_request.start.z = 0.0
-    add_raycast_request.end.x = 10.0
-    add_raycast_request.end.y = 0.0
-    add_raycast_request.end.z = 0.0
+
+    num_pts = 30
+    half_pts = num_pts * 0.5
+    half_angle = 0.5
+    for i in range(num_pts):
+        angle = half_angle * (i - half_pts) / half_pts
+        line = Line()
+        line.start.x = 0.1 * math.cos(angle)
+        line.start.y = 0.0
+        line.start.z = 0.1 * math.sin(angle)
+        line.end.x = 10.0 * math.cos(angle)
+        line.end.y = 0.0
+        line.end.z = 10.0 * math.sin(angle)
+
+        add_raycast_request.lines.append(line)
     rospy.loginfo(add_raycast_request)
     try:
 	add_raycast_response = add_raycast(add_raycast_request)

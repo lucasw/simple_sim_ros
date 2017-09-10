@@ -66,6 +66,7 @@ add_message_files(
   Face.msg
   Impulse.msg
   Heightfield.msg
+  Line.msg
   Link.msg
   Material.msg
   Node.msg

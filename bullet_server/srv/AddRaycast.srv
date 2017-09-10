@@ -2,6 +2,5 @@
 string frame_id
 string name
 string topic_name
-geometry_msgs/Point start
-geometry_msgs/Point end
+bullet_server/Line[] lines
 ---

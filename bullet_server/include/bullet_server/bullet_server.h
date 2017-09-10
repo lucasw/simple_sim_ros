@@ -30,6 +30,7 @@
 #include <bullet_server/AddConstraint.h>
 #include <bullet_server/AddHeightfield.h>
 #include <bullet_server/AddImpulse.h>
+#include <bullet_server/AddLaserScan.h>
 #include <bullet_server/AddRaycast.h>
 #include <bullet_server/Anchor.h>
 #include <bullet_server/Body.h>
@@ -75,6 +76,9 @@ class BulletServer
   ros::ServiceServer add_raycast_;
   bool addRaycast(bullet_server::AddRaycast::Request& req,
                   bullet_server::AddRaycast::Response& res);
+  ros::ServiceServer add_laser_scan_;
+  bool addLaserScan(bullet_server::AddLaserScan::Request& req,
+                    bullet_server::AddLaserScan::Response& res);
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   bool softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg);

@@ -25,6 +25,33 @@ Raycast::Raycast(const std::string name, const std::string frame_id,
   point_cloud_pub_ = nh.advertise<sensor_msgs::PointCloud>(topic_name, 3);
 }
 
+Raycast::Raycast(const std::string name,
+      const sensor_msgs::LaserScan& laser_scan,
+      const std::string topic_name,
+      ros::NodeHandle& nh,
+      btDiscreteDynamicsWorld* dynamics_world) :
+    // TODO(lucasw) reuse the other constructor
+    name_(name),
+    frame_id_(laser_scan.header.frame_id),
+    laser_scan_(laser_scan),
+    dynamics_world_(dynamics_world)
+{
+  // TODO(lucasw) the point_cloud_pub may still be useful for debug
+  point_cloud_pub_ = nh.advertise<sensor_msgs::PointCloud>(topic_name + "_point_cloud_debug", 3);
+  laser_scan_pub_ = nh.advertise<sensor_msgs::LaserScan>(topic_name, 3);
+
+  for (float angle = laser_scan_.angle_min; angle < laser_scan_.angle_max;
+      angle += laser_scan_.angle_increment)
+  {
+    bullet_server::Line line;
+    line.start.x = laser_scan_.range_min * cos(angle);
+    line.start.y = laser_scan_.range_min * sin(angle);
+    line.end.x = laser_scan_.range_max * cos(angle);
+    line.end.y = laser_scan_.range_max * sin(angle);
+    lines_.push_back(line);
+  }
+}
+
 // TODO(lucasw) later this will return an entire ros message
 // in PointCloud, PointCloud2, LaserScan, or Range formats as desired
 bool Raycast::update(tf2_ros::Buffer& tf_buffer)
@@ -45,6 +72,10 @@ bool Raycast::update(tf2_ros::Buffer& tf_buffer)
   }
   sensor_msgs::PointCloud pc;
   pc.header = world_to_frame.header;
+  sensor_msgs::LaserScan laser_scan = laser_scan_;
+  laser_scan.header = pc.header;
+  laser_scan.ranges.resize(0);
+  laser_scan.intensities.resize(0);
 
   // TODO(lucasw) put all points into point cloud that can be transformed in one call
   for (auto line : lines_)
@@ -101,8 +132,30 @@ bool Raycast::update(tf2_ros::Buffer& tf_buffer)
       frame_pt32.y = frame_pt.point.y;
       frame_pt32.z = frame_pt.point.z;
       pc.points.push_back(frame_pt32);
+
+      if (laser_scan_pub_.getTopic() != "")
+      {
+        // avoid doing sqrt and other math on vector result
+        const float extent = (laser_scan_.range_max - laser_scan_.range_min);
+        const float range = laser_scan_.range_min + closest_results.m_closestHitFraction * extent;
+        laser_scan.ranges.push_back(range);
+      }
     }
-  }
+    else
+    {
+      if (laser_scan_pub_.getTopic() != "")
+      {
+        // TODO(lucasw) not sure sure putting in range_max value
+        // means that there is empty space there, or some other value
+        // communicates that.
+        laser_scan.ranges.push_back(laser_scan_.range_max);
+      }
+    }
+  }  // loop through all rays
   point_cloud_pub_.publish(pc);
+  if (laser_scan_pub_.getTopic() != "")
+  {
+    laser_scan_pub_.publish(laser_scan);
+  }
   return true;
 }

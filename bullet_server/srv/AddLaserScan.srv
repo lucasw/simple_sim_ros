@@ -1,0 +1,9 @@
+# the header seq, stamp are ignored, and range and intensities
+# scan_time and time_increment are currently also ignore and set to zero
+# TODO(lucasw) https://answers.ros.org/question/163201/laserscan-time_increment/
+string name
+string topic_name
+float32 update_rate
+sensor_msgs/LaserScan laser_scan
+# TODO(lucasw) update rate
+---

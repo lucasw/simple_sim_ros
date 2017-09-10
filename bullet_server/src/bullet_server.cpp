@@ -162,6 +162,7 @@ int BulletServer::init()
 
   add_compound_ = nh_.advertiseService("add_compound", &BulletServer::addCompound, this);
   add_raycast_ = nh_.advertiseService("add_raycast", &BulletServer::addRaycast, this);
+  add_laser_scan_ = nh_.advertiseService("add_laser_scan", &BulletServer::addLaserScan, this);
 
   republish_markers_sub_ = nh_.subscribe("republish_markers", 3,
       &BulletServer::republishMarkers, this);
@@ -258,6 +259,25 @@ bool BulletServer::addRaycast(bullet_server::AddRaycast::Request& req,
 
   raycasts_[req.name] = new Raycast(req.name, req.frame_id,
       req.lines,
+      req.topic_name,
+      nh_,
+      dynamics_world_);
+
+  return true;
+}
+
+// TODO(lucasw) this is where a plugin architecture starts to become necessary,
+// the LaserScan is actually a specific kind of Raycast
+bool BulletServer::addLaserScan(bullet_server::AddLaserScan::Request& req,
+                                bullet_server::AddLaserScan::Response& res)
+{
+  if (raycasts_.count(req.name) > 0)
+  {
+    delete raycasts_[req.name];
+  }
+
+  raycasts_[req.name] = new Raycast(req.name,
+      req.laser_scan,
       req.topic_name,
       nh_,
       dynamics_world_);

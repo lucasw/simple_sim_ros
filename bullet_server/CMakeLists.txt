@@ -83,6 +83,7 @@ add_service_files(
     AddConstraint.srv
     AddImpulse.srv
     AddHeightfield.srv
+    AddLaserScan.srv
     AddRaycast.srv
     # SoftBody.srv
 )

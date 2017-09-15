@@ -9,6 +9,8 @@
 # this may require more than just a simple interactive marker.
 # Later being able to create joints between bodies would be nice.
 
+# TODO(lucasw) this is taking up a lot of cpu
+
 import copy
 import numpy
 import rospy

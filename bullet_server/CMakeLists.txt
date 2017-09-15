@@ -7,6 +7,7 @@ project(bullet_server)
 find_package(catkin REQUIRED COMPONENTS
   # bullet
   cv_bridge
+  dynamic_reconfigure
   geometry_msgs
   roscpp
   roslint
@@ -120,10 +121,9 @@ generate_messages(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/BulletServer.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -174,6 +174,7 @@ add_executable(bullet_server
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(bullet_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(bullet_server bullet_server_gencfg)
 add_dependencies(bullet_server bullet_server_gencpp)
 
 ## Specify libraries to link a library or executable target against

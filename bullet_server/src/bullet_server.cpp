@@ -149,7 +149,18 @@ int BulletServer::init()
     dynamics_world_->addRigidBody(ground_rigid_body_);
   }
 
-  period_ = 1.0 / 60.0;
+  // TODO(lucasw) could have multiple threads, but would need proper protections
+  timer_ = nh_.createTimer(ros::Duration(0.1),
+      &BulletServer::update, this);
+
+	// dynamic reconfigure init
+	{
+		reconfigure_server_.reset(
+				new ReconfigureServer(dr_mutex_, nh_));
+		dynamic_reconfigure::Server<bullet_server::BulletServerConfig>::CallbackType bsc =
+			boost::bind(&BulletServer::reconfigureCallback, this, _1, _2);
+		reconfigure_server_->setCallback(bsc);
+	}
 
   marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
   // TODO(lucasw) make this a service
@@ -168,6 +179,15 @@ int BulletServer::init()
       &BulletServer::republishMarkers, this);
 
   return 0;
+}
+
+void BulletServer::reconfigureCallback(
+    bullet_server::BulletServerConfig& config,
+    uint32_t level)
+{
+  config_ = config;
+  // TODO(lucasw) adjust timer with new time step
+  timer_.setPeriod(ros::Duration(config_.target_time_step), false);
 }
 
 void BulletServer::republishMarkers(const std_msgs::Empty::ConstPtr&)
@@ -422,10 +442,11 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 }
 
 
-void BulletServer::update()
+void BulletServer::update(const ros::TimerEvent& e)
 {
-  // TODO(lucasw) make these parameters dynamically configurable
-  dynamics_world_->stepSimulation(period_, 10);
+  // Only do this when not generating clock
+  dynamics_world_->stepSimulation((e.current_real - e.last_real).toSec());  // ,
+  //    config_.max_sub_steps);
 
   for (std::map<std::string, Body*>::iterator it = bodies_.begin();
       it != bodies_.end(); ++it)
@@ -448,9 +469,6 @@ void BulletServer::update()
   {
     it.second->update(tf_buffer_);
   }
-
-  ros::spinOnce();
-  ros::Duration(period_).sleep();
 }
 
 void BulletServer::removeConstraint(const Constraint* constraint,
@@ -501,10 +519,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "bullet_server");
   BulletServer bullet_server;
-
-  while (ros::ok())
-  {
-    bullet_server.update();
-  }
+  ros::spin();
 }
 

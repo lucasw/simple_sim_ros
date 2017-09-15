@@ -34,6 +34,7 @@
 #include <bullet_server/AddRaycast.h>
 #include <bullet_server/Anchor.h>
 #include <bullet_server/Body.h>
+#include <bullet_server/BulletServerConfig.h>
 #include <bullet_server/Constraint.h>
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
@@ -44,6 +45,7 @@
 #include <bullet_server/Link.h>
 #include <bullet_server/Face.h>
 #include <bullet_server/Tetra.h>
+#include <dynamic_reconfigure/server.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
@@ -124,11 +126,21 @@ class BulletServer
   std::map<std::string, Constraint*> constraints_;
   std::map<std::string, Raycast*> raycasts_;
 
+  boost::recursive_mutex dr_mutex_;
+  typedef dynamic_reconfigure::Server<bullet_server::BulletServerConfig> ReconfigureServer;
+  boost::shared_ptr<ReconfigureServer> reconfigure_server_;
+  bullet_server::BulletServerConfig config_;
+  void reconfigureCallback(
+      bullet_server::BulletServerConfig& config,
+      uint32_t level);
+
+  ros::Timer timer_;
+
   int init();
 public:
   BulletServer();
   ~BulletServer();
-  void update();
+  void update(const ros::TimerEvent& e);
   void removeConstraint(const Constraint* constraint,
       const bool remove_from_bodies = false);
   std::map<std::string, Body*> bodies_;

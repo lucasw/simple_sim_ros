@@ -31,12 +31,18 @@ class SimClock():
                 time.sleep(0.1)
 
     def update(self):
-        # TODO(lwalter) time values can't be negative, so reverse
+        # TODO(lucasw) time values can't be negative, so reverse
         # time isn't going to work well without a large positive offset.
         msg = rospy.Time.from_sec(self.cur_time)
         self.pub.publish(msg)
         # TODO(lucasw) need to track wall time so don't drift behind
         self.cur_time += self.config.dt
+
+    # TODO(lucasw) trigger the update from a message
+    # One example of a message would be from a cpu intensive node that has
+    # finished processing
+    def trigger(self, msg):
+        self.update()
 
     def dr_callback(self, config, level):
         self.config = config

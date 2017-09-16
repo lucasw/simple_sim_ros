@@ -457,6 +457,7 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 
 void BulletServer::tickCallback(btScalar time_step)
 {
+  internal_elapsed_time_ += time_step;
   std_msgs::Float32 msg;
   msg.data = time_step;
   tick_pub_.publish(msg);

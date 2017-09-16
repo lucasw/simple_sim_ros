@@ -136,10 +136,12 @@ class BulletServer
 
   ros::Timer timer_;
 
+  ros::Publisher tick_pub_;
   int init();
 public:
   BulletServer();
   ~BulletServer();
+  void tickCallback(btScalar time_step);
   void update(const ros::TimerEvent& e);
   void removeConstraint(const Constraint* constraint,
       const bool remove_from_bodies = false);

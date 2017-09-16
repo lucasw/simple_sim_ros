@@ -52,6 +52,7 @@
 #include <geometry_msgs/Pose.h>
 #include <map>
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 #include <string>
 #include <tf/transform_broadcaster.h>
@@ -72,6 +73,14 @@ uint16_t hash(const char *str)
   }
 
   return hash;
+}
+
+// There isn't a built-in way of passing in 'this' to the callback, so this
+// forwarding function is needed
+// http://bulletphysics.org/mediawiki-1.5.8/index.php/Simulation_Tick_Callbacks
+void externalTickCallback(btDynamicsWorld *world, btScalar timeStep) {
+  BulletServer* bullet_server = static_cast<BulletServer*>(world->getWorldUserInfo());
+  bullet_server->tickCallback(timeStep);
 }
 
 BulletServer::BulletServer() :
@@ -162,6 +171,10 @@ int BulletServer::init()
 		reconfigure_server_->setCallback(bsc);
 	}
 
+  // TODO(lucasw) use a Float32Stamped
+  tick_pub_ = nh_.advertise<std_msgs::Float32>("sim_tick", 8);
+  dynamics_world_->setInternalTickCallback(externalTickCallback, static_cast<void*>(this));
+
   marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
   // TODO(lucasw) make this a service
   // rostopic pub /add_body bullet_server/Body "{name: 'test6', pose:
@@ -188,6 +201,7 @@ void BulletServer::reconfigureCallback(
   config_ = config;
   // TODO(lucasw) adjust timer with new time step
   timer_.setPeriod(ros::Duration(config_.target_time_step), false);
+  timer_.start();
 }
 
 void BulletServer::republishMarkers(const std_msgs::Empty::ConstPtr&)
@@ -441,12 +455,23 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
       dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
 }
 
+void BulletServer::tickCallback(btScalar time_step)
+{
+  std_msgs::Float32 msg;
+  msg.data = time_step;
+  tick_pub_.publish(msg);
+}
 
 void BulletServer::update(const ros::TimerEvent& e)
 {
   // Only do this when not generating clock
-  dynamics_world_->stepSimulation((e.current_real - e.last_real).toSec());  // ,
-  //    config_.max_sub_steps);
+  const double time_step = (e.current_real - e.last_real).toSec();
+  // http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World
+  // The simulation only steps when using this live update rate if
+  // max_sub_steps is set to zero, then it can be set to other values
+  // dynamics_world_->stepSimulation(time_step,
+  dynamics_world_->stepSimulation(config_.target_time_step,
+      config_.max_sub_steps, config_.fixed_time_step);
 
   for (std::map<std::string, Body*>::iterator it = bodies_.begin();
       it != bodies_.end(); ++it)

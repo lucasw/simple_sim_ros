@@ -137,6 +137,7 @@ class BulletServer
   ros::Timer timer_;
   double internal_elapsed_time_;
   ros::Publisher tick_pub_;
+  ros::Publisher internal_time_pub_;
   int init();
 public:
   BulletServer();

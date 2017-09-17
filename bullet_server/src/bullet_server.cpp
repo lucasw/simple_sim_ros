@@ -173,6 +173,8 @@ int BulletServer::init()
 
   // TODO(lucasw) use a Float32Stamped
   tick_pub_ = nh_.advertise<std_msgs::Float32>("sim_tick", 8);
+  // TODO(lucasw) or Clock?
+  internal_time_pub_ = nh_.advertise<std_msgs::Float32>("internal_time", 8);
   dynamics_world_->setInternalTickCallback(externalTickCallback, static_cast<void*>(this));
 
   marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
@@ -458,9 +460,16 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 void BulletServer::tickCallback(btScalar time_step)
 {
   internal_elapsed_time_ += time_step;
-  std_msgs::Float32 msg;
-  msg.data = time_step;
-  tick_pub_.publish(msg);
+  {
+    std_msgs::Float32 msg;
+    msg.data = time_step;
+    tick_pub_.publish(msg);
+  }
+  {
+    std_msgs::Float32 msg2;
+    msg2.data = internal_elapsed_time_;
+    internal_time_pub_.publish(msg2);
+  }
 }
 
 void BulletServer::update(const ros::TimerEvent& e)

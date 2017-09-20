@@ -3,6 +3,7 @@
 
 */
 
+#include <bullet_server/bullet_server.h>
 #include <bullet_server/raycast.h>
 #include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 #include <geometry_msgs/Point.h>
@@ -12,11 +13,14 @@
 #include <sensor_msgs/PointCloud.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-Raycast::Raycast(const std::string name, const std::string frame_id,
+Raycast::Raycast(
+      BulletServer* parent,
+      const std::string name, const std::string frame_id,
       const std::vector<bullet_server::Line>& lines,
       const std::string topic_name,
       ros::NodeHandle& nh,
       btDiscreteDynamicsWorld* dynamics_world) :
+    parent_(parent),
     name_(name),
     frame_id_(frame_id),
     lines_(lines),
@@ -25,12 +29,15 @@ Raycast::Raycast(const std::string name, const std::string frame_id,
   point_cloud_pub_ = nh.advertise<sensor_msgs::PointCloud>(topic_name, 3);
 }
 
-Raycast::Raycast(const std::string name,
+Raycast::Raycast(
+      BulletServer* parent,
+      const std::string name,
       const sensor_msgs::LaserScan& laser_scan,
       const std::string topic_name,
       ros::NodeHandle& nh,
       btDiscreteDynamicsWorld* dynamics_world) :
     // TODO(lucasw) reuse the other constructor
+    parent_(parent),
     name_(name),
     frame_id_(laser_scan.header.frame_id),
     laser_scan_(laser_scan),
@@ -59,7 +66,7 @@ bool Raycast::update(tf2_ros::Buffer& tf_buffer)
   geometry_msgs::TransformStamped frame_to_world;
   geometry_msgs::TransformStamped world_to_frame;
   // TODO(lucasw) pass this in in constructor
-  const std::string world_frame = "map";
+  const std::string world_frame = parent_->config_.frame_id;
   try
   {
     frame_to_world = tf_buffer.lookupTransform(world_frame, frame_id_, ros::Time(0));

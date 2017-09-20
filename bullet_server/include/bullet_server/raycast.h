@@ -6,10 +6,13 @@
 #include <sensor_msgs/LaserScan.h>
 #include <tf2_ros/transform_listener.h>
 
+class BulletServer;
+
 class Raycast
 {
 public:
-  Raycast(const std::string name, const std::string frame_id,
+  Raycast(BulletServer* parent,
+      const std::string name, const std::string frame_id,
       const std::vector<bullet_server::Line>& lines,
       const std::string topic_name,
       ros::NodeHandle& nh,
@@ -17,7 +20,8 @@ public:
 
   // TODO(lucasw) this should probably be a subclass instead
   sensor_msgs::LaserScan laser_scan_;
-  Raycast(const std::string name,
+  Raycast(BulletServer* parent,
+      const std::string name,
       const sensor_msgs::LaserScan& laser_scan,
       const std::string topic_name,
       ros::NodeHandle& nh,
@@ -25,6 +29,7 @@ public:
 
   bool update(tf2_ros::Buffer& tf_buffer);
 private:
+  BulletServer* parent_;
   ros::Publisher point_cloud_pub_;
   ros::Publisher laser_scan_pub_;
 

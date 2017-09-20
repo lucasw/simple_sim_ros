@@ -8,6 +8,8 @@
     <arg name="tf_prefix" value="$(arg tf_prefix)"/>
   </include>
   </group>
+
+  <group ns="bullet_server">
   <node pkg="bullet_server" type="ground_plane.py" name="ground_plane"
       output="screen"
       if="false">
@@ -16,6 +18,7 @@
   <node pkg="bullet_server" type="tracks.py" name="tracked_vehicle"
       output="screen">
   </node>
+  </group>
   <node pkg="rostopic" type="rostopic" name="back_left"
     args="pub wheel_motor_0_0/target_ang_motor_vel std_msgs/Float64 0.7" output="screen"/>
   <node pkg="rostopic" type="rostopic" name="front_left"
@@ -24,5 +27,4 @@
     args="pub wheel_motor_1_0/target_ang_motor_vel std_msgs/Float64 1.1" output="screen"/>
   <node pkg="rostopic" type="rostopic" name="front_right"
     args="pub wheel_motor_1_1/target_ang_motor_vel std_msgs/Float64 1.1" output="screen"/>
-
 </launch>

@@ -204,7 +204,7 @@ SoftBody::SoftBody(BulletServer* parent,
 
     // TODO(lucasw) could turn this into function
     marker.id = hash(name_.c_str());
-    marker.header.frame_id = "map";
+    marker.header.frame_id = parent_->config_.frame_id;
     marker.color.r = 0.45;
     marker.color.g = 0.4;
     marker.color.b = 0.65;
@@ -232,7 +232,7 @@ SoftBody::SoftBody(BulletServer* parent,
 
     // TODO(lucasw) could turn this into function
     marker.id = hash((name_ + "lines").c_str());
-    marker.header.frame_id = "map";
+    marker.header.frame_id = parent_->config_.frame_id;
     marker.color.r = 0.3;
     marker.color.g = 0.67;
     marker.color.b = 0.65;

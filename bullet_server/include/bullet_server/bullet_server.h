@@ -113,6 +113,9 @@ class BulletServer
   // btSoftBodySolver* soft_body_solver_;
   btSequentialImpulseConstraintSolver* solver_;
 
+  // the dynamics world will operate in config_.frame_id
+  // If this frame were to move relative to a higher non-simulated frame
+  // there would be no effect on the sim.
   btDiscreteDynamicsWorld* dynamics_world_;
 
   // TODO(lucasw) make this configurable by addCompound
@@ -129,7 +132,6 @@ class BulletServer
   boost::recursive_mutex dr_mutex_;
   typedef dynamic_reconfigure::Server<bullet_server::BulletServerConfig> ReconfigureServer;
   boost::shared_ptr<ReconfigureServer> reconfigure_server_;
-  bullet_server::BulletServerConfig config_;
   void reconfigureCallback(
       bullet_server::BulletServerConfig& config,
       uint32_t level);
@@ -142,6 +144,7 @@ class BulletServer
 public:
   BulletServer();
   ~BulletServer();
+  bullet_server::BulletServerConfig config_;
   void tickCallback(btScalar time_step);
   void update(const ros::TimerEvent& e);
   void removeConstraint(const Constraint* constraint,

@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
+  <group ns="bullet_server">
   <node pkg="bullet_server" type="ground_plane.py" name="ground_plane"
       output="screen">
   </node>
@@ -21,5 +22,6 @@
       output="screen">
     <param name="frame" value="spawn_frame"/>
   </node>
+  </group>
 
 </launch>

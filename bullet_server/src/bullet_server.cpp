@@ -84,6 +84,7 @@ void externalTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 }
 
 BulletServer::BulletServer() :
+  nh_("~"),
   rigid_only_(true),
   broadphase_(NULL),
   collision_configuration_(NULL),
@@ -293,7 +294,8 @@ bool BulletServer::addRaycast(bullet_server::AddRaycast::Request& req,
     delete raycasts_[req.name];
   }
 
-  raycasts_[req.name] = new Raycast(req.name, req.frame_id,
+  raycasts_[req.name] = new Raycast(this,
+      req.name, req.frame_id,
       req.lines,
       req.topic_name,
       nh_,
@@ -312,7 +314,8 @@ bool BulletServer::addLaserScan(bullet_server::AddLaserScan::Request& req,
     delete raycasts_[req.name];
   }
 
-  raycasts_[req.name] = new Raycast(req.name,
+  raycasts_[req.name] = new Raycast(this,
+      req.name,
       req.laser_scan,
       req.topic_name,
       nh_,

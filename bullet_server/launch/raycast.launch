@@ -3,9 +3,11 @@
 
   <include file="$(find bullet_server)/launch/imarker.launch"/>
 
+  <group ns="bullet_server">
   <node pkg="bullet_server" type="raycast.py" name="raycast"
       output="screen">
     <param name="frame" value="spawn_frame"/>
   </node>
+  </group>
 
 </launch>

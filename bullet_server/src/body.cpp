@@ -333,7 +333,7 @@ Body::Body(
   {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    marker.header.frame_id = "map";
+    marker.header.frame_id = parent_->config_.frame_id;
     marker.ns = "heightfield";
     marker.frame_locked = true;
     marker.id = hash(name.c_str());
@@ -399,7 +399,9 @@ Body::Body(
 
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    marker.header.frame_id = "map";
+    marker.header.frame_id = parent_->config_.frame_id;
+    // TODO(lucasw) if frame_id_ != parent_->frame_id_
+    // then transform coords into this frame_id_
     marker.ns = "heightfield";
     marker.frame_locked = true;
     marker.id = hash(name.c_str());

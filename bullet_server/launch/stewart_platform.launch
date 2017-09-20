@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="remove" default="false"/>
+
+  <group ns="bullet_server">
   <node name="spawn_platform" pkg="bullet_server" type="stewart_platform.py"
       output="screen">
     <param name="remove" value="$(arg remove)"/>
   </node>
+  </group>
 
   <group unless="$(arg remove)">
   <group ns="prismatic_0">

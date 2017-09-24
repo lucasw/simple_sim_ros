@@ -146,8 +146,54 @@ class Grasp:
             # TODO(lucasw) is this an absolute angle or rate?
             prismatic.lower_ang_lim = -0.1
             prismatic.upper_ang_lim = 0.1
-            prismatic.max_motor_impulse = 1000.0
+            prismatic.max_motor_impulse = 10.0
             add_compound_request.constraint.append(prismatic)
+
+        # fingers gotta fing
+        num_fingers = 3
+        for i in range(num_fingers):
+            finger_thickness = thickness / 4.0
+            finger_length = 0.05
+            finger_upper = Body()
+            finger_upper.name = "finger_upper_" + str(i)
+            finger_upper.mass = 0.03
+            finger_upper.pose.orientation.x = rot90[0]
+            finger_upper.pose.orientation.y = rot90[1]
+            finger_upper.pose.orientation.z = rot90[2]
+            finger_upper.pose.orientation.w = rot90[3]
+            angle = float(i) / num_fingers * 2.0 * math.pi
+            finger_upper.pose.position.x = thickness / 2.0 * math.cos(angle)
+            finger_upper.pose.position.y = thickness / 2.0 * math.sin(angle)
+            finger_upper.pose.position.z = arm_base_height - cyl_length * 1.56
+            finger_upper.type = Body.CYLINDER
+            finger_upper.scale.x = finger_thickness / 2.0
+            finger_upper.scale.y = finger_length / 2.0
+            finger_upper.scale.z = finger_thickness / 2.0
+            add_compound_request.body.append(finger_upper)
+
+	    finger_joint = Constraint()
+	    finger_joint.name = "finger_joint_" + str(i)
+	    finger_joint.body_a = "arm_fore"
+	    finger_joint.body_b = finger_upper.name
+	    finger_joint.type = Constraint.HINGE
+	    finger_joint.lower_ang_lim = -0.4
+	    finger_joint.upper_ang_lim = 0.6
+	    finger_joint.max_motor_impulse = 2.0
+	    finger_joint.pivot_in_a.x = thickness / 2.0 * math.cos(angle)
+	    finger_joint.pivot_in_a.z = -thickness / 2.0 * math.sin(angle)
+	    finger_joint.pivot_in_a.y = -cyl_length * 0.52
+	    finger_joint.axis_in_a.x = -math.cos(angle + math.pi / 2.0)
+	    finger_joint.axis_in_a.z = math.sin(angle + math.pi / 2.0)
+	    finger_joint.axis_in_a.y = 0.0
+	    finger_joint.pivot_in_b.x = 0.0
+	    finger_joint.pivot_in_b.y = finger_length / 2.0
+	    finger_joint.pivot_in_b.z = 0.0
+	    finger_joint.axis_in_b.x = 1.0
+	    finger_joint.axis_in_b.y = 0.0
+	    finger_joint.axis_in_b.z = 0.0
+	    finger_joint.enable_pos_pub = True
+	    finger_joint.enable_motor_sub = True
+	    add_compound_request.constraint.append(finger_joint)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

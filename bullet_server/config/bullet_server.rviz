@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -74,7 +74,7 @@ Visualization Manager:
       Marker Topic: /bullet_server/visualization_marker
       Name: Viz
       Namespaces:
-        bodies: true
+        {}
       Queue Size: 200
       Value: true
     - Class: rviz/Group
@@ -311,7 +311,7 @@ Visualization Manager:
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 255; 255; 255
+    Background Color: 161; 161; 161
     Fixed Frame: map
     Frame Rate: 30
     Headlight: true
@@ -370,5 +370,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1244
-  X: 601
-  Y: 65
+  X: 52
+  Y: 41

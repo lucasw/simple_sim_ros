@@ -186,7 +186,7 @@ class Grasp:
 	    finger_joint.axis_in_a.z = math.sin(angle + math.pi / 2.0)
 	    finger_joint.axis_in_a.y = 0.0
 	    finger_joint.pivot_in_b.x = 0.0
-	    finger_joint.pivot_in_b.y = finger_length / 2.0
+	    finger_joint.pivot_in_b.y = finger_length * 0.5
 	    finger_joint.pivot_in_b.z = 0.0
 	    finger_joint.axis_in_b.x = 1.0
 	    finger_joint.axis_in_b.y = 0.0
@@ -194,6 +194,32 @@ class Grasp:
 	    finger_joint.enable_pos_pub = True
 	    finger_joint.enable_motor_sub = True
 	    add_compound_request.constraint.append(finger_joint)
+
+            finger_lower = copy.deepcopy(finger_upper)
+            finger_lower.name = "finger_lower_" + str(i)
+            finger_lower.pose.position.z = arm_base_height - cyl_length * 1.56 - finger_length
+            finger_lower.scale.y = finger_length * 0.4
+            finger_lower.scale.z = finger_thickness / 2.0
+            add_compound_request.body.append(finger_lower)
+
+	    finger_lower_joint = copy.deepcopy(finger_joint)
+	    finger_lower_joint.name = "finger_lower_joint_" + str(i)
+	    finger_lower_joint.body_a = finger_upper.name
+	    finger_lower_joint.body_b = finger_lower.name
+	    finger_lower_joint.type = Constraint.HINGE
+	    finger_lower_joint.lower_ang_lim = -0.4
+	    finger_lower_joint.upper_ang_lim = 0.6
+	    finger_lower_joint.max_motor_impulse = 2.0
+	    finger_lower_joint.pivot_in_a.x = 0.0
+	    finger_lower_joint.pivot_in_a.z = 0.0
+	    finger_lower_joint.pivot_in_a.y = -finger_length * 0.5
+	    finger_lower_joint.axis_in_a.x = math.sin(angle + math.pi / 2.0)
+	    finger_lower_joint.axis_in_a.z = -math.cos(angle + math.pi / 2.0)
+	    finger_lower_joint.axis_in_a.y = 0.0
+	    finger_joint.pivot_in_b.y = finger_length * 0.4
+	    finger_lower_joint.enable_pos_pub = True
+	    finger_lower_joint.enable_motor_sub = True
+	    add_compound_request.constraint.append(finger_lower_joint)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

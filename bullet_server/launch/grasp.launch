@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="remove" default="false"/>
+  <arg name="finger_kp_scale" default="4.0"/>
+  <arg name="finger_upper_limit" default="2.0"/>
+
+  <group ns="bullet_server">
+  <node name="spawn_platform" pkg="bullet_server" type="grasp.py"
+      output="screen">
+    <param name="remove" value="$(arg remove)"/>
+  </node>
+  </group>
+
+  <group unless="$(arg remove)">
+  <group ns="prismatic_upper_fore">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="1"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_lin_motor_vel"/>
+			<param name="topic_from_plant" value="linear_pos"/>
+    </node>
+  </group>
+
+  <group ns="finger_joint_0">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="$(arg finger_upper_limit)"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_ang_motor_vel"/>
+			<param name="topic_from_plant" value="angular_pos"/>
+    </node>
+  </group>
+
+  <group ns="finger_joint_1">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="$(arg finger_upper_limit)"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_ang_motor_vel"/>
+			<param name="topic_from_plant" value="angular_pos"/>
+    </node>
+  </group>
+
+  <group ns="finger_joint_2">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="$(arg finger_upper_limit)"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_ang_motor_vel"/>
+			<param name="topic_from_plant" value="angular_pos"/>
+    </node>
+  </group>
+
+  <group ns="finger_lower_joint_0">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="$(arg finger_upper_limit)"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_ang_motor_vel"/>
+			<param name="topic_from_plant" value="angular_pos"/>
+    </node>
+  </group>
+
+  <group ns="finger_lower_joint_1">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="$(arg finger_upper_limit)"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_ang_motor_vel"/>
+			<param name="topic_from_plant" value="angular_pos"/>
+    </node>
+  </group>
+
+  <group ns="finger_lower_joint_2">
+    <node name="pid" pkg="pid" type="controller">
+      <param name="Kp" value="1.0"/>
+      <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
+      <param name="Ki" value="0.0"/>
+      <param name="Kd" value="0.05"/>
+      <param name="upper_limit" value="$(arg finger_upper_limit)"/>
+      <param name="lower_limit" value="-1"/>
+      <param name="windup_limit" value="1"/>
+      <param name="diagnostic_period" value="0.25"/>
+      <param name="max_loop_frequency" value="100.0"/>
+      <param name="min_loop_frequency" value="100.0"/>
+			<param name="topic_from_controller" value="target_ang_motor_vel"/>
+			<param name="topic_from_plant" value="angular_pos"/>
+    </node>
+  </group>
+  </group>  <!-- remove -->
+
+</launch>

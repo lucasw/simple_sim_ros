@@ -79,7 +79,7 @@ class Grasp:
             arm_upper = Body()
             # arm_upper = copy.deepcopy(arm_fore)
             arm_upper.name = "arm_upper"
-            arm_upper.mass = 0.3
+            arm_upper.mass = 1.0
             arm_upper.pose.position.x = 0.0
             arm_upper.pose.position.y = 0.0
             rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
@@ -113,7 +113,7 @@ class Grasp:
 
             arm_fore = Body()
             arm_fore.name = "arm_fore"
-            arm_fore.mass = 0.3
+            arm_fore.mass = 1.0
             arm_fore.pose.orientation.x = rot90[0]
             arm_fore.pose.orientation.y = rot90[1]
             arm_fore.pose.orientation.z = rot90[2]
@@ -146,7 +146,7 @@ class Grasp:
             # TODO(lucasw) is this an absolute angle or rate?
             prismatic.lower_ang_lim = -0.1
             prismatic.upper_ang_lim = 0.1
-            prismatic.max_motor_impulse = 10.0
+            prismatic.max_motor_impulse = 80.0
             add_compound_request.constraint.append(prismatic)
 
         # fingers gotta fing
@@ -156,7 +156,7 @@ class Grasp:
             finger_length = 0.05
             finger_upper = Body()
             finger_upper.name = "finger_upper_" + str(i)
-            finger_upper.mass = 0.03
+            finger_upper.mass = 0.1
             finger_upper.pose.orientation.x = rot90[0]
             finger_upper.pose.orientation.y = rot90[1]
             finger_upper.pose.orientation.z = rot90[2]
@@ -165,7 +165,7 @@ class Grasp:
             finger_upper.pose.position.x = thickness / 2.0 * math.cos(angle)
             finger_upper.pose.position.y = thickness / 2.0 * math.sin(angle)
             finger_upper.pose.position.z = arm_base_height - cyl_length * 1.56
-            finger_upper.type = Body.CYLINDER
+            finger_upper.type = Body.BOX
             finger_upper.scale.x = finger_thickness / 2.0
             finger_upper.scale.y = finger_length / 2.0
             finger_upper.scale.z = finger_thickness / 2.0
@@ -176,9 +176,9 @@ class Grasp:
 	    finger_joint.body_a = "arm_fore"
 	    finger_joint.body_b = finger_upper.name
 	    finger_joint.type = Constraint.HINGE
-	    finger_joint.lower_ang_lim = -0.4
+	    finger_joint.lower_ang_lim = -0.8
 	    finger_joint.upper_ang_lim = 0.6
-	    finger_joint.max_motor_impulse = 2.0
+	    finger_joint.max_motor_impulse = 50.0
 	    finger_joint.pivot_in_a.x = thickness / 2.0 * math.cos(angle)
 	    finger_joint.pivot_in_a.z = -thickness / 2.0 * math.sin(angle)
 	    finger_joint.pivot_in_a.y = -cyl_length * 0.52
@@ -197,9 +197,10 @@ class Grasp:
 
             finger_lower = copy.deepcopy(finger_upper)
             finger_lower.name = "finger_lower_" + str(i)
+            finger_lower.mass = 0.05
             finger_lower.pose.position.z = arm_base_height - cyl_length * 1.56 - finger_length
             finger_lower.scale.y = finger_length * 0.4
-            finger_lower.scale.z = finger_thickness / 2.0
+            finger_lower.scale.z = finger_thickness / 3.0
             add_compound_request.body.append(finger_lower)
 
 	    finger_lower_joint = copy.deepcopy(finger_joint)
@@ -207,14 +208,15 @@ class Grasp:
 	    finger_lower_joint.body_a = finger_upper.name
 	    finger_lower_joint.body_b = finger_lower.name
 	    finger_lower_joint.type = Constraint.HINGE
-	    finger_lower_joint.lower_ang_lim = -0.4
+	    finger_lower_joint.lower_ang_lim = -0.6
 	    finger_lower_joint.upper_ang_lim = 0.6
-	    finger_lower_joint.max_motor_impulse = 2.0
+	    finger_lower_joint.max_motor_impulse = 50.0
 	    finger_lower_joint.pivot_in_a.x = 0.0
 	    finger_lower_joint.pivot_in_a.z = 0.0
 	    finger_lower_joint.pivot_in_a.y = -finger_length * 0.5
-	    finger_lower_joint.axis_in_a.x = math.sin(angle + math.pi / 2.0)
-	    finger_lower_joint.axis_in_a.z = -math.cos(angle + math.pi / 2.0)
+	    finger_lower_joint.axis_in_a.x = 1.0
+	    finger_lower_joint.axis_in_a.y = 0.0
+	    finger_lower_joint.axis_in_a.z = 0.0
 	    finger_lower_joint.axis_in_a.y = 0.0
 	    finger_joint.pivot_in_b.y = finger_length * 0.4
 	    finger_lower_joint.enable_pos_pub = True

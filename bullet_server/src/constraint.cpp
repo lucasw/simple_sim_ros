@@ -72,6 +72,7 @@ Constraint::Constraint(
       const float max_motor_impulse,
       const bool enable_pos_pub,
       const bool enable_motor_sub,
+      const bool disable_collisions_between_linked_bodies,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub) :
     nh_(name),
@@ -90,7 +91,6 @@ Constraint::Constraint(
   const btVector3 pivot_in_b_bt(pivot_in_b.x, pivot_in_b.y, pivot_in_b.z);
   const btVector3 axis_in_a_bt(axis_in_a.x, axis_in_a.y, axis_in_a.z);
   const btVector3 axis_in_b_bt(axis_in_b.x, axis_in_b.y, axis_in_b.z);
-  bool dont_collide = true;
   // TODO(lucasw) instead of this big switch here, need to have
   // subclasses
   if (type == bullet_server::Constraint::HINGE)
@@ -238,8 +238,6 @@ Constraint::Constraint(
   }
   if (type == bullet_server::Constraint::POINT2POINT)
   {
-    // TODO(lucasw) set this in Constraint?
-    dont_collide = false;
     // ROS_INFO_STREAM(name << " " << body_a->name_ << " " << body_b->name_
     //     << pivot_in_a << " " << pivot_in_b);
     constraint_ = new btPoint2PointConstraint(
@@ -311,7 +309,7 @@ Constraint::Constraint(
 
     marker_array_pub_->publish(marker_array_);
   }
-  dynamics_world_->addConstraint(constraint_, dont_collide);
+  dynamics_world_->addConstraint(constraint_, disable_collisions_between_linked_bodies);
   body_a->addConstraint(this);
   body_b->addConstraint(this);
   body_a->rigid_body_->activate();
@@ -342,10 +340,12 @@ void Constraint::update()
   btSliderConstraint* slider = dynamic_cast<btSliderConstraint*>(constraint_);
   if (slider)
   {
-    std_msgs::Float64 msg;
-    msg.data = slider->getLinearPos();
     if (enable_pos_pub_)
+    {
+      std_msgs::Float64 msg;
+      msg.data = slider->getLinearPos();
       pubs_["linear_pos"].publish(msg);
+    }
 
     // TODO(lucasw) need to be able to disable the motor
     const float vel = command_["target_lin_motor_vel"];
@@ -357,10 +357,12 @@ void Constraint::update()
   {
     // TODO(lucasw) detect roll-over and make this continuous
     // rather than -pi to pi
-    std_msgs::Float64 msg;
-    msg.data = hinge->getHingeAngle();
     if (enable_pos_pub_)
+    {
+      std_msgs::Float64 msg;
+      msg.data = hinge->getHingeAngle();
       pubs_["angular_pos"].publish(msg);
+    }
 
     const float vel = command_["target_ang_motor_vel"];
     hinge->enableAngularMotor(true, vel, max_motor_impulse_);

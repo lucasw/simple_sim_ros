@@ -20,3 +20,4 @@ geometry_msgs/Point pivot_in_a
 geometry_msgs/Point pivot_in_b
 geometry_msgs/Vector3 axis_in_a
 geometry_msgs/Vector3 axis_in_b
+bool disable_collisions_between_linked_bodies

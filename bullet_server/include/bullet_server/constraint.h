@@ -91,6 +91,7 @@ public:
       const float max_motor_impulse,
       const bool enable_pos_pub,
       const bool enable_motor_sub,
+      const bool disable_collisions_between_linked_bodies,
       btDiscreteDynamicsWorld* dynamics_world,
       ros::Publisher* marker_array_pub);
   ~Constraint();

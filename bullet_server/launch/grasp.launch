@@ -2,7 +2,8 @@
 <launch>
   <arg name="remove" default="false"/>
   <arg name="finger_kp_scale" default="4.0"/>
-  <arg name="finger_upper_limit" default="2.0"/>
+  <arg name="finger_upper_limit" default="20.0"/>
+  <arg name="finger_lower_limit" default="-20.0"/>
 
   <group ns="bullet_server">
   <node name="spawn_platform" pkg="bullet_server" type="grasp.py"
@@ -15,7 +16,7 @@
   <group ns="prismatic_upper_fore">
     <node name="pid" pkg="pid" type="controller">
       <param name="Kp" value="1.0"/>
-      <param name="Ki" value="0.0"/>
+      <param name="Ki" value="0.5"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="1"/>
       <param name="lower_limit" value="-1"/>
@@ -35,7 +36,7 @@
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(arg finger_upper_limit)"/>
-      <param name="lower_limit" value="-1"/>
+      <param name="lower_limit" value="$(arg finger_lower_limit)"/>
       <param name="windup_limit" value="1"/>
       <param name="diagnostic_period" value="0.25"/>
       <param name="max_loop_frequency" value="100.0"/>
@@ -52,7 +53,7 @@
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(arg finger_upper_limit)"/>
-      <param name="lower_limit" value="-1"/>
+      <param name="lower_limit" value="$(arg finger_lower_limit)"/>
       <param name="windup_limit" value="1"/>
       <param name="diagnostic_period" value="0.25"/>
       <param name="max_loop_frequency" value="100.0"/>
@@ -69,7 +70,7 @@
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(arg finger_upper_limit)"/>
-      <param name="lower_limit" value="-1"/>
+      <param name="lower_limit" value="$(arg finger_lower_limit)"/>
       <param name="windup_limit" value="1"/>
       <param name="diagnostic_period" value="0.25"/>
       <param name="max_loop_frequency" value="100.0"/>
@@ -86,7 +87,7 @@
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(arg finger_upper_limit)"/>
-      <param name="lower_limit" value="-1"/>
+      <param name="lower_limit" value="$(arg finger_lower_limit)"/>
       <param name="windup_limit" value="1"/>
       <param name="diagnostic_period" value="0.25"/>
       <param name="max_loop_frequency" value="100.0"/>
@@ -103,7 +104,7 @@
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(arg finger_upper_limit)"/>
-      <param name="lower_limit" value="-1"/>
+      <param name="lower_limit" value="$(arg finger_lower_limit)"/>
       <param name="windup_limit" value="1"/>
       <param name="diagnostic_period" value="0.25"/>
       <param name="max_loop_frequency" value="100.0"/>
@@ -120,7 +121,7 @@
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(arg finger_upper_limit)"/>
-      <param name="lower_limit" value="-1"/>
+      <param name="lower_limit" value="$(arg finger_lower_limit)"/>
       <param name="windup_limit" value="1"/>
       <param name="diagnostic_period" value="0.25"/>
       <param name="max_loop_frequency" value="100.0"/>

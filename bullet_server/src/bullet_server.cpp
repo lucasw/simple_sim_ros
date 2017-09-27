@@ -415,6 +415,7 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
       msg->max_motor_impulse,
       msg->enable_pos_pub,
       msg->enable_motor_sub,
+      msg->disable_collisions_between_linked_bodies,
       dynamics_world_,
       &marker_array_pub_);
 

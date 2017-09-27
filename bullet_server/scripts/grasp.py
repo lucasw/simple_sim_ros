@@ -109,6 +109,7 @@ class Grasp:
             constraint.pivot_in_b.x = 0
             constraint.pivot_in_b.y = cyl_length / 2.0
             constraint.pivot_in_b.z = 0
+            constraint.disable_collisions_between_linked_bodies = True
             add_compound_request.constraint.append(constraint)
 
             arm_fore = Body()
@@ -147,6 +148,7 @@ class Grasp:
             prismatic.lower_ang_lim = -0.1
             prismatic.upper_ang_lim = 0.1
             prismatic.max_motor_impulse = 80.0
+            prismatic.disable_collisions_between_linked_bodies = True
             add_compound_request.constraint.append(prismatic)
 
         # fingers gotta fing
@@ -156,7 +158,7 @@ class Grasp:
             finger_length = 0.05
             finger_upper = Body()
             finger_upper.name = "finger_upper_" + str(i)
-            finger_upper.mass = 0.1
+            finger_upper.mass = 0.5
             finger_upper.pose.orientation.x = rot90[0]
             finger_upper.pose.orientation.y = rot90[1]
             finger_upper.pose.orientation.z = rot90[2]
@@ -178,7 +180,7 @@ class Grasp:
 	    finger_joint.type = Constraint.HINGE
 	    finger_joint.lower_ang_lim = -0.8
 	    finger_joint.upper_ang_lim = 0.6
-	    finger_joint.max_motor_impulse = 50.0
+	    finger_joint.max_motor_impulse = 2000.0
 	    finger_joint.pivot_in_a.x = thickness / 2.0 * math.cos(angle)
 	    finger_joint.pivot_in_a.z = -thickness / 2.0 * math.sin(angle)
 	    finger_joint.pivot_in_a.y = -cyl_length * 0.52
@@ -193,11 +195,12 @@ class Grasp:
 	    finger_joint.axis_in_b.z = 0.0
 	    finger_joint.enable_pos_pub = True
 	    finger_joint.enable_motor_sub = True
+            finger_joint.disable_collisions_between_linked_bodies = True
 	    add_compound_request.constraint.append(finger_joint)
 
             finger_lower = copy.deepcopy(finger_upper)
             finger_lower.name = "finger_lower_" + str(i)
-            finger_lower.mass = 0.05
+            finger_lower.mass = 0.5
             finger_lower.pose.position.z = arm_base_height - cyl_length * 1.56 - finger_length
             finger_lower.scale.y = finger_length * 0.4
             finger_lower.scale.z = finger_thickness / 3.0
@@ -210,7 +213,7 @@ class Grasp:
 	    finger_lower_joint.type = Constraint.HINGE
 	    finger_lower_joint.lower_ang_lim = -0.6
 	    finger_lower_joint.upper_ang_lim = 0.6
-	    finger_lower_joint.max_motor_impulse = 50.0
+	    finger_lower_joint.max_motor_impulse = 2000.0
 	    finger_lower_joint.pivot_in_a.x = 0.0
 	    finger_lower_joint.pivot_in_a.z = 0.0
 	    finger_lower_joint.pivot_in_a.y = -finger_length * 0.5

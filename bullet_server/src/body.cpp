@@ -235,10 +235,14 @@ Body::Body(BulletServer* parent,
       btVector3(pose.position.x, pose.position.y, pose.position.z)));
   // TODO(lucasw) provide in message
   btScalar scalar_mass = mass;
-  btVector3 fallInertia(0, 0, 0);
-  shape_->calculateLocalInertia(scalar_mass, fallInertia);
+  btVector3 fall_inertia(0, 0, 0);
+  shape_->calculateLocalInertia(scalar_mass, fall_inertia);
+  ROS_INFO_STREAM(name_ << " " << scalar_mass
+    << " " << fall_inertia.x()
+    << " " << fall_inertia.y()
+    << " " << fall_inertia.z());
   btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(scalar_mass, motion_state_,
-      shape_, fallInertia);
+      shape_, fall_inertia);
   rigid_body_ = new btRigidBody(fallRigidBodyCI);
   dynamics_world_->addRigidBody(rigid_body_);
 

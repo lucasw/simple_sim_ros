@@ -7,7 +7,7 @@ roslaunch bullet_server bullet_server.launch
 roslaunch bullet_server stewart_platform.launch
 ```
 
-The ros pid package is required, for example `sudo apt-get install ros-jade-pid` on jade systems.
+The ros pid package is required, for example `sudo apt-get install ros-kinetic-pid` on kinetic systems.
 
 Then extend on 'actuator':
 

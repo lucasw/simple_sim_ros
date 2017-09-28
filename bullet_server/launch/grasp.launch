@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="remove" default="false"/>
-  <arg name="finger_kp_scale" default="4.0"/>
+  <!-- these scale values are enums that can only be 0.1, 1.0, 10.0, 100.0-
+      but that doesn't matter because the init of the pid messes with these values,
+      so set it to 1.0 and set Kp to desired value-->
+  <arg name="finger_kp_scale" default="1.0"/>
+  <arg name="finger_kp" default="10.0"/>
   <arg name="finger_upper_limit" default="20.0"/>
   <arg name="finger_lower_limit" default="-20.0"/>
 
@@ -15,7 +19,7 @@
   <group unless="$(arg remove)">
   <group ns="prismatic_upper_fore">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Ki" value="0.5"/>
       <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="1"/>
@@ -31,7 +35,7 @@
 
   <group ns="finger_joint_0">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
@@ -48,7 +52,7 @@
 
   <group ns="finger_joint_1">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
@@ -65,7 +69,7 @@
 
   <group ns="finger_joint_2">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
@@ -82,7 +86,7 @@
 
   <group ns="finger_lower_joint_0">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
@@ -99,7 +103,7 @@
 
   <group ns="finger_lower_joint_1">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>
@@ -116,7 +120,7 @@
 
   <group ns="finger_lower_joint_2">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="1.0"/>
+      <param name="Kp" value="$(arg finger_kp)"/>
       <param name="Kp_scale" value="$(arg finger_kp_scale)"/>
       <param name="Ki" value="0.0"/>
       <param name="Kd" value="0.05"/>

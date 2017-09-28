@@ -25,21 +25,30 @@ class GraspSequence:
         rospy.loginfo(self.pubs.keys())
         rospy.sleep(0.5)
 
+        while not rospy.is_shutdown():
+            self.sequence()
+
+    def sequence(self):
         fing_open = -0.6
-        self.setpoint(0.0, fing_open, fing_open, fing_open, fing_open, fing_open, fing_open)
-        rospy.sleep(2.0)
-        self.setpoint(0.0, fing_open, fing_open, fing_open, fing_open, fing_open, fing_open)
-        rospy.sleep(2.0)
-        self.setpoint(0.1, fing_open, fing_open, fing_open, fing_open, fing_open, fing_open)
-        rospy.sleep(2.0)
-        fing_closed = -0.1
-        lower_fing_closed = 0.7
-        self.setpoint(0.1, fing_closed, fing_closed, fing_closed,
+        self.setpoint(0.0, fing_open, fing_open, fing_open,
+                      fing_open * 0.7, fing_open * 0.7, fing_open * 0.7)
+        rospy.sleep(0.5)
+        self.setpoint(0.0, fing_open, fing_open, fing_open,
+                      fing_open * 0.7, fing_open * 0.7, fing_open * 0.7)
+        rospy.sleep(0.5)
+        grab_height = 0.229
+        self.setpoint(grab_height, fing_open, fing_open, fing_open,
+                      fing_open * 0.7, fing_open * 0.7, fing_open * 0.7)
+        rospy.sleep(1.0)
+        fing_closed = -0.15
+        lower_fing_closed = 0.9
+        self.setpoint(grab_height, fing_closed, fing_closed, fing_closed,
                       lower_fing_closed, lower_fing_closed, lower_fing_closed)
-        rospy.sleep(2.0)
+        rospy.sleep(1.0)
         self.setpoint(0.0, fing_closed, fing_closed, fing_closed,
                       lower_fing_closed, lower_fing_closed, lower_fing_closed)
-        rospy.spin()
+        rospy.sleep(1.0)
+        # rospy.spin()
 
     def setpoint(self, arm, f0, f1, f2, fu0, fu1, fu2):
         for i in range(4):

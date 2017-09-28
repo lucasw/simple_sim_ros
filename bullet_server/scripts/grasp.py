@@ -42,7 +42,7 @@ class Grasp:
         ball_radius = 0.04
         ball = Body()
         ball.name = "ball"
-        ball.mass = 0.5
+        ball.mass = 0.3
         ball.pose.orientation.x = rot90[0]
         ball.pose.orientation.y = rot90[1]
         ball.pose.orientation.z = rot90[2]
@@ -178,7 +178,7 @@ class Grasp:
 	    finger_joint.body_a = "arm_fore"
 	    finger_joint.body_b = finger_upper.name
 	    finger_joint.type = Constraint.HINGE
-	    finger_joint.lower_ang_lim = -0.8
+	    finger_joint.lower_ang_lim = -0.9
 	    finger_joint.upper_ang_lim = 0.6
 	    finger_joint.max_motor_impulse = 2000.0
 	    finger_joint.pivot_in_a.x = thickness / 2.0 * math.cos(angle)
@@ -211,8 +211,8 @@ class Grasp:
 	    finger_lower_joint.body_a = finger_upper.name
 	    finger_lower_joint.body_b = finger_lower.name
 	    finger_lower_joint.type = Constraint.HINGE
-	    finger_lower_joint.lower_ang_lim = -0.6
-	    finger_lower_joint.upper_ang_lim = 0.6
+	    finger_lower_joint.lower_ang_lim = -0.5
+	    finger_lower_joint.upper_ang_lim = 0.9
 	    finger_lower_joint.max_motor_impulse = 2000.0
 	    finger_lower_joint.pivot_in_a.x = 0.0
 	    finger_lower_joint.pivot_in_a.z = 0.0

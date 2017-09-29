@@ -7,6 +7,7 @@ import rospy
 
 from bullet_server.msg import Face, Link, Material, Node, SoftBody
 from bullet_server.srv import *
+from bullet_server.utility import *
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 
@@ -23,7 +24,7 @@ class Icosphere:
         body = SoftBody()
         body.name = name
         body.pose.position.x = px
-        body.pose.position.z = radius
+        body.pose.position.z = radius * 2.0
         body.pose.orientation.w = 1.0
 
         # from http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
@@ -87,6 +88,7 @@ class Icosphere:
             pt.x *= scale
             pt.y *= scale
             pt.z *= scale
+            pt.z += radius
             ico[i] = pt
 
         if False:
@@ -118,7 +120,7 @@ class Icosphere:
             rospy.sleep(0.5)
 
         # make nodes and links and faces in SoftBody
-        total_mass = 30.0
+        total_mass = 10.0
         node_mass = total_mass / len(ico)
         for pt in ico:
             node = Node()
@@ -141,6 +143,7 @@ class Icosphere:
         mat = Material()
         mat.kLST = 0.1
         body.material.append(mat)
+        body.config = make_soft_config()
         body.config.kDF = 1
         body.config.kDP = 0.001
         body.config.kPR = 2500  # pressure coefficient

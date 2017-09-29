@@ -5,7 +5,8 @@ import copy
 import math
 import rospy
 
-from bullet_server.msg import Face, Node, SoftBody
+from bullet_server.msg import Face, Link, Material, Node, SoftBody
+from bullet_server.srv import *
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 
@@ -57,24 +58,23 @@ class Icosphere:
         faces.append([0, 7, 10])
         faces.append([0, 10, 11])
 
-        if True:
-            faces.append([1, 5, 9])
-            faces.append([5, 11, 4])
-            faces.append([11, 10, 2])
-            faces.append([10, 7, 6])
-            faces.append([7, 1, 8])
+        faces.append([1, 5, 9])
+        faces.append([5, 11, 4])
+        faces.append([11, 10, 2])
+        faces.append([10, 7, 6])
+        faces.append([7, 1, 8])
 
-            faces.append([3, 9, 4])
-            faces.append([3, 4, 2])
-            faces.append([3, 2, 6])
-            faces.append([3, 6, 8])
-            faces.append([3, 8, 9])
+        faces.append([3, 9, 4])
+        faces.append([3, 4, 2])
+        faces.append([3, 2, 6])
+        faces.append([3, 6, 8])
+        faces.append([3, 8, 9])
 
-            faces.append([4, 9, 5])
-            faces.append([2, 4, 11])
-            faces.append([6, 2, 10])
-            faces.append([8, 6, 7])
-            faces.append([9, 8, 1])
+        faces.append([4, 9, 5])
+        faces.append([2, 4, 11])
+        faces.append([6, 2, 10])
+        faces.append([8, 6, 7])
+        faces.append([9, 8, 1])
 
         for i in range(levels):
             ico, faces = self.subdivide(ico, faces)
@@ -89,7 +89,7 @@ class Icosphere:
             pt.z *= scale
             ico[i] = pt
 
-        if True:
+        if False:
             marker = Marker()
             marker.header.frame_id = rospy.get_param("~frame_id", "map")
             marker.ns = name
@@ -116,6 +116,50 @@ class Icosphere:
             rospy.sleep(0.5)
             self.pub.publish(marker)
             rospy.sleep(0.5)
+
+        # make nodes and links and faces in SoftBody
+        total_mass = 30.0
+        node_mass = total_mass / len(ico)
+        for pt in ico:
+            node = Node()
+            node.position.x = pt.x
+            node.position.y = pt.y
+            node.position.z = pt.z
+            node.mass = node_mass
+            body.node.append(node)
+
+        for i in range(len(faces)):
+            face = Face()
+            for j in range(3):
+                face.node_indices[j] = faces[i][j]
+                link = Link()
+                link.node_indices[0] = faces[i][j]
+                link.node_indices[1] = faces[i][(j + 1) % 3]
+                body.link.append(link)
+            body.face.append(face)
+
+        mat = Material()
+        mat.kLST = 0.1
+        body.material.append(mat)
+        body.config.kDF = 1
+        body.config.kDP = 0.001
+        body.config.kPR = 2500  # pressure coefficient
+
+        # TODO(lucasw)
+        # body.randomize_constraints = True
+
+        rospy.wait_for_service('add_compound')
+        self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)
+        add_compound_request = AddCompoundRequest()
+        add_compound_request.remove = False  # rospy.get_param('~remove', False)
+        add_compound_request.soft_body.append(body)
+
+        rospy.loginfo(add_compound_request)
+        try:
+            add_compound_response = self.add_compound(add_compound_request)
+            rospy.loginfo(add_compound_response)
+        except rospy.service.ServiceException as e:
+            rospy.logerr(e)
 
     def make_triangle(self, src, dst, i0, i1, i2, subdiv=1):
         if subdiv == 0:
@@ -170,4 +214,3 @@ class Icosphere:
 if __name__ == '__main__':
     rospy.init_node('icosphere')
     icosphere = Icosphere()
-

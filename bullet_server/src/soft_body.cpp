@@ -70,6 +70,7 @@ SoftBody::SoftBody(BulletServer* parent,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
+  parent_(parent),
   dynamics_world_(dynamics_world),
   name_(name),
   br_(br),
@@ -151,18 +152,6 @@ SoftBody::SoftBody(BulletServer* parent,
       tetras[i].node_indices[3], pm);
   }
 
-#if 0
-  for (size_t i = 0; i < materials.size(); ++i)
-  {
-    btSoftBody::Material* pm = soft_body_->appendMaterial();
-    pm->m_kLST = materials[i].kLST;
-    pm->m_kAST = materials[i].kAST;
-    pm->m_kVST = materials[i].kVST;
-    const int distance = 1;
-    soft_body_->generateBendingConstraints(distance, pm);
-    ROS_INFO_STREAM(name_ << " " << pm->m_kLST);
-  }
-#endif
   for (size_t i = 0; i < anchors.size(); ++i)
   {
     if (parent->bodies_.count(anchors[i].rigid_body_name) == 0)

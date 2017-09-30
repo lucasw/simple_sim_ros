@@ -16,7 +16,7 @@ class Icosphere:
     def __init__(self):
         self.pub = rospy.Publisher("marker", Marker, queue_size=2)
 
-        radius = rospy.get_param("~radius", 0.05)
+        radius = rospy.get_param("~radius", 0.02)
         levels = rospy.get_param("~levels", 1)
         px = rospy.get_param("~x", 0.0)
         name = rospy.get_param("~name", "ball")
@@ -137,23 +137,30 @@ class Icosphere:
             face = Face()
             for j in range(3):
                 face.node_indices[j] = faces[i][j]
-                link = Link()
-                link.node_indices[0] = faces[i][j]
-                link.node_indices[1] = faces[i][(j + 1) % 3]
-                body.link.append(link)
+                ind1 = faces[i][j]
+                ind2 = faces[i][(j + 1) % 3]
+                # prevent duplicate links
+                if ind1 < ind2:
+                    link = Link()
+                    link.node_indices[0] = ind1
+                    link.node_indices[1] = ind2
+                    body.link.append(link)
             body.face.append(face)
 
         mat = Material()
-        mat.kLST = 0.1
+        mat.kLST = 0.99
+        mat.bending_distance = 2
         body.material.append(mat)
-        body.config = make_soft_config()
-        body.config.kDF = 0.9
-        body.config.kDP = 0.015
-        body.config.kDG = 0.05
-        body.config.kPR = 0.15  # pressure coefficient
 
-        # TODO(lucasw)
-        body.randomize_constraints = True
+        body.config = make_soft_config()
+        body.config.kDF = 0.49
+        body.config.kDP = 0.35
+        body.config.kDG = 0.05
+        body.config.kPR = 19.15  # pressure coefficient
+        body.config.kMT = 0.5  # pressure coefficient
+
+        body.k_clusters = 8
+        body.randomize_constraints = False  # True
 
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)

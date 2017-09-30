@@ -14,6 +14,7 @@ bullet_server/Anchor[] anchor
 bool randomize_constraints
 # uint8 bending_contraints_distance
 # uint8 piterations
+uint8 k_clusters
 bullet_server/SoftConfig config
 geometry_msgs/Vector3 scale
 geometry_msgs/Pose pose

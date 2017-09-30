@@ -20,8 +20,8 @@ class Grasp:
         add_compound_request.remove = rospy.get_param('~remove', False)
 
         # make a table
+        table_height = 0.28
         if False:
-            table_height = 0.0
             rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
             table_thickness = 0.1
             table = Body()

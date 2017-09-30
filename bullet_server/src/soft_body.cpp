@@ -68,6 +68,7 @@ SoftBody::SoftBody(BulletServer* parent,
     const std::vector<bullet_server::Anchor>& anchors,
     const bullet_server::SoftConfig& config,
     const bool randomize_constraints,
+    const uint8_t k_clusters,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
@@ -125,10 +126,11 @@ SoftBody::SoftBody(BulletServer* parent,
     pm->m_kLST = materials[i].kLST;
     pm->m_kAST = materials[i].kAST;
     pm->m_kVST = materials[i].kVST;
-    // const int distance = 1;
-    // soft_body_->generateBendingConstraints(distance, pm);
+    soft_body_->generateBendingConstraints(materials[i].bending_distance, pm);
     ROS_INFO_STREAM(name_ << " " << pm->m_kLST);
   }
+
+  soft_body_->generateClusters(k_clusters);
 
   for (size_t i = 0; i < links.size(); ++i)
   {

@@ -85,10 +85,12 @@ class SoftBodyDemo:
         body.link.append(l1)
 
         mat = Material()
-        mat.kLST = 0.2
+        mat.kLST = 0.15
         mat.kVST = 0.1
         mat.kAST = 0.1
         body.material.append(mat)
+
+        body.k_clusters = 8
 
         add_compound_request.soft_body.append(body)
 

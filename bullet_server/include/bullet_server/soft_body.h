@@ -79,6 +79,7 @@ public:
       const std::vector<bullet_server::Anchor>& anchors,
       const bullet_server::SoftConfig& config,
       const bool randomize_constraints,
+      const uint8_t k_clusters,
       btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub);

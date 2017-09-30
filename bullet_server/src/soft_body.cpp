@@ -131,6 +131,10 @@ SoftBody::SoftBody(BulletServer* parent,
   }
 
   soft_body_->generateClusters(k_clusters);
+  // enable cluster collisions
+  // TODO(lucasw) put all collision options into config
+  soft_body_->m_cfg.collisions += btSoftBody::fCollision::CL_RS;
+  soft_body_->m_cfg.collisions += btSoftBody::fCollision::CL_SS;
 
   for (size_t i = 0; i < links.size(); ++i)
   {
@@ -187,9 +191,9 @@ SoftBody::SoftBody(BulletServer* parent,
     // tf::Quaternion quat = tf::createQuaternionFromRPY();
     // tf::Matrix3x3(quat)
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
-    marker.scale.z = 0.1;
+    marker.scale.x = 0.05;
+    marker.scale.y = 0.05;
+    marker.scale.z = 0.05;
     marker.ns = "nodes";
     // marker_.header.stamp = ros::Time::now();
     marker.frame_locked = true;

@@ -11,7 +11,7 @@ bullet_server/Material[] material
 bullet_server/Anchor[] anchor
 # bullet_server/Anchor[] anchor
 # not sure about these
-# bool randomize_constraints
+bool randomize_constraints
 # uint8 bending_contraints_distance
 # uint8 piterations
 bullet_server/SoftConfig config

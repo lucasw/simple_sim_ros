@@ -59,23 +59,24 @@ class Icosphere:
         faces.append([0, 7, 10])
         faces.append([0, 10, 11])
 
-        faces.append([1, 5, 9])
-        faces.append([5, 11, 4])
-        faces.append([11, 10, 2])
-        faces.append([10, 7, 6])
-        faces.append([7, 1, 8])
+        if True:
+            faces.append([1, 5, 9])
+            faces.append([5, 11, 4])
+            faces.append([11, 10, 2])
+            faces.append([10, 7, 6])
+            faces.append([7, 1, 8])
 
-        faces.append([3, 9, 4])
-        faces.append([3, 4, 2])
-        faces.append([3, 2, 6])
-        faces.append([3, 6, 8])
-        faces.append([3, 8, 9])
+            faces.append([3, 9, 4])
+            faces.append([3, 4, 2])
+            faces.append([3, 2, 6])
+            faces.append([3, 6, 8])
+            faces.append([3, 8, 9])
 
-        faces.append([4, 9, 5])
-        faces.append([2, 4, 11])
-        faces.append([6, 2, 10])
-        faces.append([8, 6, 7])
-        faces.append([9, 8, 1])
+            faces.append([4, 9, 5])
+            faces.append([2, 4, 11])
+            faces.append([6, 2, 10])
+            faces.append([8, 6, 7])
+            faces.append([9, 8, 1])
 
         for i in range(levels):
             ico, faces = self.subdivide(ico, faces)
@@ -88,7 +89,7 @@ class Icosphere:
             pt.x *= scale
             pt.y *= scale
             pt.z *= scale
-            pt.z += radius
+            pt.z += radius * 2
             ico[i] = pt
 
         if False:
@@ -149,7 +150,7 @@ class Icosphere:
         body.config.kPR = 2500  # pressure coefficient
 
         # TODO(lucasw)
-        # body.randomize_constraints = True
+        body.randomize_constraints = True
 
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)

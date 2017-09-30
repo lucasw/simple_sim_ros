@@ -78,6 +78,7 @@ public:
       const std::vector<bullet_server::Material>& materials,
       const std::vector<bullet_server::Anchor>& anchors,
       const bullet_server::SoftConfig& config,
+      const bool randomize_constraints,
       btSoftRigidDynamicsWorld* dynamics_world,
       tf::TransformBroadcaster* br,
       ros::Publisher* marker_array_pub);
@@ -92,6 +93,7 @@ public:
     ANCHORS,
     ANCHOR_PIVOTS,
     TETRAS,
+    FACES,
     COUNT
   };
 };

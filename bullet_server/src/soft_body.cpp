@@ -67,6 +67,7 @@ SoftBody::SoftBody(BulletServer* parent,
     const std::vector<bullet_server::Material>& materials,
     const std::vector<bullet_server::Anchor>& anchors,
     const bullet_server::SoftConfig& config,
+    const bool randomize_constraints,
     btSoftRigidDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub) :
@@ -170,6 +171,9 @@ SoftBody::SoftBody(BulletServer* parent,
       local_pivot, anchors[i].disable_collision_between_linked_bodies,
       anchors[i].influence);
   }
+
+  if (randomize_constraints)
+    soft_body_->randomizeConstraints();
 
   marker_array_.markers.resize(COUNT);
   {
@@ -287,6 +291,34 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.b = 0.75;
     marker_array_.markers[TETRAS] = marker;
   }
+
+  // face markers
+  {
+    visualization_msgs::Marker marker;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    // rotating the z axis to the y axis is a -90 degree around the axis axis (roll)
+    // KDL::Rotation(-M_PI_2, 0, 0)?
+    // tf::Quaternion quat = tf::createQuaternionFromRPY();
+    // tf::Matrix3x3(quat)
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.ns = "faces";
+    marker.frame_locked = true;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration();
+
+    marker.id = hash((name_ + "faces").c_str());
+    marker.header.frame_id = "map";
+    marker.color.r = 0.15;
+    marker.color.g = 0.37;
+    marker.color.b = 0.55;
+    marker_array_.markers[FACES] = marker;
+  }
+
+
 }
 
 SoftBody::~SoftBody()
@@ -364,7 +396,21 @@ void SoftBody::update()
     }
   }
 
-  // TODO(lucasw) also do something with faces
+  // faces
+  btSoftBody::tFaceArray& faces(soft_body_->m_faces);
+  marker_array_.markers[FACES].points.clear();
+  for (size_t i = 0; i < faces.size(); ++i)
+  {
+    for (size_t k = 0; k < 3; ++k)
+    {
+      const btSoftBody::Node* node = faces[i].m_n[k];
+      geometry_msgs::Point pt;
+      pt.x = node->m_x.getX();
+      pt.y = node->m_x.getY();
+      pt.z = node->m_x.getZ();
+      marker_array_.markers[FACES].points.push_back(pt);
+    }
+  }
 
   btSoftBody::tAnchorArray& anchors(soft_body_->m_anchors);
   marker_array_.markers[ANCHORS].points.clear();

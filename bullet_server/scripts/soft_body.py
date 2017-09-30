@@ -91,6 +91,7 @@ class SoftBodyDemo:
         body.material.append(mat)
 
         body.k_clusters = 8
+        body.margin = 0.05
 
         add_compound_request.soft_body.append(body)
 

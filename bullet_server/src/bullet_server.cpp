@@ -365,6 +365,7 @@ bool BulletServer::softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg
       msg->node, msg->link, msg->face, msg->tetra,
       msg->material, msg->anchor,
       msg->config,
+      msg->margin,
       msg->randomize_constraints,
       msg->k_clusters,
       soft_rigid_dynamics_world,

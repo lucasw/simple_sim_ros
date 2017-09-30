@@ -67,6 +67,7 @@ SoftBody::SoftBody(BulletServer* parent,
     const std::vector<bullet_server::Material>& materials,
     const std::vector<bullet_server::Anchor>& anchors,
     const bullet_server::SoftConfig& config,
+    const float margin,
     const bool randomize_constraints,
     const uint8_t k_clusters,
     btSoftRigidDynamicsWorld* dynamics_world,
@@ -133,8 +134,8 @@ SoftBody::SoftBody(BulletServer* parent,
   soft_body_->generateClusters(k_clusters);
   // enable cluster collisions
   // TODO(lucasw) put all collision options into config
-  soft_body_->m_cfg.collisions += btSoftBody::fCollision::CL_RS;
-  soft_body_->m_cfg.collisions += btSoftBody::fCollision::CL_SS;
+  // soft_body_->m_cfg.collisions += btSoftBody::fCollision::CL_RS;
+  // soft_body_->m_cfg.collisions += btSoftBody::fCollision::CL_SS;
 
   for (size_t i = 0; i < links.size(); ++i)
   {
@@ -180,6 +181,9 @@ SoftBody::SoftBody(BulletServer* parent,
 
   if (randomize_constraints)
     soft_body_->randomizeConstraints();
+  ROS_INFO_STREAM(name_ << ", margin " << margin);
+  if (margin > 0)
+    soft_body_->getCollisionShape()->setMargin(margin);
 
   marker_array_.markers.resize(COUNT);
   {

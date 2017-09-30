@@ -78,6 +78,7 @@ public:
       const std::vector<bullet_server::Material>& materials,
       const std::vector<bullet_server::Anchor>& anchors,
       const bullet_server::SoftConfig& config,
+      const float margin,
       const bool randomize_constraints,
       const uint8_t k_clusters,
       btSoftRigidDynamicsWorld* dynamics_world,

@@ -14,6 +14,9 @@ bullet_server/Anchor[] anchor
 bool randomize_constraints
 # uint8 bending_contraints_distance
 # uint8 piterations
+# how much space around the body- everything floats this far
+# away from rigid bodies, but don't set it to zero or else instability
+float32 margin
 uint8 k_clusters
 bullet_server/SoftConfig config
 geometry_msgs/Vector3 scale

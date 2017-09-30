@@ -1,10 +1,21 @@
+/**
+  Copyright 2017 Lucas Walter
+  GNU GPL 3.0
+
+*/
+
+#ifndef BULLET_SERVER_RAYCAST_H
+#define BULLET_SERVER_RAYCAST_H
+
 #include <bullet/btBulletDynamicsCommon.h>
 #include <bullet_server/Line.h>
 // #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <string>
 #include <tf2_ros/transform_listener.h>
+#include <vector>
 
 class BulletServer;
 
@@ -42,3 +53,4 @@ private:
   const btDiscreteDynamicsWorld* dynamics_world_;
 };
 
+#endif  // BULLET_SERVER_RAYCAST_H

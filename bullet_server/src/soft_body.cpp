@@ -323,8 +323,6 @@ SoftBody::SoftBody(BulletServer* parent,
     marker.color.b = 0.55;
     marker_array_.markers[FACES] = marker;
   }
-
-
 }
 
 SoftBody::~SoftBody()

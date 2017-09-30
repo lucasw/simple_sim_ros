@@ -78,7 +78,8 @@ uint16_t hash(const char *str)
 // There isn't a built-in way of passing in 'this' to the callback, so this
 // forwarding function is needed
 // http://bulletphysics.org/mediawiki-1.5.8/index.php/Simulation_Tick_Callbacks
-void externalTickCallback(btDynamicsWorld *world, btScalar timeStep) {
+void externalTickCallback(btDynamicsWorld *world, btScalar timeStep)
+{
   BulletServer* bullet_server = static_cast<BulletServer*>(world->getWorldUserInfo());
   bullet_server->tickCallback(timeStep);
 }
@@ -163,14 +164,14 @@ int BulletServer::init()
   timer_ = nh_.createTimer(ros::Duration(0.1),
       &BulletServer::update, this);
 
-	// dynamic reconfigure init
-	{
-		reconfigure_server_.reset(
-				new ReconfigureServer(dr_mutex_, nh_));
-		dynamic_reconfigure::Server<bullet_server::BulletServerConfig>::CallbackType bsc =
-			boost::bind(&BulletServer::reconfigureCallback, this, _1, _2);
-		reconfigure_server_->setCallback(bsc);
-	}
+  // dynamic reconfigure init
+  {
+    reconfigure_server_.reset(
+        new ReconfigureServer(dr_mutex_, nh_));
+    dynamic_reconfigure::Server<bullet_server::BulletServerConfig>::CallbackType bsc =
+      boost::bind(&BulletServer::reconfigureCallback, this, _1, _2);
+    reconfigure_server_->setCallback(bsc);
+  }
 
   // TODO(lucasw) use a Float32Stamped
   tick_pub_ = nh_.advertise<std_msgs::Float32>("sim_tick", 8);

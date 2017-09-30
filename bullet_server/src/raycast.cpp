@@ -11,7 +11,9 @@
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/PointCloud.h>
+#include <string>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <vector>
 
 Raycast::Raycast(
       BulletServer* parent,

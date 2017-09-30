@@ -157,7 +157,8 @@ class Icosphere:
         body.config.kDP = 0.35
         body.config.kDG = 0.05
         body.config.kPR = 19.15  # pressure coefficient
-        body.config.kMT = 0.5  # pressure coefficient
+        body.config.kMT = 0.5
+        body.config.maxvolume = 0.1
 
         body.k_clusters = 8
         body.randomize_constraints = False  # True

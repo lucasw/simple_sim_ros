@@ -5,7 +5,7 @@
   <description>The bullet_server package</description>
 
   <maintainer email="wsacul@gmail.com">Lucas Walter</maintainer>
-  <license>BSD</license>
+  <license>GPLv3</license>
   <url type="website">https://github.com/lucasw/simple_sim_ros</url>
   <author email="wsacul@gmail.com">Lucas Walter</author>
 

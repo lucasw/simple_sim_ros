@@ -16,7 +16,7 @@ class Icosphere:
     def __init__(self):
         self.pub = rospy.Publisher("marker", Marker, queue_size=2)
 
-        radius = rospy.get_param("~radius", 0.5)
+        radius = rospy.get_param("~radius", 0.05)
         levels = rospy.get_param("~levels", 1)
         px = rospy.get_param("~x", 0.0)
         name = rospy.get_param("~name", "ball")
@@ -24,7 +24,7 @@ class Icosphere:
         body = SoftBody()
         body.name = name
         body.pose.position.x = px
-        body.pose.position.z = radius * 2.0
+        body.pose.position.z = 0.2
         body.pose.orientation.w = 1.0
 
         # from http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
@@ -32,22 +32,24 @@ class Icosphere:
         tmp_radius = math.sqrt(1.0 + icost * icost)
         scale = radius / tmp_radius
 
+        self.pts = []
+        self.subpts = {}
+
         pt = Point()
-        ico = []
-        ico.append(Point(-1, icost, 0))
-        ico.append(Point(1, icost, 0))
-        ico.append(Point(-1, -icost, 0))
-        ico.append(Point(1, -icost, 0))
+        self.pts.append(Point(-1, icost, 0))
+        self.pts.append(Point(1, icost, 0))
+        self.pts.append(Point(-1, -icost, 0))
+        self.pts.append(Point(1, -icost, 0))
 
-        ico.append(Point(0, -1, icost))
-        ico.append(Point(0, 1, icost))
-        ico.append(Point(0, -1, -icost))
-        ico.append(Point(0, 1, -icost))
+        self.pts.append(Point(0, -1, icost))
+        self.pts.append(Point(0, 1, icost))
+        self.pts.append(Point(0, -1, -icost))
+        self.pts.append(Point(0, 1, -icost))
 
-        ico.append(Point(icost, 0, -1))
-        ico.append(Point(icost, 0, 1))
-        ico.append(Point(-icost, 0, -1))
-        ico.append(Point(-icost, 0, 1))
+        self.pts.append(Point(icost, 0, -1))
+        self.pts.append(Point(icost, 0, 1))
+        self.pts.append(Point(-icost, 0, -1))
+        self.pts.append(Point(-icost, 0, 1))
 
         # first construct an icosohedron
         # rospy.loginfo(ico)
@@ -79,18 +81,18 @@ class Icosphere:
             faces.append([9, 8, 1])
 
         for i in range(levels):
-            ico, faces = self.subdivide(ico, faces)
+            faces = self.subdivide(faces)
 
-        print len(ico)
+        print len(self.pts)
         # scale all points to be on sphere of desired radius
-        for i in range(len(ico)):
-            pt = ico[i]
+        for i in range(len(self.pts)):
+            pt = self.pts[i]
             scale = radius / math.sqrt(pt.x * pt.x + pt.y * pt.y + pt.z * pt.z)
             pt.x *= scale
             pt.y *= scale
             pt.z *= scale
-            pt.z += radius * 2
-            ico[i] = pt
+            pt.z += 0.34
+            self.pts[i] = pt
 
         if False:
             marker = Marker()
@@ -112,18 +114,18 @@ class Icosphere:
 
             for face in faces:
                 print face
-                marker.points.append(ico[face[0]])
-                marker.points.append(ico[face[1]])
-                marker.points.append(ico[face[2]])
+                marker.points.append(self.pts[face[0]])
+                marker.points.append(self.pts[face[1]])
+                marker.points.append(self.pts[face[2]])
 
             rospy.sleep(0.5)
             self.pub.publish(marker)
             rospy.sleep(0.5)
 
         # make nodes and links and faces in SoftBody
-        total_mass = 10.0
-        node_mass = total_mass / len(ico)
-        for pt in ico:
+        total_mass = 4.0
+        node_mass = total_mass / len(self.pts)
+        for pt in self.pts:
             node = Node()
             node.position.x = pt.x
             node.position.y = pt.y
@@ -145,9 +147,10 @@ class Icosphere:
         mat.kLST = 0.1
         body.material.append(mat)
         body.config = make_soft_config()
-        body.config.kDF = 1
-        body.config.kDP = 0.001
-        body.config.kPR = 2500  # pressure coefficient
+        body.config.kDF = 0.9
+        body.config.kDP = 0.015
+        body.config.kDG = 0.05
+        body.config.kPR = 0.15  # pressure coefficient
 
         # TODO(lucasw)
         body.randomize_constraints = True
@@ -179,41 +182,43 @@ class Icosphere:
 
         dst.extend(self.sub_tri(src[i0], src[i1], src[i2]))
 
-    def mid_point(self, v1, v2):
+    def mid_point(self, i1, i2):
+        if i1 in self.subpts.keys() and i2 in self.subpts[i1].keys():
+            return self.subpts[i1][i2]
+        if i2 in self.subpts.keys() and i1 in self.subpts[i2].keys():
+            return self.subpts[i2][i1]
+        v1 = self.pts[i1]
+        v2 = self.pts[i2]
         pt = Point(
                    (v1.x + v2.x) / 2.0,
                    (v1.y + v2.y) / 2.0,
                    (v1.z + v2.z) / 2.0)
-        # make all the points have the right radius
-        if False:
-            scale = self.tmp_radius / math.sqrt(pt.x * pt.x + pt.y * pt.y + pt.z * pt.z)
-            pt.x *= scale
-            pt.y *= scale
-            pt.z *= scale
-        return pt
 
-    def subdivide(self, pts, faces):  # v1, v2, v3, levels=1):
+        self.pts.append(pt)
+        ind = len(self.pts) - 1
+        if not i1 in self.subpts.keys():
+            self.subpts[i1] = {}
+        self.subpts[i1][i2] = ind
+        return ind
+
+    def subdivide(self, faces):  # v1, v2, v3, levels=1):
         #        v2
         #
         #     a     b
         #  
         #   v1   c    v3
         subfaces = []
-        subpts = copy.deepcopy(pts)
         for fc in faces:
-            subpts.append(self.mid_point(pts[fc[0]], pts[fc[1]]))
-            ai = len(subpts) - 1
-            subpts.append(self.mid_point(pts[fc[1]], pts[fc[2]]))
-            bi = len(subpts) - 1
-            subpts.append(self.mid_point(pts[fc[2]], pts[fc[0]]))
-            ci = len(subpts) - 1
+            ai = self.mid_point(fc[0], fc[1])
+            bi = self.mid_point(fc[1], fc[2])
+            ci = self.mid_point(fc[2], fc[0])
 
             subfaces.extend([[fc[0], ai, ci],
                              [ci, ai, bi],
                              [ci, bi, fc[2]],
                              [ai, fc[1], bi],
                              ])
-        return (subpts, subfaces)
+        return (subfaces)
 
 if __name__ == '__main__':
     rospy.init_node('icosphere')

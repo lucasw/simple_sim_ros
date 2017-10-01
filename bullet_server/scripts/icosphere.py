@@ -83,6 +83,8 @@ class Icosphere:
         for i in range(levels):
             faces = self.subdivide(faces)
 
+        height = rospy.get_param("~height", 0.14)
+
         print len(self.pts)
         # scale all points to be on sphere of desired radius
         for i in range(len(self.pts)):
@@ -91,7 +93,7 @@ class Icosphere:
             pt.x *= scale
             pt.y *= scale
             pt.z *= scale
-            pt.z += 0.34
+            pt.z += height
             self.pts[i] = pt
 
         if False:
@@ -123,7 +125,7 @@ class Icosphere:
             rospy.sleep(0.5)
 
         # make nodes and links and faces in SoftBody
-        total_mass = 4.0
+        total_mass = 0.5
         node_mass = total_mass / len(self.pts)
         for pt in self.pts:
             node = Node()
@@ -133,6 +135,24 @@ class Icosphere:
             node.mass = node_mass
             body.node.append(node)
 
+        # center node
+        # This doesn't work well, would rather have a sphere
+        # built out of a layer of tetras
+        if False:
+            node = Node()
+            node.mass = node_mass
+            node.position.x = 0
+            node.position.y = 0
+            node.position.z = height
+            body.node.append(node)
+            center_ind = len(body.node) - 1
+            for i in range(0, len(body.node), 10):
+                link = Link()
+                link.node_indices[0] = i
+                link.node_indices[1] = center_ind
+                body.link.append(link)
+
+        link_map = {}
         for i in range(len(faces)):
             face = Face()
             for j in range(3):
@@ -140,29 +160,34 @@ class Icosphere:
                 ind1 = faces[i][j]
                 ind2 = faces[i][(j + 1) % 3]
                 # prevent duplicate links
-                if ind1 < ind2:
-                    link = Link()
-                    link.node_indices[0] = ind1
-                    link.node_indices[1] = ind2
-                    body.link.append(link)
+                if ((ind1 in link_map.keys() and ind2 in link_map[ind1].keys()) or
+                    (ind2 in link_map.keys() and ind1 in link_map[ind2].keys())):
+                    continue
+                link = Link()
+                link.node_indices[0] = ind1
+                link.node_indices[1] = ind2
+                if not ind1 in link_map.keys():
+                    link_map[ind1] = {}
+                link_map[ind1][ind2] = True
+                body.link.append(link)
             body.face.append(face)
 
         mat = Material()
-        mat.kLST = 0.99
+        mat.kLST = 0.9
         mat.bending_distance = 2
         body.material.append(mat)
 
         body.config = make_soft_config()
-        body.config.kDF = 0.49
-        body.config.kDP = 0.35
-        body.config.kDG = 0.05
-        body.config.kPR = 19.15  # pressure coefficient
-        body.config.kMT = 0.5
-        body.config.maxvolume = 1.0
+        body.config.kDF = 0.89
+        body.config.kDP = 0.85
+        body.config.kDG = 0.25
+        body.config.kPR = 1.15  # pressure coefficient
+        body.config.kMT = 0.9
+        body.config.maxvolume = 0.5
 
-        body.margin = 0.05
+        body.margin = radius / 40.0
         body.k_clusters = 8
-        body.randomize_constraints = False  # True
+        body.randomize_constraints = True
 
         rospy.wait_for_service('add_compound')
         self.add_compound = rospy.ServiceProxy('add_compound', AddCompound)

@@ -59,18 +59,19 @@ class SoftBodyDemo:
         body.material[0].kVST = 0.9
 
         # body.margin = lx
-        body.material[0].bending_distance = 2
+        body.material[0].bending_distance = int(nx / 2.0)
         body.randomize_constraints = True
-        body.k_clusters = 4
+        # body.k_clusters = 4
         # volume preserving?  Doesn't seem to work
-        # body.config.kVC = 1e9 * volume
+        body.config.kVC = 10.0 # 1e9 * volume
         body.config.kDP = 0.39
         body.config.kDF = 0.99
         # body.config.kMT = 0.5
         # pressure preserving?
         # setting this to anything with no faces (?) will result in nans
-        # body.config.kPR = 90000.0 * lx * ly * lz
+        # body.config.kPR = 90.0 * lx * ly * lz
 
+        body.config.kKHR = 1.0
         body.config.kSRHR_CL = 0.8
         print body
 

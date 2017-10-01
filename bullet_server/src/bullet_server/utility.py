@@ -2,6 +2,7 @@
 # Copyright Lucas Walter 2016
 
 import math
+import random
 import rospy
 import tf
 
@@ -150,6 +151,61 @@ def make_tetra(node_indices, make_links=True, make_faces=True):
         faces.append(face)
     return tetra, links, faces
 
+def get_tetra_inds(xi, yi, zi, nx, ny, nz, flip=False):
+    #    6  7
+    #  4   5
+    #
+    #    2  3
+    #  0   1
+    # Make the indices go in a right hand rule order
+    # for the base triangle, the first index should be directly
+    # below the 4th.
+
+    ind = zi * (nx * ny) + yi * nx + xi
+    inds = []
+    for j in range(8):
+        inds.append(0)
+    inds[0] = ind
+    inds[1] = inds[0] + 1
+    inds[2] = ind + nx
+    inds[3] = inds[2] + 1
+    inds[4] = ind + nx * ny
+    inds[5] = inds[4] + 1
+    inds[6] = inds[4] + nx
+    inds[7] = inds[6] + 1
+
+    # flipped
+    #    7   5
+    #  6   4
+    #
+    #    3   1
+    #  2   0
+
+    if flip:
+        ninds = []
+        for j in range(8):
+            ninds.append(0)
+        ninds[0] = inds[1]
+        ninds[1] = inds[3]
+        ninds[2] = inds[0]
+        ninds[3] = inds[2]
+
+        ninds[4] = inds[5]
+        ninds[5] = inds[7]
+        ninds[6] = inds[4]
+        ninds[7] = inds[6]
+
+        for i in range(len(inds)):
+            inds[i] = ninds[i]
+
+    tinds = []
+    tinds.append([inds[0], inds[1], inds[2], inds[4]])
+    tinds.append([inds[3], inds[2], inds[1], inds[7]])
+    tinds.append([inds[4], inds[1], inds[2], inds[7]])
+    tinds.append([inds[6], inds[7], inds[4], inds[2]])
+    tinds.append([inds[5], inds[4], inds[7], inds[1]])
+
+    return tinds
 
 def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
                          lx, ly, lz,
@@ -174,32 +230,12 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
                 n1.position.z = zs + (k - nz/2 + 0.5) * lz * flip
                 body.node.append(n1)
 
-    #    6  7
-    #  4   5
-    #
-    #    2  3
-    #  0   1
-    # Make the indices go in a right hand rule order
-    # for the base triangle, the first index should be directly
-    # below the 4th.
     for k in range(nz - 1):
         for j in range(ny - 1):
             for i in range(nx - 1):
-                ind = k * (nx * ny) + j * nx + i
-                i0 = ind
-                i1 = i0 + 1
-                i2 = ind + nx
-                i3 = i2 + 1
-                i4 = ind + nx * ny
-                i5 = i4 + 1
-                i6 = i4 + nx
-                i7 = i6 + 1
-                tinds = []
-                tinds.append([i0, i1, i2, i4])
-                tinds.append([i3, i2, i1, i7])
-                tinds.append([i4, i1, i2, i7])
-                tinds.append([i6, i7, i4, i2])
-                tinds.append([i5, i4, i7, i1])
+                ind_flip = bool(random.getrandbits(1))
+                tinds = get_tetra_inds(i, j, k, nx, ny, nz, ind_flip)
+                # randomize
                 for tind in tinds:
                     tetra, links, faces = make_tetra(tind)
                     body.tetra.append(tetra)

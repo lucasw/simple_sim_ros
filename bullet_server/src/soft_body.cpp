@@ -142,7 +142,7 @@ SoftBody::SoftBody(BulletServer* parent,
     pm->m_kAST = materials[i].kAST;
     pm->m_kVST = materials[i].kVST;
     soft_body_->generateBendingConstraints(materials[i].bending_distance, pm);
-    ROS_INFO_STREAM(name_ << " " << pm->m_kLST);
+    ROS_INFO_STREAM(name_ << " material " << pm->m_kLST);
   }
 
   soft_body_->generateClusters(k_clusters);

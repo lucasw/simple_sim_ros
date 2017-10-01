@@ -33,7 +33,7 @@ while not rospy.is_shutdown():
     body.name = "random_body_" + postfix + "_" + str(count)
     bodies[count] = body.name
     body.type = random.randint(0, 4)  # Body.CYLINDER
-    body.mass = 1.0 + random.uniform(-0.5, 1.5)
+    body.mass = 0.4  # + random.uniform(-0.5, 1.5)
     body.pose.position.x = random.uniform(-0.1, 0.1)
     body.pose.position.y = random.uniform(-0.1, 0.1)
     body.pose.position.z = z_height  # + random.uniform(0, 4.0)

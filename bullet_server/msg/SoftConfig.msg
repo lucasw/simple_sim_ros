@@ -2,8 +2,8 @@ float32 kVCF # 1  Velocities correction factor (Baumgarte)
 float32 kDP # 0  Damping coefficient [0,1]
 float32 kDG # 0  Drag coefficient [0,+inf]
 float32 kLF # 0  Lift coefficient [0,+inf]
-float32 kPR # 0  Pressure coefficient [-inf,+inf]
-float32 kVC # 0  Volume conversation coefficient [0,+inf]
+float32 kPR # 0  Pressure coefficient [-inf,+inf], don't set this non-zero without faces
+float32 kVC # 0  Volume conservation coefficient [0,+inf]
 float32 kDF # 0.2  Dynamic friction coefficient [0,1]
 float32 kMT # 0  Pose matching coefficient [0,1]
 float32 kCHR # 1.0  Rigid contacts hardness [0,1]

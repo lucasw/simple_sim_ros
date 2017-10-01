@@ -57,6 +57,20 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
+bool isnan(const geometry_msgs::Point pt)
+{
+  if (std::isnan(pt.x) || std::isnan(pt.y) || std::isnan(pt.z))
+    return true;
+  return false;
+}
+
+bool isnan(const btVector3 pt)
+{
+  if (std::isnan(pt.x()) || std::isnan(pt.y()) || std::isnan(pt.z()))
+    return true;
+  return false;
+}
+
 SoftBody::SoftBody(BulletServer* parent,
     const std::string name,
     btSoftBodyWorldInfo* soft_body_world_info,
@@ -84,7 +98,7 @@ SoftBody::SoftBody(BulletServer* parent,
   for (size_t i = 0; i < nodes.size(); ++i)
   {
     btVector3 pos(nodes[i].position.x, nodes[i].position.y, nodes[i].position.z);
-    if (std::isnan(pos.x()) || std::isnan(pos.y()) || std::isnan(pos.z()))
+    if (isnan(pos))
     {
       ROS_ERROR_STREAM("bad position " << pos);
       delete[] points;
@@ -352,7 +366,7 @@ void SoftBody::update()
     pt.z = nodes[i].m_x.getZ();
     marker_array_.markers[NODES].points.push_back(pt);
 
-    if (std::isnan(pt.x) || std::isnan(pt.y) || std::isnan(pt.z))
+    if (isnan(pt))
     {
       ROS_ERROR_STREAM(name_ << " bad node " << i << " " << pt);
       return;
@@ -375,8 +389,7 @@ void SoftBody::update()
     pt2.z = links[i].m_n[1]->m_x.getZ();
     marker_array_.markers[LINKS].points.push_back(pt2);
 
-    if (std::isnan(pt1.x) || std::isnan(pt1.y) || std::isnan(pt1.z) ||
-        std::isnan(pt2.x) || std::isnan(pt2.y) || std::isnan(pt2.z))
+    if (isnan(pt1) || isnan(pt2))
     {
       ROS_ERROR_STREAM("bad link " << i << " " << pt1 << " " << pt2);
       return;

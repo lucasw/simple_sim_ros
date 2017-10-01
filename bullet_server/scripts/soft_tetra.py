@@ -21,28 +21,57 @@ class SoftBodyDemo:
         ys = rospy.get_param("~y", 0.0)
         zs = rospy.get_param("~z", 1.0)
 
-        body = make_soft_tetra_cube("soft_tetra_cube", 0.1,
-                                    xs, ys, zs, 4.0)
+        lx = rospy.get_param("~lx", 0.05)
+        ly = rospy.get_param("~ly", 0.05)
+        lz = rospy.get_param("~lz", 0.05)
 
-        body.material[0].kLST = 0.2
+        nx = rospy.get_param("~nx", 2)
+        ny = rospy.get_param("~ny", 2)
+        nz = rospy.get_param("~nz", 2)
+
+        node_mass = rospy.get_param("~node_mass", 0.1)
+        if True:
+            body = make_soft_tetra_cube("soft_tetra_cube",
+                                        node_mass,
+                                        xs, ys, zs,
+                                        lx, ly, lz,
+                                        nx, ny, nz,
+                                        1.0)
+        else:
+            body = make_soft_cube("soft_tetra_cube",
+                                  node_mass,
+                                  xs, ys, zs,
+                                  lx,
+                                  nx, ny, nz,
+                                  1)
+
+        body.material[0].kLST = 0.99
         # these do nothing
         body.material[0].kAST = 0.0
         body.material[0].kVST = 0.9
 
-        # volume preserviing?
-        body.config.kVC = 200
+        # body.margin = lx
+        body.material[0].bending_distance = 2
+        body.randomize_constraints = False  # True
+        body.k_clusters = 4
+        # volume preserving?
+        body.config.kVC = 200.0
+        body.config.kDP = 0.7
+        body.config.kDF = 0.7
         # pressure preserving?
-        # body.config.kPR = 2500
+        # setting this to anything with no faces (?) will result in nans
+        # body.config.kPR = 2.0
         print body
 
         add_compound_request.soft_body.append(body)
 
-        cyl = make_rigid_cylinder("cyl", 0.1,
-                                  0, 0, 1.2,
-                                  0.8,
-                                  0.1,
-                                  math.pi/2.0, 0, 0)
-        # add_compound_request.body.append(cyl)
+        if False:
+            cyl = make_rigid_cylinder("cyl", 0.1,
+                                      0, 0, 1.2,
+                                      0.8,
+                                      0.1,
+                                      math.pi/2.0, 0, 0)
+            add_compound_request.body.append(cyl)
 
         try:
             add_compound_response = self.add_compound(add_compound_request)

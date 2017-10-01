@@ -58,7 +58,7 @@ def make_soft_config():
     config.kVCF = 1.0
     config.kDF = 0.2
     config.kCHR = 1.0
-    config.kKHR = 0.1
+    config.kKHR = 0.9  # 0.1
     config.kSHR = 1.0
     config.kAHR = 0.7
     config.kSRHR_CL = 0.1
@@ -72,7 +72,9 @@ def make_soft_config():
     return config
 
 
-def make_soft_cube(name, node_mass, xs, ys, zs, ln,
+def make_soft_cube(name, node_mass,
+                   xs, ys, zs,
+                   ln,
                    nx=4, ny=4, nz=4, flip=1.0):
     body = SoftBody()
     body.config = make_soft_config()
@@ -109,6 +111,7 @@ def make_soft_cube(name, node_mass, xs, ys, zs, ln,
     mat.kVST = 0.1
     mat.kAST = 0.1
     body.material.append(mat)
+    body.margin = nx * ln / 40.0
 
     return body
 
@@ -128,7 +131,8 @@ def make_tetra(node_indices, make_links=True):
     return tetra, links
 
 
-def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
+def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
+                         lx, ly, lz,
                          nx=2, ny=2, nz=2, flip=1.0):
     body = SoftBody()
     body.config = make_soft_config()
@@ -142,9 +146,9 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
             for i in range(nx):
                 n1 = Node()
                 n1.mass = node_mass
-                n1.position.x = xs + (i - nx/2 + 0.5) * ln * flip
-                n1.position.y = ys + (j - ny/2 + 0.5) * ln * flip
-                n1.position.z = zs + (k - nz/2 + 0.5) * ln * flip
+                n1.position.x = xs + (i - nx/2 + 0.5) * lx * flip
+                n1.position.y = ys + (j - ny/2 + 0.5) * ly * flip
+                n1.position.z = zs + (k - nz/2 + 0.5) * lz * flip
                 body.node.append(n1)
 
     #    6  7
@@ -183,6 +187,7 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs, ln,
     mat.kAST = 0.1
     mat.kVST = 0.9
     body.material.append(mat)
+    body.margin = lx * nx / 40.0
 
     return body
 

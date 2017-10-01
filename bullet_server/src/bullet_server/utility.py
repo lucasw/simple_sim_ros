@@ -134,6 +134,9 @@ def make_tetra(node_indices, make_links=True):
 def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
                          lx, ly, lz,
                          nx=2, ny=2, nz=2, flip=1.0):
+    if (nx < 2) or (ny < 2) or (nz < 2):
+        rospy.logerr("can't make tetra with n < 2 " + str(nx) + " " + str(ny) + " " + str(nz))
+        return None
     body = SoftBody()
     body.config = make_soft_config()
     body.name = name
@@ -159,27 +162,39 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
     # Make the indices go in a right hand rule order
     # for the base triangle, the first index should be directly
     # below the 4th.
-    tetra, links = make_tetra([0, 1, 2, 4])
-    body.tetra.append(tetra)
-    for link in links:
-        body.link.append(link)
-    if True:
-        tetra, links = make_tetra([3, 2, 1, 7])
-        body.tetra.append(tetra)
-        for link in links:
-            body.link.append(link)
-        tetra, links = make_tetra([4, 1, 2, 7])
-        body.tetra.append(tetra)
-        for link in links:
-            body.link.append(link)
-        tetra, links = make_tetra([6, 7, 4, 2])
-        body.tetra.append(tetra)
-        for link in links:
-            body.link.append(link)
-        tetra, links = make_tetra([5, 4, 7, 1])
-        body.tetra.append(tetra)
-        for link in links:
-            body.link.append(link)
+    for k in range(nz - 1):
+        for j in range(ny - 1):
+            for i in range(nx - 1):
+                ind = k * (nx * ny) + j * nx + i
+                i0 = ind
+                i1 = i0 + 1
+                i2 = ind + nx
+                i3 = i2 + 1
+                i4 = ind + nx * ny
+                i5 = i4 + 1
+                i6 = i4 + nx
+                i7 = i6 + 1
+                tetra, links = make_tetra([i0, i1, i2, i4])
+                body.tetra.append(tetra)
+                for link in links:
+                    body.link.append(link)
+                if True:
+                    tetra, links = make_tetra([i3, i2, i1, i7])
+                    body.tetra.append(tetra)
+                    for link in links:
+                        body.link.append(link)
+                    tetra, links = make_tetra([i4, i1, i2, i7])
+                    body.tetra.append(tetra)
+                    for link in links:
+                        body.link.append(link)
+                    tetra, links = make_tetra([i6, i7, i4, i2])
+                    body.tetra.append(tetra)
+                    for link in links:
+                        body.link.append(link)
+                    tetra, links = make_tetra([i5, i4, i7, i1])
+                    body.tetra.append(tetra)
+                    for link in links:
+                        body.link.append(link)
 
     mat = Material()
     mat.kLST = 0.25

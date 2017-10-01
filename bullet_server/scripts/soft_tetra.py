@@ -25,9 +25,9 @@ class SoftBodyDemo:
         ly = rospy.get_param("~ly", 0.05)
         lz = rospy.get_param("~lz", 0.05)
 
-        nx = rospy.get_param("~nx", 2)
-        ny = rospy.get_param("~ny", 2)
-        nz = rospy.get_param("~nz", 2)
+        nx = rospy.get_param("~nx", 3)
+        ny = rospy.get_param("~ny", 3)
+        nz = rospy.get_param("~nz", 3)
 
         node_mass = rospy.get_param("~node_mass", 0.1)
         if True:

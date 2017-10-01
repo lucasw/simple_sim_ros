@@ -116,19 +116,39 @@ def make_soft_cube(name, node_mass,
     return body
 
 
-def make_tetra(node_indices, make_links=True):
+def make_tetra(node_indices, make_links=True, make_faces=True):
+    if len(node_indices) != 4:
+        rospy.logerr("bad node_indices length " + str(node_indices))
+        return None
     tetra = Tetra()
     tetra.node_indices = node_indices
     links = []
     if make_links:
         for i in range(len(node_indices)):
-            for j in range(i+1, len(node_indices)):
+            for j in range(i + 1, len(node_indices)):
                 link = Link()
                 link.node_indices[0] = node_indices[i]
                 link.node_indices[1] = node_indices[j]
                 links.append(link)
-
-    return tetra, links
+    faces = []
+    # 3
+    #
+    #   2
+    # 0   1
+    if make_faces:
+        face = Face()
+        face.node_indices = [node_indices[0], node_indices[2], node_indices[1]]
+        faces.append(face)
+        face = Face()
+        face.node_indices = [node_indices[0], node_indices[1], node_indices[3]]
+        faces.append(face)
+        face = Face()
+        face.node_indices = [node_indices[0], node_indices[3], node_indices[2]]
+        faces.append(face)
+        face = Face()
+        face.node_indices = [node_indices[2], node_indices[3], node_indices[1]]
+        faces.append(face)
+    return tetra, links, faces
 
 
 def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
@@ -174,27 +194,19 @@ def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
                 i5 = i4 + 1
                 i6 = i4 + nx
                 i7 = i6 + 1
-                tetra, links = make_tetra([i0, i1, i2, i4])
-                body.tetra.append(tetra)
-                for link in links:
-                    body.link.append(link)
-                if True:
-                    tetra, links = make_tetra([i3, i2, i1, i7])
+                tinds = []
+                tinds.append([i0, i1, i2, i4])
+                tinds.append([i3, i2, i1, i7])
+                tinds.append([i4, i1, i2, i7])
+                tinds.append([i6, i7, i4, i2])
+                tinds.append([i5, i4, i7, i1])
+                for tind in tinds:
+                    tetra, links, faces = make_tetra(tind)
                     body.tetra.append(tetra)
                     for link in links:
                         body.link.append(link)
-                    tetra, links = make_tetra([i4, i1, i2, i7])
-                    body.tetra.append(tetra)
-                    for link in links:
-                        body.link.append(link)
-                    tetra, links = make_tetra([i6, i7, i4, i2])
-                    body.tetra.append(tetra)
-                    for link in links:
-                        body.link.append(link)
-                    tetra, links = make_tetra([i5, i4, i7, i1])
-                    body.tetra.append(tetra)
-                    for link in links:
-                        body.link.append(link)
+                    for face in faces:
+                        body.face.append(face)
 
     mat = Material()
     mat.kLST = 0.25

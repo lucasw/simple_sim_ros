@@ -27,9 +27,10 @@ class SoftBodyDemo:
 
         nx = rospy.get_param("~nx", 3)
         ny = rospy.get_param("~ny", 3)
-        nz = rospy.get_param("~nz", 3)
+        nz = rospy.get_param("~nz", 4)
 
-        node_mass = rospy.get_param("~node_mass", 0.1)
+        total_mass = rospy.get_param("~total_mass", 0.5)
+        node_mass = total_mass / float((nx - 1) * (ny - 1) * (nz - 1))
         if True:
             body = make_soft_tetra_cube("soft_tetra_cube",
                                         node_mass,
@@ -41,11 +42,11 @@ class SoftBodyDemo:
             body = make_soft_cube("soft_tetra_cube",
                                   node_mass,
                                   xs, ys, zs,
-                                  lx,
+                                  lx,  # ly, lz,
                                   nx, ny, nz,
                                   1)
 
-        body.material[0].kLST = 0.99
+        body.material[0].kLST = 0.79
         # these do nothing
         body.material[0].kAST = 0.0
         body.material[0].kVST = 0.9
@@ -55,12 +56,12 @@ class SoftBodyDemo:
         body.randomize_constraints = False  # True
         body.k_clusters = 4
         # volume preserving?
-        body.config.kVC = 200.0
-        body.config.kDP = 0.7
-        body.config.kDF = 0.7
+        body.config.kVC = 100.0
+        body.config.kDP = 0.9
+        body.config.kDF = 0.9
         # pressure preserving?
         # setting this to anything with no faces (?) will result in nans
-        # body.config.kPR = 2.0
+        body.config.kPR = 0.05
         print body
 
         add_compound_request.soft_body.append(body)

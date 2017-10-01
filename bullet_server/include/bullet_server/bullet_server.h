@@ -144,6 +144,7 @@ class BulletServer
 public:
   BulletServer();
   ~BulletServer();
+  void reset();
   bullet_server::BulletServerConfig config_;
   void tickCallback(btScalar time_step);
   void update(const ros::TimerEvent& e);

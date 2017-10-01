@@ -202,7 +202,14 @@ void BulletServer::reconfigureCallback(
     bullet_server::BulletServerConfig& config,
     uint32_t level)
 {
+  if (config.reset)
+  {
+    reset();
+    config.reset = false;
+  }
+
   config_ = config;
+
   // TODO(lucasw) adjust timer with new time step
   timer_.setPeriod(ros::Duration(config_.target_time_step), false);
   timer_.start();
@@ -532,11 +539,7 @@ void BulletServer::removeConstraint(const Constraint* constraint,
 
 BulletServer::~BulletServer()
 {
-  for (std::map<std::string, Body*>::iterator it = bodies_.begin();
-      it != bodies_.end(); ++it)
-  {
-    delete it->second;
-  }
+  reset();
 
   if (false)
   {
@@ -556,6 +559,23 @@ BulletServer::~BulletServer()
 
   delete dispatcher_;
   delete broadphase_;
+}
+
+void BulletServer::reset()
+{
+  for (auto it = bodies_.begin();
+      it != bodies_.end(); ++it)
+  {
+    delete it->second;
+    bodies_.erase(it->first);
+  }
+  for (auto it = soft_bodies_.begin();
+      it != soft_bodies_.end(); ++it)
+  {
+    delete it->second;
+    soft_bodies_.erase(it->first);
+  }
+
 }
 
 int main(int argc, char** argv)

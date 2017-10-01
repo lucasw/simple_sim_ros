@@ -19,22 +19,22 @@ class SoftBodyDemo:
 
         xs = rospy.get_param("~x", 0.0)
         ys = rospy.get_param("~y", 0.0)
-        zs = rospy.get_param("~z", 1.0)
+        zs = rospy.get_param("~z", 0.5)
 
-        length = rospy.get_param("~length", 0.1)
-        width = rospy.get_param("~width", 0.1)
-        height = rospy.get_param("~height", 0.1)
+        length = rospy.get_param("~length", 0.5)
+        width = rospy.get_param("~width", 0.5)
+        height = rospy.get_param("~height", 0.5)
 
-        nx = rospy.get_param("~nx", 3)
-        ny = rospy.get_param("~ny", 3)
-        nz = rospy.get_param("~nz", 4)
+        nx = rospy.get_param("~nx", 5)
+        ny = rospy.get_param("~ny", 5)
+        nz = rospy.get_param("~nz", 5)
 
         lx = length / float(nx - 1)
         ly = width / float(ny - 1)
         lz = height / float(nz - 1)
         volume = lx * ly * lz
 
-        total_mass = rospy.get_param("~total_mass", 0.5)
+        total_mass = rospy.get_param("~total_mass", 1.5)
         num_cubes = (nx - 1) * (ny - 1) * (nz - 1)
         tetras_per_cube = 5
         node_mass = total_mass / float(num_cubes * tetras_per_cube)
@@ -53,23 +53,25 @@ class SoftBodyDemo:
                                   nx, ny, nz,
                                   1)
 
-        body.material[0].kLST = 0.79
+        body.material[0].kLST = 0.89
         # these do nothing
         body.material[0].kAST = 0.0
         body.material[0].kVST = 0.9
 
         # body.margin = lx
         body.material[0].bending_distance = 2
-        body.randomize_constraints = False  # True
+        body.randomize_constraints = True
         body.k_clusters = 4
         # volume preserving?  Doesn't seem to work
-        body.config.kVC = 1e9 * volume
-        body.config.kDP = 0.9
-        body.config.kDF = 0.999
+        # body.config.kVC = 1e9 * volume
+        body.config.kDP = 0.39
+        body.config.kDF = 0.99
         # body.config.kMT = 0.5
         # pressure preserving?
         # setting this to anything with no faces (?) will result in nans
-        body.config.kPR = 90000.0 * lx * ly * lz
+        # body.config.kPR = 90000.0 * lx * ly * lz
+
+        body.config.kSRHR_CL = 0.8
         print body
 
         add_compound_request.soft_body.append(body)

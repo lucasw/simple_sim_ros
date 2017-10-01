@@ -8,13 +8,16 @@ import rospkg
 import rospy
 
 from bullet_server.msg import Body, Constraint, Heightfield, Impulse
-
+from bullet_server.srv import *
 
 rospy.init_node("random")
 
-body_pub = rospy.Publisher("add_body", Body, queue_size=5)
-constraint_pub = rospy.Publisher("add_constraint", Constraint, queue_size=1)
-impulse_pub = rospy.Publisher("add_impulse", Impulse, queue_size=1)
+rospy.wait_for_service('add_compound')
+add_compound = rospy.ServiceProxy('add_compound', AddCompound)
+
+# body_pub = rospy.Publisher("add_body", Body, queue_size=5)
+# constraint_pub = rospy.Publisher("add_constraint", Constraint, queue_size=1)
+# impulse_pub = rospy.Publisher("add_impulse", Impulse, queue_size=1)
 
 sleep_time = 2.0
 postfix = str(random.randrange(0, 1000000000))
@@ -22,31 +25,42 @@ count = 0
 
 bodies = {}
 
+z_height = rospy.get_param("~z", 8.8)
+single = rospy.get_param("~single", False)
+
 while not rospy.is_shutdown():
-    z_height = 8.8
-    wheel = Body()
-    wheel.name = "random_body_" + postfix + "_" + str(count)
-    bodies[count] = wheel.name
-    wheel.type = random.randint(0, 4)  # Body.CYLINDER
-    wheel.mass = 1.0
-    wheel.pose.position.x = random.uniform(-0.1, 0.1)
-    wheel.pose.position.y = random.uniform(-0.1, 0.1)
-    wheel.pose.position.z = z_height + random.uniform(0, 4.0)
+    body = Body()
+    body.name = "random_body_" + postfix + "_" + str(count)
+    bodies[count] = body.name
+    body.type = random.randint(0, 4)  # Body.CYLINDER
+    body.mass = 1.0 + random.uniform(-0.5, 1.5)
+    body.pose.position.x = random.uniform(-0.1, 0.1)
+    body.pose.position.y = random.uniform(-0.1, 0.1)
+    body.pose.position.z = z_height  # + random.uniform(0, 4.0)
     # TODO(lucasw) make a random rotation
-    wheel.pose.orientation.x = 0.0  # 0.707
-    wheel.pose.orientation.w = random.uniform(0.9, 1.0)  # 0.707
-    wheel.scale.x = random.uniform(0.5, 2.4)
-    wheel.scale.y = random.uniform(0.5, 2.4)
-    wheel.scale.z = random.uniform(0.5, 2.4)
-    # republish wheel because usually the first one isn't received
-    body_pub.publish(wheel)
+    body.pose.orientation.x = 0.0  # 0.707
+    body.pose.orientation.w = random.uniform(0.9, 1.0)  # 0.707
+    body.scale.x = random.uniform(0.1, 0.4)
+    body.scale.y = random.uniform(0.1, 0.4)
+    body.scale.z = random.uniform(0.1, 0.4)
+    # republish body because usually the first one isn't received
+    add_compound_request = AddCompoundRequest()
+    add_compound_request.remove = rospy.get_param('~remove', False)
+    add_compound_request.body.append(body)
+    try:
+	add_compound_response = add_compound(add_compound_request)
+	rospy.loginfo(add_compound_response)
+    except rospy.service.ServiceException as e:
+	rospy.logerr(e)
+
     rospy.sleep(sleep_time)
     count += 1
 
     # TODO(lucasw) create random joints between existing links
     # store the names of all the existing bodies
     min_count = 8
-    if count > min_count and random.random() > 0.5:
+    if False:
+    # if count > min_count and random.random() > 0.5:
         axel = Constraint()
         axel.name = "constraint_" + postfix + "_" + str(count)
         axel.type = Constraint.POINT2POINT
@@ -63,3 +77,6 @@ while not rospy.is_shutdown():
         constraint_pub.publish(axel)
         rospy.loginfo(axel)
         rospy.sleep(sleep_time)
+
+    if single:
+        break

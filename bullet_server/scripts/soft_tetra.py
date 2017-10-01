@@ -61,7 +61,7 @@ class SoftBodyDemo:
         body.config.kDF = 0.9
         # pressure preserving?
         # setting this to anything with no faces (?) will result in nans
-        body.config.kPR = 0.05
+        body.config.kPR = 0.25
         print body
 
         add_compound_request.soft_body.append(body)

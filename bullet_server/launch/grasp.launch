@@ -5,7 +5,7 @@
       but that doesn't matter because the init of the pid messes with these values,
       so set it to 1.0 and set Kp to desired value-->
   <!--arg name="finger_kp_scale" default="1.0"/-->
-  <arg name="finger_kp" default="10.0"/>
+  <arg name="finger_kp" default="5.0"/>
   <arg name="finger_upper_limit" default="20.0"/>
   <arg name="finger_lower_limit" default="-20.0"/>
   <arg name="scale" default="14.0"/>
@@ -16,6 +16,9 @@
     <param name="remove" value="$(arg remove)"/>
     <param name="scale" value="$(arg scale)"/>
   </node>
+  <node name="spawn_ground" pkg="bullet_server" type="ground_plane.py"
+      output="screen">
+  </node>
   </group>
   <node name="grasp_sequence" pkg="bullet_server" type="grasp_sequence.py"
       output="screen">
@@ -25,14 +28,14 @@
   <group unless="$(arg remove)">
   <group ns="prismatic_upper_fore">
     <node name="pid" pkg="pid" type="controller">
-      <param name="Kp" value="3.5"/>
-      <param name="Ki" value="0.5"/>
-      <param name="Kd" value="0.4"/>
+      <param name="Kp" value="0.5"/>
+      <param name="Ki" value="0.2"/>
+      <param name="Kd" value="0.05"/>
       <param name="upper_limit" value="$(eval 1 * arg('scale'))"/>
       <param name="lower_limit" value="$(eval -1 * arg('scale'))"/>
       <param name="windup_limit" value="$(eval 1 * arg('scale'))"/>
       <param name="diagnostic_period" value="0.25"/>
-      <param name="max_loop_frequency" value="100.0"/>
+      <param name="max_loop_frequency" value="500.0"/>
       <param name="min_loop_frequency" value="100.0"/>
 			<param name="topic_from_controller" value="target_lin_motor_vel"/>
 			<param name="topic_from_plant" value="linear_pos"/>

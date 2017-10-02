@@ -60,6 +60,8 @@ Body::Body(BulletServer* parent,
     geometry_msgs::Pose pose,
     geometry_msgs::Twist twist,
     geometry_msgs::Vector3 scale,
+    const float friction,
+    const float rolling_friction,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub,
@@ -241,9 +243,12 @@ Body::Body(BulletServer* parent,
     << " " << fall_inertia.x()
     << " " << fall_inertia.y()
     << " " << fall_inertia.z());
-  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(scalar_mass, motion_state_,
+  btRigidBody::btRigidBodyConstructionInfo construction_info(scalar_mass, motion_state_,
       shape_, fall_inertia);
-  rigid_body_ = new btRigidBody(fallRigidBodyCI);
+  // TODO(lucasw) make contruction_info message type to put these into
+  construction_info.m_friction = friction;
+  construction_info.m_rollingFriction = rolling_friction;
+  rigid_body_ = new btRigidBody(construction_info);
   dynamics_world_->addRigidBody(rigid_body_);
 
   // ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
@@ -280,6 +285,8 @@ Body::Body(
     const float resolution,
     const float height_scale,
     const bool flip_quad_edges,
+    const float friction,
+    const float rolling_friction,
     btDiscreteDynamicsWorld* dynamics_world,
     tf::TransformBroadcaster* br,
     ros::Publisher* marker_array_pub,
@@ -511,9 +518,11 @@ Body::Body(
   const btScalar mass = 0.0;
   btVector3 fall_inertia(0, 0, 0);
   // shape_->calculateLocalInertia(mass, fallInertia);
-  btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motion_state_,
+  btRigidBody::btRigidBodyConstructionInfo construction_info(mass, motion_state_,
       shape_, fall_inertia);
-  rigid_body_ = new btRigidBody(fallRigidBodyCI);
+  construction_info.m_friction = friction;
+  construction_info.m_rollingFriction = rolling_friction;
+  rigid_body_ = new btRigidBody(construction_info);
   dynamics_world_->addRigidBody(rigid_body_);
 }
 

@@ -23,7 +23,7 @@ class Grasp:
         scale = rospy.get_param("~scale", 10.0)
 
         # make a table
-        table_height = -0.13
+        table_height = 0.0
         if rospy.get_param("~ground", False):
             rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
             table_thickness = 0.1
@@ -60,7 +60,7 @@ class Grasp:
             add_compound_request.body.append(ball)
 
         # Platform arm is attached to
-        arm_base_height = table_height + 1.0
+        arm_base_height = table_height + 0.93
         rot90 = tf.transformations.quaternion_from_euler(math.pi/2.0, 0, 0)
         arm_base_thickness = 0.02
         arm_base = Body()
@@ -97,6 +97,7 @@ class Grasp:
             arm_upper.scale.x = thickness / 2.0 * scale
             arm_upper.scale.y = cyl_length / 2.0 * scale
             arm_upper.scale.z = thickness / 2.0 * scale
+            arm_upper.friction = 0.7
             add_compound_request.body.append(arm_upper)
 
             # connect the cylinders to the bottom plate with p2p ball socket
@@ -131,6 +132,7 @@ class Grasp:
             arm_fore.scale.x = thickness * 0.4 * scale
             arm_fore.scale.y = cyl_length / 2.0 * scale
             arm_fore.scale.z = thickness * 0.4 * scale
+            arm_fore.friction = 0.7
             add_compound_request.body.append(arm_fore)
 
             # connect each top cylinder to paired bottom cylinder with slider constraint
@@ -152,7 +154,7 @@ class Grasp:
             # TODO(lucasw) is this an absolute angle or rate?
             prismatic.lower_ang_lim = -0.1
             prismatic.upper_ang_lim = 0.1
-            prismatic.max_motor_impulse = 800.0
+            prismatic.max_motor_impulse = 2800.0
             prismatic.disable_collisions_between_linked_bodies = True
             add_compound_request.constraint.append(prismatic)
 
@@ -176,6 +178,7 @@ class Grasp:
             finger_upper.scale.x = finger_thickness / 2.0 * scale
             finger_upper.scale.y = finger_length / 2.0 * scale
             finger_upper.scale.z = finger_thickness / 2.0 * scale
+            finger_upper.friction = 0.7
             add_compound_request.body.append(finger_upper)
 
 	    finger_joint = Constraint()
@@ -209,6 +212,7 @@ class Grasp:
             finger_lower.pose.position.z = (arm_base_height - cyl_length * 1.56 - finger_length) * scale
             finger_lower.scale.y = finger_length * 0.4 * scale
             finger_lower.scale.z = finger_thickness / 3.0 * scale
+            finger_lower.friction = 1.9
             add_compound_request.body.append(finger_lower)
 
 	    finger_lower_joint = copy.deepcopy(finger_joint)

@@ -3,12 +3,16 @@
   <arg name="rigid_only" default="true" doc="set to false to allow soft bodies"/>
   <arg name="use_rviz" default="true"/>
   <arg name="use_sim_clock" default="false"/>
+  <arg name="step_time" default="0.03"/>
   <arg name="tf_prefix" default=""/>
-  <arg name="gravity" default="-100.0" doc="gravity in units/sec^2"/>
+  <arg name="gravity" default="-150.0" doc="gravity in units/sec^2"/>
 
   <group if="$(arg use_sim_clock)">
     <param name="use_sim_time" value="true"/>
-    <node name="sim_clock" pkg="sim_clock" type="clock.py"/>
+    <node name="sim_clock" pkg="sim_clock" type="clock.py">
+      <param name="dt" value="0.001"/>
+      <param name="step_time" value="$(arg step_time)"/>
+    </node>
     <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
   </group>
 
@@ -21,8 +25,9 @@
     <param name="rigid_only" value="$(arg rigid_only)"/>
     <param name="tf_prefix" value="$(arg tf_prefix)"/>
     <param name="gravity" value="$(arg gravity)"/>
-    <param name="target_time_step" value="0.03"/>
-    <param name="fixed_time_step" value="0.001"/>
+    <param name="target_time_step" value="$(arg step_time)"/>
+    <param name="fixed_time_step" value="0.0003"/>
+    <param name="max_sub_steps" value="150"/>
   </node>
 
 </launch>

@@ -343,6 +343,7 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
 
   bodies_[msg->name] = new Body(this, msg->name, msg->type, msg->mass,
       msg->pose, msg->twist, msg->scale,
+      msg->friction, msg->rolling_friction,
       dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
 }
 
@@ -471,6 +472,7 @@ void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPt
 
   bodies_[msg->name] = new Body(this, msg->name,
       cv_ptr->image, msg->resolution, msg->height_scale, msg->flip_quad_edges,
+      0.5, 0.001,
       dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
 }
 

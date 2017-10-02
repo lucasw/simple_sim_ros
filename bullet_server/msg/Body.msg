@@ -20,6 +20,8 @@ geometry_msgs/Twist twist
 # x defines the sphere radius, and the cylinder radius, rect length
 # yz will be used for rect width and height
 geometry_msgs/Vector3 scale
+float32 friction
+float32 rolling_friction
 # not used yet
 string text
 string mesh_resource

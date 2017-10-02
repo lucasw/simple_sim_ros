@@ -125,7 +125,7 @@ class Icosphere:
             rospy.sleep(0.5)
 
         # make nodes and links and faces in SoftBody
-        total_mass = 3.0
+        total_mass = rospy.get_param("~mass", 2.0)
         node_mass = total_mass / len(self.pts)
         for pt in self.pts:
             node = Node()
@@ -179,8 +179,8 @@ class Icosphere:
 
         body.config = make_soft_config()
         body.config.kDF = 1.0
-        body.config.kDP = 0.05
-        body.config.kDG = 0.05
+        body.config.kDP = 0.004
+        body.config.kDG = 0.005
         body.config.kPR = rospy.get_param("~pressure", 700.0)  # pressure coefficient
         body.config.kMT = 0.9
         body.config.maxvolume = 0.5

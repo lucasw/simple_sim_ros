@@ -12,6 +12,8 @@ Panels:
         - /Grid1/Grid XZ1
         - /Grid1/Grid XZ1/Offset1
         - /PointCloud2
+        - /Light1
+        - /Light1/Direction1
       Splitter Ratio: 0.54360503
     Tree Height: 481
   - Class: rviz/Selection
@@ -78,13 +80,7 @@ Visualization Manager:
       Marker Topic: /bullet_server/visualization_marker
       Name: Viz
       Namespaces:
-        anchor_pivots: true
-        anchors: true
-        bodies: true
-        faces: true
-        links: true
-        nodes: false
-        tetras: true
+        {}
       Queue Size: 200
       Value: true
     - Class: rviz/Group
@@ -319,12 +315,30 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz_lighting/Light
+      Diffuse Color: 255; 255; 255
+      Direction:
+        X: 0.5
+        Y: 0
+        Z: -0.699999988
+      Enabled: true
+      Falloff: 1
+      Light Type: Directional
+      Name: Light
+      Outer Angle: 0.5
+      Position:
+        X: 0
+        Y: 0
+        Z: 0
+      Reference Frame: <Fixed Frame>
+      Specular Color: 255; 255; 255
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 161; 161; 161
     Fixed Frame: map
     Frame Rate: 30
-    Headlight: true
+    Headlight: false
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -344,7 +358,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 0.688551724
+      Distance: 7.94817495
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -359,10 +373,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.149796903
+      Pitch: 0.354797065
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.80354357
+      Yaw: 2.04535317
     Saved: ~
 Window Geometry:
   Displays:
@@ -380,5 +394,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 981
-  X: -8
+  X: 0
   Y: 24

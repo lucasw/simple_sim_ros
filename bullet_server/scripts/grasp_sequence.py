@@ -40,7 +40,7 @@ class GraspSequence:
         grab_height = 0.229
         self.setpoint(grab_height * self.scale, fing_open, fing_open, fing_open,
                       fing_open * 0.7, fing_open * 0.7, fing_open * 0.7)
-        rospy.sleep(1.0)
+        rospy.sleep(3.0)
         fing_closed = -0.15
         lower_fing_closed = 0.9
         self.setpoint(grab_height * self.scale, fing_closed, fing_closed, fing_closed,
@@ -48,7 +48,7 @@ class GraspSequence:
         rospy.sleep(1.0)
         self.setpoint(0.0, fing_closed, fing_closed, fing_closed,
                       lower_fing_closed, lower_fing_closed, lower_fing_closed)
-        rospy.sleep(1.0)
+        rospy.sleep(3.0)
         # rospy.spin()
 
     def setpoint(self, arm, f0, f1, f2, fu0, fu1, fu2):

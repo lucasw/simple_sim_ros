@@ -39,6 +39,7 @@ class GroundPlane:
         ground.scale.x = radius
         ground.scale.y = radius
         ground.scale.z = thickness
+        ground.friction = 0.7
         add_compound_request.body.append(ground)
 
         try:

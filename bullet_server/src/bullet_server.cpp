@@ -131,8 +131,10 @@ int BulletServer::init()
     dynamics_world_ = new btSoftRigidDynamicsWorld(dispatcher_, broadphase_,
         solver_, soft_rigid_collision_configuration_);
   }
-  // TODO(lucasw) provide this in ros param
-  btVector3 gravity(0.0, 0.0, -10.0);
+  // TODO(lucasw) make this adjustable via cfg or service call
+  float acc = -10.0;
+  ros::param::get("~gravity", acc);
+  btVector3 gravity(0.0, 0.0, acc);
   dynamics_world_->setGravity(gravity);
   soft_body_world_info_.m_gravity = gravity;
   // sdf -> 'signed distance field'

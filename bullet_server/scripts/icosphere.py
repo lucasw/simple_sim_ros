@@ -16,8 +16,8 @@ class Icosphere:
     def __init__(self):
         self.pub = rospy.Publisher("marker", Marker, queue_size=2)
 
-        radius = rospy.get_param("~radius", 0.02)
-        levels = rospy.get_param("~levels", 1)
+        radius = rospy.get_param("~radius", 0.5)
+        levels = rospy.get_param("~levels", 3)
         px = rospy.get_param("~x", 0.0)
         name = rospy.get_param("~name", "ball")
 
@@ -83,7 +83,7 @@ class Icosphere:
         for i in range(levels):
             faces = self.subdivide(faces)
 
-        height = rospy.get_param("~height", 0.14)
+        height = rospy.get_param("~height", radius * 1.1)
 
         print len(self.pts)
         # scale all points to be on sphere of desired radius
@@ -125,7 +125,7 @@ class Icosphere:
             rospy.sleep(0.5)
 
         # make nodes and links and faces in SoftBody
-        total_mass = 0.5
+        total_mass = 3.0
         node_mass = total_mass / len(self.pts)
         for pt in self.pts:
             node = Node()
@@ -178,10 +178,10 @@ class Icosphere:
         body.material.append(mat)
 
         body.config = make_soft_config()
-        body.config.kDF = 0.89
-        body.config.kDP = 0.85
-        body.config.kDG = 0.25
-        body.config.kPR = 1.15  # pressure coefficient
+        body.config.kDF = 1.0
+        body.config.kDP = 0.05
+        body.config.kDG = 0.05
+        body.config.kPR = rospy.get_param("~pressure", 700.0)  # pressure coefficient
         body.config.kMT = 0.9
         body.config.maxvolume = 0.5
 

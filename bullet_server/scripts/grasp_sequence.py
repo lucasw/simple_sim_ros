@@ -22,6 +22,7 @@ class GraspSequence:
             self.pubs[prefix] = rospy.Publisher(topic, Float64, queue_size=4)
             # rospy.set_param(topic + "/pid/Kp_scale", 10.0)
 
+        self.scale = rospy.get_param("~scale", 1.0)
         rospy.loginfo(self.pubs.keys())
         rospy.sleep(0.5)
 
@@ -37,12 +38,12 @@ class GraspSequence:
                       fing_open * 0.7, fing_open * 0.7, fing_open * 0.7)
         rospy.sleep(0.5)
         grab_height = 0.229
-        self.setpoint(grab_height, fing_open, fing_open, fing_open,
+        self.setpoint(grab_height * self.scale, fing_open, fing_open, fing_open,
                       fing_open * 0.7, fing_open * 0.7, fing_open * 0.7)
         rospy.sleep(1.0)
         fing_closed = -0.15
         lower_fing_closed = 0.9
-        self.setpoint(grab_height, fing_closed, fing_closed, fing_closed,
+        self.setpoint(grab_height * self.scale, fing_closed, fing_closed, fing_closed,
                       lower_fing_closed, lower_fing_closed, lower_fing_closed)
         rospy.sleep(1.0)
         self.setpoint(0.0, fing_closed, fing_closed, fing_closed,

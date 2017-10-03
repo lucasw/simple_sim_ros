@@ -17,7 +17,9 @@ generate_dynamic_reconfigure_options(
 
 catkin_package()
 
-# add_dependencies(scripts/sim_clock.py ${PROJECT_NAME}_gencfg)
+add_executable(clock src/clock.cpp)
+add_dependencies(clock ${PROJECT_NAME}_gencfg)
+target_link_libraries(clock ${catkin_LIBRARIES})
 
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(timer_test src/timer_test.cpp)

@@ -3,18 +3,16 @@
 
   First step:
 
-  Create a bullet simulation, default with an infinite plane.
+  Create a bullet physics library simulation.
 
   ros messages or service calls create body primitives in the simulation.
   Send the position and attitude of each body to tf.
 
-  Maybe publish Markers for rviz, but could leave that to client- ideally
+  Publish Markers for rviz, but could leave that to client- ideally
   no visualization at all would be done here.
 
-  No joints initially, or actuation, or sensors.
-
-  Publish to clock if use_sim_time is set, otherwise try to keep up with
-  wall clock time as much as possible (maybe issue a warning if the sim
+  Try to keep up with
+  clock time as much as possible (maybe issue a warning if the sim
   gets more than 5 or 10 seconds behind current time).
 */
 

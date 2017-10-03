@@ -7,10 +7,10 @@
   <arg name="tf_prefix" default=""/>
   <arg name="gravity" default="-150.0" doc="gravity in units/sec^2"/>
 
+  <param name="use_sim_time" value="$(arg use_sim_clock)"/>
   <group if="$(arg use_sim_clock)">
-    <param name="use_sim_time" value="true"/>
-    <node name="sim_clock" pkg="sim_clock" type="clock.py">
-      <param name="dt" value="0.001"/>
+    <node name="sim_clock" pkg="sim_clock" type="clock">
+      <param name="dt" value="0.01"/>
       <param name="step_time" value="$(arg step_time)"/>
     </node>
     <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>

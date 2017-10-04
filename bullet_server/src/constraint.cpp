@@ -1,21 +1,19 @@
 /**
-  Copyright 2016 Lucas Walter
+  Copyright (C) 2016  Lucas Walter
 
-  First step:
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  Create a bullet simulation, default with an infinite plane.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-  ros messages or service calls create body primitives in the simulation.
-  Send the position and attitude of each body to tf.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  Maybe publish Markers for rviz, but could leave that to client- ideally
-  no visualization at all would be done here.
-
-  No joints initially, or actuation, or sensors.
-
-  Publish to clock if use_sim_time is set, otherwise try to keep up with
-  wall clock time as much as possible (maybe issue a warning if the sim
-  gets more than 5 or 10 seconds behind current time).
 */
 
 #include <boost/functional/hash.hpp>

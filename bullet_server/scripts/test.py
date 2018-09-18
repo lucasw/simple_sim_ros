@@ -68,37 +68,37 @@ rospy.sleep(sleep_time)
 
 # exit()
 
-axel_y = 0.75
-axel = Constraint()
-axel.name = "axel0"
-axel.type = Constraint.POINT2POINT
-axel.body_a = "chassis0"
-axel.body_b = "wheel0"
-axel.pivot_in_a.x = 1.0  # wheel0.pose.position.x
-axel.pivot_in_a.y = axel_y
-axel.pivot_in_a.z = -0.1
-axel.pivot_in_b.y = -0.2
-constraint_pub.publish(axel)
+axle_y = 0.75
+axle = Constraint()
+axle.name = "axle0"
+axle.type = Constraint.POINT2POINT
+axle.body_a = "chassis0"
+axle.body_b = "wheel0"
+axle.pivot_in_a.x = 1.0  # wheel0.pose.position.x
+axle.pivot_in_a.y = axle_y
+axle.pivot_in_a.z = -0.1
+axle.pivot_in_b.y = -0.2
+constraint_pub.publish(axle)
 rospy.sleep(sleep_time)
 
-axel.name = "axel1"
-axel.body_b = "wheel1"
-axel.pivot_in_a.y = -axel_y
-axel.pivot_in_b.y = 0.2
-constraint_pub.publish(axel)
+axle.name = "axle1"
+axle.body_b = "wheel1"
+axle.pivot_in_a.y = -axle_y
+axle.pivot_in_b.y = 0.2
+constraint_pub.publish(axle)
 rospy.sleep(sleep_time)
 
-axel.name = "axel2"
-axel.body_b = "wheel2"
-axel.pivot_in_a.x = -1.0
-constraint_pub.publish(axel)
+axle.name = "axle2"
+axle.body_b = "wheel2"
+axle.pivot_in_a.x = -1.0
+constraint_pub.publish(axle)
 rospy.sleep(sleep_time)
 
-axel.name = "axel3"
-axel.body_b = "wheel3"
-axel.pivot_in_a.y = axel_y
-axel.pivot_in_b.y = -0.2
-constraint_pub.publish(axel)
+axle.name = "axle3"
+axle.body_b = "wheel3"
+axle.pivot_in_a.y = axle_y
+axle.pivot_in_b.y = -0.2
+constraint_pub.publish(axle)
 rospy.sleep(sleep_time)
 
 if False:

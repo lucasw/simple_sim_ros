@@ -61,21 +61,21 @@ while not rospy.is_shutdown():
     min_count = 8
     if False:
     # if count > min_count and random.random() > 0.5:
-        axel = Constraint()
-        axel.name = "constraint_" + postfix + "_" + str(count)
-        axel.type = Constraint.POINT2POINT
-        axel.body_a = bodies[random.randrange(count - min_count, count)]
-        axel.body_b = bodies[random.randrange(count - min_count, count)]
-        if (axel.body_a == axel.body_b):
+        axle = Constraint()
+        axle.name = "constraint_" + postfix + "_" + str(count)
+        axle.type = Constraint.POINT2POINT
+        axle.body_a = bodies[random.randrange(count - min_count, count)]
+        axle.body_b = bodies[random.randrange(count - min_count, count)]
+        if (axle.body_a == axle.body_b):
             continue
-        axel.pivot_in_a.x = random.uniform(2.5, 3.0)
-        axel.pivot_in_a.y = random.uniform(-3.0, 3.0)
-        axel.pivot_in_a.z = random.uniform(-3.0, 3.0)
-        axel.pivot_in_b.x = random.uniform(-2.5, -3.0)
-        axel.pivot_in_b.y = random.uniform(-3.0, 3.0)
-        axel.pivot_in_b.z = random.uniform(-3.0, 3.0)
-        constraint_pub.publish(axel)
-        rospy.loginfo(axel)
+        axle.pivot_in_a.x = random.uniform(2.5, 3.0)
+        axle.pivot_in_a.y = random.uniform(-3.0, 3.0)
+        axle.pivot_in_a.z = random.uniform(-3.0, 3.0)
+        axle.pivot_in_b.x = random.uniform(-2.5, -3.0)
+        axle.pivot_in_b.y = random.uniform(-3.0, 3.0)
+        axle.pivot_in_b.z = random.uniform(-3.0, 3.0)
+        constraint_pub.publish(axle)
+        rospy.loginfo(axle)
         rospy.sleep(sleep_time)
 
     if single:

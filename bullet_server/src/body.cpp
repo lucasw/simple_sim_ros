@@ -587,9 +587,6 @@ void Body::tickUpdate(btScalar time_step)
   // update kinematic object - is this going to be jerky?
   if (rigid_body_->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)
   {
-    btVector3 vel = rigid_body_->getLinearVelocity();
-    ROS_DEBUG_STREAM(vel.getX() << " " << vel.getY() << " " << vel.getZ());
-
     btTransform trans;
     rigid_body_->getMotionState()->getWorldTransform(trans);
     // TODO(lucasw) velocity * dt

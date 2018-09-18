@@ -55,6 +55,7 @@ Body::Body(BulletServer* parent,
     const std::string name,
     unsigned int type,
     const float mass,
+    const bool kinematic,
     geometry_msgs::Pose pose,
     geometry_msgs::Twist twist,
     geometry_msgs::Vector3 scale,
@@ -228,13 +229,17 @@ Body::Body(BulletServer* parent,
     }
   }
   else
+  {
+    ROS_ERROR_STREAM("unknown body type: " << type);
     return;
+  }
 
   motion_state_ = new btDefaultMotionState(btTransform(
       btQuaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w),
       btVector3(pose.position.x, pose.position.y, pose.position.z)));
   // TODO(lucasw) provide in message
   btScalar scalar_mass = mass;
+
   btVector3 fall_inertia(0, 0, 0);
   shape_->calculateLocalInertia(scalar_mass, fall_inertia);
   ROS_INFO_STREAM(name_ << " " << scalar_mass
@@ -243,10 +248,19 @@ Body::Body(BulletServer* parent,
     << " " << fall_inertia.z());
   btRigidBody::btRigidBodyConstructionInfo construction_info(scalar_mass, motion_state_,
       shape_, fall_inertia);
-  // TODO(lucasw) make contruction_info message type to put these into
+  // TODO(lucasw) make construction_info message type to put these into
   construction_info.m_friction = friction;
   construction_info.m_rollingFriction = rolling_friction;
   rigid_body_ = new btRigidBody(construction_info);
+
+  if (kinematic)
+  {
+    ROS_INFO_STREAM(name + " is kinematic, mass should be zero to work");
+    rigid_body_->setCollisionFlags(
+        rigid_body_->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+    rigid_body_->setActivationState(DISABLE_DEACTIVATION);
+  }
+
   dynamics_world_->addRigidBody(rigid_body_);
 
   // ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
@@ -568,11 +582,28 @@ Body::~Body()
     delete index_vertex_arrays_;
 }
 
+void Body::tickUpdate(btScalar time_step)
+{
+  // update kinematic object - is this going to be jerky?
+  if (rigid_body_->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)
+  {
+    btVector3 vel = rigid_body_->getLinearVelocity();
+    ROS_DEBUG_STREAM(vel.getX() << " " << vel.getY() << " " << vel.getZ());
+
+    btTransform trans;
+    rigid_body_->getMotionState()->getWorldTransform(trans);
+    // TODO(lucasw) velocity * dt
+    trans.setOrigin(trans.getOrigin() + kinematic_linear_vel_ * time_step);
+    rigid_body_->getMotionState()->setWorldTransform(trans);
+  }
+}
+
 // TODO(lucasw) pass in current time
 void Body::update()
 {
   if (!shape_)
     return;
+
   btTransform trans;
   // TODO(lucasw) instead of world transform, need to have a parent
   // specified and get the transform relative to that.

@@ -64,6 +64,7 @@ public:
       const std::string name,
       unsigned int type,
       const float mass,
+      const bool kinematic,
       geometry_msgs::Pose pose,
       geometry_msgs::Twist twist,
       geometry_msgs::Vector3 scale,
@@ -93,11 +94,16 @@ public:
 
   void publishMarker();
 
+  // TODO(lucasw) need angular vel as well
+  btVector3 kinematic_linear_vel_;
+
   // keep track of constraints attached to this body
   void addConstraint(Constraint* constraint);
   void removeConstraint(const Constraint* constraint);
   const std::string name_;
+  // TODO(lucasw) make this private and have bullet_server be a friend
   btRigidBody* rigid_body_;
+  void tickUpdate(btScalar time_step);
   void update();
 };
 

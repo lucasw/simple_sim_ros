@@ -12,6 +12,7 @@ from bullet_server.srv import *
 
 rospy.init_node("random")
 
+pub = rospy.Publisher("add_impulse", Impulse, queue_size=3)
 rospy.wait_for_service('add_compound')
 add_compound = rospy.ServiceProxy('add_compound', AddCompound)
 
@@ -20,24 +21,19 @@ add_compound = rospy.ServiceProxy('add_compound', AddCompound)
 # impulse_pub = rospy.Publisher("add_impulse", Impulse, queue_size=1)
 
 sleep_time = 2.0
-postfix = str(random.randrange(0, 1000000000))
 count = 0
 
 bodies = {}
 
-z_height = rospy.get_param("~z", 8.8)
-single = rospy.get_param("~single", False)
+z_height = rospy.get_param("~z", 0.8)
 
-while not rospy.is_shutdown():
+if True:
     body = Body()
-    body.name = "random_body_" + postfix + "_" + str(count)
+    body.name = "kinematic_body"
     bodies[count] = body.name
     body.type = random.randint(0, 4)  # Body.CYLINDER
-    if rospy.get_param("~kinematic", False):
-        body.kinematic = True
-        body.mass = 0.0
-    else:
-        body.mass = 0.4  # + random.uniform(-0.5, 1.5)
+    body.kinematic = True
+    body.mass = 0.0
 
     body.pose.position.x = random.uniform(-0.1, 0.1)
     body.pose.position.y = random.uniform(-0.1, 0.1)
@@ -53,10 +49,10 @@ while not rospy.is_shutdown():
     add_compound_request.remove = rospy.get_param('~remove', False)
     add_compound_request.body.append(body)
     try:
-	add_compound_response = add_compound(add_compound_request)
-	rospy.loginfo(add_compound_response)
+        add_compound_response = add_compound(add_compound_request)
+        rospy.loginfo(add_compound_response)
     except rospy.service.ServiceException as e:
-	rospy.logerr(e)
+        rospy.logerr(e)
 
     rospy.sleep(sleep_time)
     count += 1
@@ -64,24 +60,10 @@ while not rospy.is_shutdown():
     # TODO(lucasw) create random joints between existing links
     # store the names of all the existing bodies
     min_count = 8
-    if False:
-    # if count > min_count and random.random() > 0.5:
-        axle = Constraint()
-        axle.name = "constraint_" + postfix + "_" + str(count)
-        axle.type = Constraint.POINT2POINT
-        axle.body_a = bodies[random.randrange(count - min_count, count)]
-        axle.body_b = bodies[random.randrange(count - min_count, count)]
-        if (axle.body_a == axle.body_b):
-            continue
-        axle.pivot_in_a.x = random.uniform(2.5, 3.0)
-        axle.pivot_in_a.y = random.uniform(-3.0, 3.0)
-        axle.pivot_in_a.z = random.uniform(-3.0, 3.0)
-        axle.pivot_in_b.x = random.uniform(-2.5, -3.0)
-        axle.pivot_in_b.y = random.uniform(-3.0, 3.0)
-        axle.pivot_in_b.z = random.uniform(-3.0, 3.0)
-        constraint_pub.publish(axle)
-        rospy.loginfo(axle)
-        rospy.sleep(sleep_time)
 
-    if single:
-        break
+    rospy.sleep(1.0)
+    impulse = Impulse()
+    impulse.body = body.name
+    impulse.impulse.x = 0.05
+    pub.publish(impulse)
+rospy.spin()

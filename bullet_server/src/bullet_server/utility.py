@@ -17,6 +17,7 @@ def make_rigid_box(name, mass, xs, ys, zs, wd, ln, ht,
     body.name = name
     body.type = Body.BOX
     body.mass = mass
+    body.kinematic = False
     body.pose.position.x = xs
     body.pose.position.y = ys
     body.pose.position.z = zs
@@ -38,6 +39,7 @@ def make_rigid_cylinder(name, mass, xs, ys, zs, radius, thickness,
     body = Body()
     body.name = name
     body.mass = mass
+    body.kinematic = False
     rot90 = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
     body.pose.orientation.x = rot90[0]
     body.pose.orientation.y = rot90[1]

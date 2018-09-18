@@ -142,6 +142,7 @@ int BulletServer::init()
     dynamics_world_ = new btSoftRigidDynamicsWorld(dispatcher_, broadphase_,
         solver_, soft_rigid_collision_configuration_);
   }
+
   // TODO(lucasw) make this adjustable via cfg or service call
   float acc = -10.0;
   ros::param::get("~gravity", acc);
@@ -190,7 +191,7 @@ int BulletServer::init()
   tick_pub_ = nh_.advertise<std_msgs::Float32>("sim_tick", 8);
   // TODO(lucasw) or Clock?
   internal_time_pub_ = nh_.advertise<std_msgs::Float32>("internal_time", 8);
-  dynamics_world_->setInternalTickCallback(externalTickCallback, static_cast<void*>(this));
+  dynamics_world_->setInternalTickCallback(externalTickCallback, static_cast<void*>(this), true);
 
   marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
   // TODO(lucasw) make this a service
@@ -352,7 +353,8 @@ void BulletServer::bodyCallback(const bullet_server::Body::ConstPtr& msg)
     delete bodies_[msg->name];
   }
 
-  bodies_[msg->name] = new Body(this, msg->name, msg->type, msg->mass,
+  bodies_[msg->name] = new Body(this, msg->name, msg->type,
+      msg->mass, msg->kinematic,
       msg->pose, msg->twist, msg->scale,
       msg->friction, msg->rolling_friction,
       dynamics_world_, &br_, &marker_array_pub_, tf_prefix_);
@@ -454,9 +456,25 @@ void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
     ROS_WARN_STREAM("body does not exist " << msg->body);
     return;
   }
+
+  const btVector3 impulse(msg->impulse.x, msg->impulse.y, msg->impulse.z);
+
+  // TODO(lucasw) impulse is the wrong place for this but good enough for now
+  if (bodies_[msg->body]->rigid_body_->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)
+  {
+    ROS_INFO_STREAM(msg->body << " setting linear velocity "
+        << impulse.getX() << " " << impulse.getY() << " " << impulse.getZ()
+        << " instead of impulse for kinematic object");
+    // this should be redundant
+    bodies_[msg->body]->rigid_body_->activate();
+    // This doesn't work (but maybe used to?)
+    // bodies_[msg->body]->rigid_body_->setLinearVelocity(impulse);
+    bodies_[msg->body]->kinematic_linear_vel_ = impulse;
+    return;
+  }
+
   // ROS_INFO_STREAM("impulse " << msg->body << "\n" << msg->location << "\n" << msg->impulse);
   const btVector3 point_rel_body(msg->location.x, msg->location.y, msg->location.z);
-  const btVector3 impulse(msg->impulse.x, msg->impulse.y, msg->impulse.z);
   bodies_[msg->body]->rigid_body_->activate();
   bodies_[msg->body]->rigid_body_->applyImpulse(impulse, point_rel_body);
 }
@@ -499,6 +517,12 @@ void BulletServer::tickCallback(btScalar time_step)
     std_msgs::Float32 msg2;
     msg2.data = internal_elapsed_time_;
     internal_time_pub_.publish(msg2);
+  }
+
+  // loop through rigid bodies and update positions of those that are kinematic
+  for (auto& body : bodies_)
+  {
+    body.second->tickUpdate(time_step);
   }
 }
 

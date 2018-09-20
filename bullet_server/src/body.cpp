@@ -77,7 +77,8 @@ Body::Body(BulletServer* parent,
   br_(br),
   marker_array_pub_(marker_array_pub),
   tf_prefix_(tf_prefix),
-  state_(-1)
+  state_(-1),
+  new_transform_(false)
 {
   ROS_DEBUG_STREAM("new Body " << name << " " << type);  // << " " << pose);
 
@@ -583,6 +584,51 @@ Body::~Body()
     delete index_vertex_arrays_;
 }
 
+void Body::setTransform(const geometry_msgs::Transform& tr)
+{
+  transform_ = tr;
+  new_transform_ = true;
+
+  // TODO(lucasw) tried putting this in update() but apparently that is in
+  // same thread.
+  if (new_transform_)
+  {
+    // TODO(lucasw) if the transform frame is not the same as the
+    // bullet frame then transform it.
+    // But if that is done once, wouldn't there be a need to keep transforming
+    // on every tickUpdate so this body can track that frame exactly?
+    btTransform trans;
+    btVector3 origin(transform_.translation.x,
+        transform_.translation.y, transform_.translation.z);
+    trans.setOrigin(origin);
+    btQuaternion quat(transform_.rotation.x, transform_.rotation.y,
+        transform_.rotation.z, transform_.rotation.w);
+    trans.setRotation(quat);
+
+    if (rigid_body_->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)
+    {
+      rigid_body_->getMotionState()->setWorldTransform(trans);
+    }
+    else
+    {
+      // TODO(lucasw) add Twist to the service for this
+      rigid_body_->setLinearVelocity(btVector3(0.0, 0.0, 0.0));
+      rigid_body_->setWorldTransform(trans);
+    }
+    new_transform_ = false;
+    ROS_DEBUG_STREAM(name_ << " new transform " << transform_);
+  }
+
+  #if 0
+  // TODO(lucasw) is this needed?
+  // probably should return true or false if timeout
+  while (new_transform_)
+  {
+    // ros::Duration(0.2).sleep();
+  }
+  #endif
+}
+
 void Body::tickUpdate(btScalar time_step)
 {
   // update kinematic object - is this going to be jerky?
@@ -590,7 +636,6 @@ void Body::tickUpdate(btScalar time_step)
   {
     btTransform trans;
     rigid_body_->getMotionState()->getWorldTransform(trans);
-    // TODO(lucasw) velocity * dt
     trans.setOrigin(trans.getOrigin() + kinematic_linear_vel_ * time_step);
     rigid_body_->getMotionState()->setWorldTransform(trans);
   }

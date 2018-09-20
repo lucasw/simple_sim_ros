@@ -86,6 +86,7 @@ add_service_files(
     AddHeightfield.srv
     AddLaserScan.srv
     AddRaycast.srv
+    SetTransform.srv
     # SoftBody.srv
 )
 

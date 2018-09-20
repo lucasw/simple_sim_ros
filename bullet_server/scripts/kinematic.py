@@ -3,6 +3,7 @@
 #
 # create a number of bodies and joints in the bullet server
 
+import copy
 import random
 import rospkg
 import rospy
@@ -13,7 +14,9 @@ from bullet_server.srv import *
 rospy.init_node("random")
 
 pub = rospy.Publisher("add_impulse", Impulse, queue_size=3)
+rospy.loginfo('waiting for services...')
 rospy.wait_for_service('add_compound')
+rospy.loginfo('service found')
 add_compound = rospy.ServiceProxy('add_compound', AddCompound)
 
 # body_pub = rospy.Publisher("add_body", Body, queue_size=5)
@@ -48,6 +51,12 @@ if True:
     add_compound_request = AddCompoundRequest()
     add_compound_request.remove = rospy.get_param('~remove', False)
     add_compound_request.body.append(body)
+    body2 = copy.deepcopy(body)
+    body2.name += "_non_kinematic"
+    body2.mass = 1.0
+    body2.kinematic = False
+    body2.pose.position.z = 2.0
+    add_compound_request.body.append(body2)
     try:
         add_compound_response = add_compound(add_compound_request)
         rospy.loginfo(add_compound_response)
@@ -64,6 +73,33 @@ if True:
     rospy.sleep(1.0)
     impulse = Impulse()
     impulse.body = body.name
-    impulse.impulse.x = 0.05
+    impulse.impulse.x = 0.15
     pub.publish(impulse)
+
+    set_transform = rospy.ServiceProxy('set_transform', SetTransform)
+    while not rospy.is_shutdown():
+        rospy.sleep(1.5)
+
+        set_transform_request = SetTransformRequest()
+        set_transform_request.body = body.name
+        set_transform_request.transform.rotation.w = 1.0
+        set_transform_request.transform.translation.x = -2.0
+        set_transform_request.transform.translation.y = random.random()
+        try:
+            set_transform_response = set_transform(set_transform_request)
+            rospy.loginfo(set_transform_response)
+        except rospy.service.ServiceException as e:
+            rospy.logerr(e)
+        set_transform_request = SetTransformRequest()
+        set_transform_request.body = body2.name
+        set_transform_request.transform.rotation.w = 1.0
+        set_transform_request.transform.translation.x = 0.0
+        set_transform_request.transform.translation.y = random.random()
+        set_transform_request.transform.translation.z = 2.0
+        try:
+            set_transform_response = set_transform(set_transform_request)
+            rospy.loginfo(set_transform_response)
+        except rospy.service.ServiceException as e:
+            rospy.logerr(e)
+
 rospy.spin()

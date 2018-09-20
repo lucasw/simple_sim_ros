@@ -44,6 +44,7 @@
 #include <bullet_server/Node.h>
 #include <bullet_server/Link.h>
 #include <bullet_server/Face.h>
+#include <bullet_server/SetTransform.h>
 #include <bullet_server/Tetra.h>
 #include <dynamic_reconfigure/server.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -81,6 +82,13 @@ class BulletServer
   ros::ServiceServer add_laser_scan_;
   bool addLaserScan(bullet_server::AddLaserScan::Request& req,
                     bullet_server::AddLaserScan::Response& res);
+
+  ros::ServiceServer set_transform_;
+  bool setTransform(bullet_server::SetTransform::Request& req,
+                    bullet_server::SetTransform::Response& res);
+
+  // TODO(lucasw) deprecate adding bodies and constraints and heightfields
+  // through topics?
   ros::Subscriber body_sub_;
   void bodyCallback(const bullet_server::Body::ConstPtr& msg);
   bool softBodyCallback(const bullet_server::SoftBody::ConstPtr& msg);

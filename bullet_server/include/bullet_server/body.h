@@ -59,6 +59,9 @@ class Body
 
   btDiscreteDynamicsWorld* dynamics_world_;
   int state_;
+
+  geometry_msgs::Transform transform_;
+  bool new_transform_;
 public:
   Body(BulletServer* parent,
       const std::string name,
@@ -103,6 +106,8 @@ public:
   const std::string name_;
   // TODO(lucasw) make this private and have bullet_server be a friend
   btRigidBody* rigid_body_;
+
+  void setTransform(const geometry_msgs::Transform& tr);
   void tickUpdate(btScalar time_step);
   void update();
 };

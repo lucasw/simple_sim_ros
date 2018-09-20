@@ -205,6 +205,7 @@ int BulletServer::init()
   add_compound_ = nh_.advertiseService("add_compound", &BulletServer::addCompound, this);
   add_raycast_ = nh_.advertiseService("add_raycast", &BulletServer::addRaycast, this);
   add_laser_scan_ = nh_.advertiseService("add_laser_scan", &BulletServer::addLaserScan, this);
+  set_transform_ = nh_.advertiseService("set_transform", &BulletServer::setTransform, this);
 
   republish_markers_sub_ = nh_.subscribe("republish_markers", 3,
       &BulletServer::republishMarkers, this);
@@ -342,6 +343,22 @@ bool BulletServer::addLaserScan(bullet_server::AddLaserScan::Request& req,
       req.topic_name,
       nh_,
       dynamics_world_);
+
+  return true;
+}
+
+bool BulletServer::setTransform(bullet_server::SetTransform::Request& req,
+                                bullet_server::SetTransform::Response& res)
+{
+  if (bodies_.count(req.body) == 0)
+  {
+    res.message = "body does not exist " + req.body;
+    res.success = false;
+    return true;
+  }
+
+  bodies_[req.body]->setTransform(req.transform);
+  res.success = true;
 
   return true;
 }

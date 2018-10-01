@@ -4,6 +4,8 @@ bullet_server/Node[] node
 bullet_server/Link[] link
 bullet_server/Face[] face
 bullet_server/Tetra[] tetra
+# if any of the above have non-zero material_in the material below
+# needs to be defined - maybe instead of inds use names?
 bullet_server/Material[] material
 # these can attach the softbody to an already
 # existing rigid body - TODO(lucasw) may need an addAnchor service

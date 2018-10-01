@@ -134,15 +134,16 @@ SoftBody::SoftBody(BulletServer* parent,
   soft_body_->m_cfg.maxvolume = config.maxvolume;
   soft_body_->m_cfg.timescale = config.timescale;
 
-  btSoftBody::Material* pm = NULL;
   for (size_t i = 0; i < materials.size(); ++i)
   {
-    // btSoftBody::Material*
-    // TODO(lucasw) this adds a second material on top of the one created in the
-    // constructor above- can I just overwrite values in that one?
+    btSoftBody::Material* pm = nullptr;
+    // Overwrite default material/s (just one ought to be there, but make this generic
     // it seems the only point of m_materials[0] is to provide a default
     // for all the appendLinks/appendFaces etc.
-    pm = soft_body_->appendMaterial();
+    if (i < soft_body_->m_materials.size())
+      pm = soft_body_->m_materials[i];
+    else
+      pm = soft_body_->appendMaterial();
     pm->m_kLST = materials[i].kLST;
     pm->m_kAST = materials[i].kAST;
     pm->m_kVST = materials[i].kVST;
@@ -158,6 +159,9 @@ SoftBody::SoftBody(BulletServer* parent,
 
   for (size_t i = 0; i < links.size(); ++i)
   {
+    btSoftBody::Material* pm = nullptr;
+    if (links[i].material_ind < soft_body_->m_materials.size())
+      pm = soft_body_->m_materials[links[i].material_ind];
     // TODO(lucasw) need to provide an optional material index
     // for each link, otherwise m_material[0] in the soft body is used.
     // With bcheckexist set to true redundant links ought
@@ -167,12 +171,18 @@ SoftBody::SoftBody(BulletServer* parent,
   }
   for (size_t i = 0; i < faces.size(); ++i)
   {
+    btSoftBody::Material* pm = nullptr;
+    if (faces[i].material_ind < soft_body_->m_materials.size())
+      pm = soft_body_->m_materials[faces[i].material_ind];
     soft_body_->appendFace(faces[i].node_indices[0],
       faces[i].node_indices[1],
       faces[i].node_indices[2], pm);
   }
   for (size_t i = 0; i < tetras.size(); ++i)
   {
+    btSoftBody::Material* pm = nullptr;
+    if (tetras[i].material_ind < soft_body_->m_materials.size())
+      pm = soft_body_->m_materials[tetras[i].material_ind];
     soft_body_->appendTetra(tetras[i].node_indices[0],
       tetras[i].node_indices[1],
       tetras[i].node_indices[2],

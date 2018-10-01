@@ -52,7 +52,7 @@ class Strand:
         mat.kLST = 0.9
         mat.kAST = 0.1
         # TODO(lucasw)
-        mat.bending_distance = node_length * 10.0
+        mat.bending_distance = node_length * 2.0
         body.material.append(mat)
 
         body.config = make_soft_config()
@@ -75,6 +75,7 @@ class Strand:
         anchor0.node_index = 0
         anchor0.rigid_body_name = anchor0_body.name
         anchor0.influence = 0.05
+        anchor0.disable_collision_between_linked_bodies = True
 
         anchor1_body = make_rigid_box(name + "_anchor1", 0.0,
                                       body.node[-1].position.x + node_length, py, pz,
@@ -84,6 +85,7 @@ class Strand:
         anchor1.node_index = len(body.node) - 1
         anchor1.rigid_body_name = anchor1_body.name
         anchor1.influence = anchor0.influence
+        anchor1.disable_collision_between_linked_bodies = True
 
         body.anchor.append(anchor0)
         body.anchor.append(anchor1)

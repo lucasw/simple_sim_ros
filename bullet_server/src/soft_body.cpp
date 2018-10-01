@@ -112,6 +112,9 @@ SoftBody::SoftBody(BulletServer* parent,
   }
 
   soft_body_ = new btSoftBody(soft_body_world_info, nodes.size(), points, masses);
+  // TODO(lucasw) all the nodes created above will have the default material properties,
+  // not the one provided to this constructor- go through and override them?
+  // Ultimately every node should have a material index into the materials vector.
   delete[] points;
   delete[] masses;
 
@@ -135,6 +138,10 @@ SoftBody::SoftBody(BulletServer* parent,
   for (size_t i = 0; i < materials.size(); ++i)
   {
     // btSoftBody::Material*
+    // TODO(lucasw) this adds a second material on top of the one created in the
+    // constructor above- can I just overwrite values in that one?
+    // it seems the only point of m_materials[0] is to provide a default
+    // for all the appendLinks/appendFaces etc.
     pm = soft_body_->appendMaterial();
     pm->m_kLST = materials[i].kLST;
     pm->m_kAST = materials[i].kAST;
@@ -152,7 +159,7 @@ SoftBody::SoftBody(BulletServer* parent,
   for (size_t i = 0; i < links.size(); ++i)
   {
     // TODO(lucasw) need to provide an optional material index
-    // for each link
+    // for each link, otherwise m_material[0] in the soft body is used.
     // With bcheckexist set to true redundant links ought
     // to be filtered out.
     soft_body_->appendLink(links[i].node_indices[0],

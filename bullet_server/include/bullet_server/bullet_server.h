@@ -38,6 +38,7 @@
 #include <bullet_server/Constraint.h>
 #include <bullet_server/Heightfield.h>
 #include <bullet_server/Impulse.h>
+#include <bullet_server/SetMaterial.h>
 #include <bullet_server/SoftBody.h>
 #include <bullet_server/SoftConfig.h>
 #include <bullet_server/Material.h>
@@ -96,6 +97,8 @@ class BulletServer
   void constraintCallback(const bullet_server::Constraint::ConstPtr& msg);
   ros::Subscriber impulse_sub_;
   void impulseCallback(const bullet_server::Impulse::ConstPtr& msg);
+  ros::Subscriber set_material_sub_;
+  void setMaterialCallback(const bullet_server::SetMaterial::ConstPtr& msg);
   ros::Subscriber heightfield_sub_;
   void heightfieldCallback(const bullet_server::Heightfield::ConstPtr& msg);
   ros::Subscriber republish_markers_sub_;

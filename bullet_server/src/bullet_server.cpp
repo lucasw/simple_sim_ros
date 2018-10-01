@@ -201,6 +201,10 @@ int BulletServer::init()
   heightfield_sub_ = nh_.subscribe("add_heightfield", 10, &BulletServer::heightfieldCallback, this);
   constraint_sub_ = nh_.subscribe("add_constraint", 10, &BulletServer::constraintCallback, this);
   impulse_sub_ = nh_.subscribe("add_impulse", 10, &BulletServer::impulseCallback, this);
+  if (!rigid_only_)
+  {
+    set_material_sub_ = nh_.subscribe("set_material", 10, &BulletServer::setMaterialCallback, this);
+  }
 
   add_compound_ = nh_.advertiseService("add_compound", &BulletServer::addCompound, this);
   add_raycast_ = nh_.advertiseService("add_raycast", &BulletServer::addRaycast, this);
@@ -522,6 +526,34 @@ void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
   const btVector3 point_rel_body(msg->location.x, msg->location.y, msg->location.z);
   bodies_[msg->body]->rigid_body_->activate();
   bodies_[msg->body]->rigid_body_->applyImpulse(impulse, point_rel_body);
+}
+
+void BulletServer::setMaterialCallback(const bullet_server::SetMaterial::ConstPtr& msg)
+{
+  if (soft_bodies_.count(msg->soft_body_name) == 0)
+  {
+    ROS_WARN_STREAM("soft body does not exist " << msg->soft_body_name);
+    return;
+  }
+
+  // Maybe there should be a way to add the material
+  btSoftBody* body = soft_bodies_[msg->soft_body_name]->soft_body_;
+  const int num_materials = body->m_materials.size();
+  if (msg->material_ind >= num_materials)
+  {
+    ROS_WARN_STREAM(msg->soft_body_name << " material index too large "
+        << msg->material_ind << " " << num_materials);
+    return;
+  }
+
+  body->activate();
+  btSoftBody::Material* pm = body->m_materials[msg->material_ind];
+  pm->m_kLST = msg->material.kLST;
+  pm->m_kAST = msg->material.kAST;
+  pm->m_kVST = msg->material.kVST;
+  body->generateBendingConstraints(msg->material.bending_distance, pm);
+
+  return;
 }
 
 void BulletServer::heightfieldCallback(const bullet_server::Heightfield::ConstPtr& msg)

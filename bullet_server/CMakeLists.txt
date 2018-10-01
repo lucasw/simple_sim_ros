@@ -71,6 +71,7 @@ add_message_files(
   Link.msg
   Material.msg
   Node.msg
+  SetMaterial.msg
   SoftBody.msg
   SoftConfig.msg
   Tetra.msg

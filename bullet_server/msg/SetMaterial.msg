@@ -1,0 +1,3 @@
+string soft_body_name
+bullet_server/Material material
+uint8 material_ind

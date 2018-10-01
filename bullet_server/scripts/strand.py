@@ -15,15 +15,15 @@ from visualization_msgs.msg import Marker
 class Strand:
     def __init__(self):
         length = rospy.get_param("~length", 0.5)
-        segments = rospy.get_param("~segments", 100)
+        segments = rospy.get_param("~segments", 20)
         py = rospy.get_param("~y", 0.0)
         name = rospy.get_param("~name", "strand")
 
         pz = 0.2
         body = SoftBody()
         body.name = name
-        body.pose.position.y = py
-        body.pose.position.z = pz
+        body.pose.position.y = 0
+        body.pose.position.z = 0
         body.pose.orientation.w = 1.0
 
         # make nodes and links and faces in SoftBody
@@ -34,7 +34,7 @@ class Strand:
         for i in range(segments):
             node = Node()
             node.position.x = x
-            node.position.y = py
+            node.position.y = py + 0.15
             node.position.z = pz
             node.mass = node_mass
             body.node.append(node)
@@ -59,7 +59,7 @@ class Strand:
         body.config.kDF = 1.0
         body.config.kDP = 0.004
         body.config.kDG = 0.005
-        body.config.kPR = rospy.get_param("~pressure", 700.0)  # pressure coefficient
+        # body.config.kPR = rospy.get_param("~pressure", 700.0)  # pressure coefficient
         body.config.kMT = 0.1
         body.config.maxvolume = 0.5
 
@@ -74,6 +74,7 @@ class Strand:
         anchor0 = Anchor()
         anchor0.node_index = 0
         anchor0.rigid_body_name = anchor0_body.name
+        anchor0.influence = 0.05
 
         anchor1_body = make_rigid_box(name + "_anchor1", 0.0,
                                       body.node[-1].position.x + node_length, py, pz,
@@ -82,9 +83,10 @@ class Strand:
         anchor1 = Anchor()
         anchor1.node_index = len(body.node) - 1
         anchor1.rigid_body_name = anchor1_body.name
+        anchor1.influence = anchor0.influence
 
-        # body.anchor.append(anchor0)
-        # body.anchor.append(anchor1)
+        body.anchor.append(anchor0)
+        body.anchor.append(anchor1)
 
         add_compound_request = AddCompoundRequest()
         add_compound_request.remove = False  # rospy.get_param('~remove', False)

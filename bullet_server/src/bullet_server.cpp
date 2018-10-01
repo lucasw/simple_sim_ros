@@ -468,13 +468,41 @@ void BulletServer::constraintCallback(const bullet_server::Constraint::ConstPtr&
 
 void BulletServer::impulseCallback(const bullet_server::Impulse::ConstPtr& msg)
 {
+  const btVector3 impulse(msg->impulse.x, msg->impulse.y, msg->impulse.z);
+
+  if (!rigid_only_ && msg->soft_body)
+  {
+    if (soft_bodies_.count(msg->body) == 0)
+    {
+      ROS_WARN_STREAM("soft body does not exist " << msg->body);
+      return;
+    }
+
+    soft_bodies_[msg->body]->soft_body_->activate();
+    if (msg->node_only)
+    {
+      const size_t num_nodes = soft_bodies_[msg->body]->soft_body_->m_nodes.size();
+      if (msg->node_ind >= num_nodes)
+      {
+        ROS_WARN_STREAM("node ind too large " << msg->node_ind << " " << num_nodes);
+        return;
+      }
+      soft_bodies_[msg->body]->soft_body_->addForce(impulse, msg->node_ind);
+    }
+    else
+    {
+      soft_bodies_[msg->body]->soft_body_->addForce(impulse);
+    }
+
+    return;
+  }
+
   if (bodies_.count(msg->body) == 0)
   {
     ROS_WARN_STREAM("body does not exist " << msg->body);
     return;
   }
 
-  const btVector3 impulse(msg->impulse.x, msg->impulse.y, msg->impulse.z);
 
   // TODO(lucasw) impulse is the wrong place for this but good enough for now
   if (bodies_[msg->body]->rigid_body_->getCollisionFlags() & btCollisionObject::CF_KINEMATIC_OBJECT)

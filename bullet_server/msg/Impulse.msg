@@ -6,3 +6,8 @@ geometry_msgs/Vector3 impulse
 geometry_msgs/Point location
 # TODO(lucasw) later provide modes here to switch
 # which frame for each of the above
+
+# if a soft body can apply a force to a specific node
+bool soft_body
+bool node_only
+uint32 node_ind

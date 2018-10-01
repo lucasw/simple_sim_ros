@@ -52,7 +52,7 @@ class Strand:
         mat.kLST = 0.9
         mat.kAST = 0.1
         # TODO(lucasw)
-        mat.bending_distance = node_length * 2.0
+        mat.bending_distance = 2
         body.material.append(mat)
 
         body.config = make_soft_config()

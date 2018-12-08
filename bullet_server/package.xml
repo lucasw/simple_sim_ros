@@ -1,26 +1,19 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>bullet_server</name>
   <version>0.0.0</version>
-  <description>The bullet_server package</description>
-
+  <description>bullet physics simulation ros wrapper</description>
   <maintainer email="wsacul@gmail.com">Lucas Walter</maintainer>
-  <license>GPLv3</license>
-  <url type="website">https://github.com/lucasw/simple_sim_ros</url>
-  <author email="wsacul@gmail.com">Lucas Walter</author>
+  <license>BSD-3</license>
 
-  <!-- The *_depend tags are used to specify dependencies -->
-  <!-- Dependencies can be catkin packages or system dependencies -->
-  <!-- Examples: -->
-  <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
-  <!-- Use buildtool_depend for build tool packages: -->
-  <!--   <buildtool_depend>catkin</buildtool_depend> -->
-  <!-- Use run_depend for packages you need at runtime: -->
-  <!--   <run_depend>message_runtime</run_depend> -->
-  <!-- Use test_depend for packages you need only for testing: -->
-  <!--   <test_depend>gtest</test_depend> -->
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
   <build_depend>cv_bridge</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>geometry_msgs</build_depend>
@@ -30,23 +23,16 @@
   <build_depend>rospy</build_depend>
   <build_depend>shape_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>tf2_ros</build_depend>
+  <!--build_depend>tf</build_depend>
+  <build_depend>tf2_msg</build_depend>
+  <build_depend>tf2_ros</build_depend-->
   <build_depend>visualization_msgs</build_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>pid</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>roslint</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>rviz_lighting</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>tf2_ros</run_depend>
-  <run_depend>visualization_msgs</run_depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

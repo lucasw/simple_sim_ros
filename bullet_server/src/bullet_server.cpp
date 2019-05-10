@@ -144,11 +144,14 @@ int BulletServer::init()
   }
 
   // TODO(lucasw) make this adjustable via cfg or service call
-  float acc = -10.0;
-  ros::param::get("~gravity", acc);
-  btVector3 gravity(0.0, 0.0, acc);
-  dynamics_world_->setGravity(gravity);
-  soft_body_world_info_.m_gravity = gravity;
+  float acc_x = 0.0;
+  float acc_y = 0.0;
+  float acc_z = -10.0;
+  ros::param::get("~gravity_x", acc_x);
+  ros::param::get("~gravity_y", acc_y);
+  ros::param::get("~gravity_z", acc_z);
+  btVector3 gravity(acc_x, acc_y, acc_z);
+
   // sdf -> 'signed distance field'
   // sparse version of soft body to make collision detection easier
   soft_body_world_info_.air_density = (btScalar)1.2;

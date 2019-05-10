@@ -691,7 +691,6 @@ void BulletServer::reset()
     delete it->second;
     soft_bodies_.erase(it->first);
   }
-
 }
 
 int main(int argc, char** argv)

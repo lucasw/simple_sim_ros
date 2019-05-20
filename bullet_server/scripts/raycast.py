@@ -5,7 +5,7 @@
 # Create 1 or more objects to bounce a range sensor off of.
 # Create an object to hang the range sensor off of
 # (all of above down in imarker.launch)
-# 
+#
 # Create the range sensor with the tf frame of that object as frame_id.
 
 import math
@@ -40,9 +40,7 @@ if __name__ == '__main__':
         add_raycast_request.lines.append(line)
     rospy.loginfo(add_raycast_request)
     try:
-	add_raycast_response = add_raycast(add_raycast_request)
-	rospy.loginfo(add_raycast_response)
+        add_raycast_response = add_raycast(add_raycast_request)
+        rospy.loginfo(add_raycast_response)
     except rospy.service.ServiceException as e:
-	rospy.logerr(e)
-
-
+        rospy.logerr(e)

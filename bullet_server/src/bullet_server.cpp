@@ -153,7 +153,7 @@ int BulletServer::init()
   btVector3 gravity(acc_x, acc_y, acc_z);
   dynamics_world_->setGravity(gravity);
   soft_body_world_info_.m_gravity = gravity;
-  
+
   // sdf -> 'signed distance field'
   // sparse version of soft body to make collision detection easier
   soft_body_world_info_.air_density = (btScalar)1.2;

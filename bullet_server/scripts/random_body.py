@@ -53,10 +53,10 @@ while not rospy.is_shutdown():
     add_compound_request.remove = rospy.get_param('~remove', False)
     add_compound_request.body.append(body)
     try:
-	add_compound_response = add_compound(add_compound_request)
-	rospy.loginfo(add_compound_response)
+        add_compound_response = add_compound(add_compound_request)
+        rospy.loginfo(add_compound_response)
     except rospy.service.ServiceException as e:
-	rospy.logerr(e)
+        rospy.logerr(e)
 
     rospy.sleep(sleep_time)
     count += 1
@@ -64,8 +64,8 @@ while not rospy.is_shutdown():
     # TODO(lucasw) create random joints between existing links
     # store the names of all the existing bodies
     min_count = 8
-    if False:
     # if count > min_count and random.random() > 0.5:
+    if False:
         axle = Constraint()
         axle.name = "constraint_" + postfix + "_" + str(count)
         axle.type = Constraint.POINT2POINT

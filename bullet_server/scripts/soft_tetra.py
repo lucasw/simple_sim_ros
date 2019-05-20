@@ -63,7 +63,7 @@ class SoftBodyDemo:
         body.randomize_constraints = True
         # body.k_clusters = 4
         # volume preserving?  Doesn't seem to work
-        body.config.kVC = 10.0 # 1e9 * volume
+        body.config.kVC = 10.0  # 1e9 * volume
         body.config.kDP = 0.39
         body.config.kDF = 0.99
         # body.config.kMT = 0.5

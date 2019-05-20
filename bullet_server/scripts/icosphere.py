@@ -160,13 +160,14 @@ class Icosphere:
                 ind1 = faces[i][j]
                 ind2 = faces[i][(j + 1) % 3]
                 # prevent duplicate links
-                if ((ind1 in link_map.keys() and ind2 in link_map[ind1].keys()) or
-                    (ind2 in link_map.keys() and ind1 in link_map[ind2].keys())):
+                ind_in_map = ((ind1 in link_map.keys() and ind2 in link_map[ind1].keys()) or
+                              (ind2 in link_map.keys() and ind1 in link_map[ind2].keys()))
+                if ind_in_map:
                     continue
                 link = Link()
                 link.node_indices[0] = ind1
                 link.node_indices[1] = ind2
-                if not ind1 in link_map.keys():
+                if ind1 not in link_map.keys():
                     link_map[ind1] = {}
                 link_map[ind1][ind2] = True
                 body.link.append(link)
@@ -230,7 +231,7 @@ class Icosphere:
 
         self.pts.append(pt)
         ind = len(self.pts) - 1
-        if not i1 in self.subpts.keys():
+        if i1 not in self.subpts.keys():
             self.subpts[i1] = {}
         self.subpts[i1][i2] = ind
         return ind
@@ -239,7 +240,7 @@ class Icosphere:
         #        v2
         #
         #     a     b
-        #  
+        #
         #   v1   c    v3
         subfaces = []
         for fc in faces:

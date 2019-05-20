@@ -153,6 +153,7 @@ def make_tetra(node_indices, make_links=True, make_faces=True):
         faces.append(face)
     return tetra, links, faces
 
+
 def get_tetra_inds(xi, yi, zi, nx, ny, nz, flip=False):
     #    6  7
     #  4   5
@@ -208,6 +209,7 @@ def get_tetra_inds(xi, yi, zi, nx, ny, nz, flip=False):
     tinds.append([inds[5], inds[4], inds[7], inds[1]])
 
     return tinds
+
 
 def make_soft_tetra_cube(name, node_mass, xs, ys, zs,
                          lx, ly, lz,

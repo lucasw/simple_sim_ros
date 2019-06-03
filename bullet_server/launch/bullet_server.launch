@@ -24,7 +24,7 @@
       output="screen">
     <param name="rigid_only" value="$(arg rigid_only)"/>
     <param name="tf_prefix" value="$(arg tf_prefix)"/>
-    <param name="gravity" value="$(arg gravity)"/>
+    <param name="gravity_z" value="$(arg gravity_z)"/>
     <param name="target_time_step" value="$(arg step_time)"/>
     <param name="fixed_time_step" value="0.0003"/>
     <param name="max_sub_steps" value="150"/>

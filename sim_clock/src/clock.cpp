@@ -28,11 +28,11 @@ private:
       sim_clock::ClockConfig& config,
       uint32_t level);
 
-	ros::NodeHandle nh_;
-	ros::NodeHandle nh_private_;
-	ros::Publisher pub_;
+  ros::NodeHandle nh_;
+  ros::NodeHandle nh_private_;
+  ros::Publisher pub_;
   ros::Subscriber sub_;
-	double cur_time_;
+  double cur_time_;
   double extra_time_;
   ros::WallDuration sleep_time_;
   ros::WallTimer timer_;
@@ -41,11 +41,11 @@ private:
 SimClock::SimClock() :
   first_single_(false),
   nh_private_("~"),
-	cur_time_(0.0),  // TODO(lucasw) allow this to be set
+  cur_time_(0.0),  // TODO(lucasw) allow this to be set
   extra_time_(0.0),
   sleep_time_(0.0)
 {
-	pub_ = nh_.advertise<rosgraph_msgs::Clock>("clock", 10);
+  pub_ = nh_.advertise<rosgraph_msgs::Clock>("clock", 10);
   // dynamic reconfigure init
   {
     reconfigure_server_.reset(
@@ -55,7 +55,7 @@ SimClock::SimClock() :
     reconfigure_server_->setCallback(scrc);
   }
 
-	sub_ = nh_private_.subscribe("step", 10, &SimClock::step, this);
+  sub_ = nh_private_.subscribe("step", 10, &SimClock::step, this);
   //
 }
 
@@ -63,12 +63,12 @@ SimClock::SimClock() :
 void SimClock::update(const ros::WallDuration dt)
 {
   cur_time_ += dt.toSec();  // * config_.real_time_factor;
-	// TODO(lucasw) time values can't be negative, so reverse
-	// time isn't going to work well without a large positive offset.
-	rosgraph_msgs::Clock msg;
+  // TODO(lucasw) time values can't be negative, so reverse
+  // time isn't going to work well without a large positive offset.
+  rosgraph_msgs::Clock msg;
   ros::Time time;
   msg.clock = time.fromSec(cur_time_);
-	pub_.publish(msg);
+  pub_.publish(msg);
   extra_time_ = 0.0;
 }
 

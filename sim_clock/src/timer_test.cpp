@@ -1,4 +1,7 @@
+/* Copyright 2017 Lucas Walter
+*/
 #include <ros/ros.h>
+#include <string>
 
 ros::Time start;
 ros::WallTime wall_start;

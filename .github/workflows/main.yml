@@ -79,7 +79,7 @@ jobs:
           # echo "::warning $CI_SOURCE_PATH"
           # echo "::warning `ls -l`"
           cd src
-          git clone git@github.com:mogumbo/rviz_lighting.git
+          git clone https://github.com/mogumbo/rviz_lighting.git
           ln -s ~/work  # $CI_SOURCE_PATH
           cd ..
           catkin build

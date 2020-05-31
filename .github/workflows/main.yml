@@ -52,7 +52,7 @@ jobs:
             sudo apt-get install -y ros-$ROS_DISTRO-roslint
             sudo apt-get install -y ros-$ROS_DISTRO-rospy
             sudo apt-get install -y ros-$ROS_DISTRO-rostest
-            # sudo apt-get install -y ros-$ROS_DISTRO-rviz
+            sudo apt-get install -y ros-$ROS_DISTRO-rviz
             sudo apt-get install -y ros-$ROS_DISTRO-shape-msgs
             sudo apt-get install -y ros-$ROS_DISTRO-sensor-msgs
             sudo apt-get install -y ros-$ROS_DISTRO-std-msgs

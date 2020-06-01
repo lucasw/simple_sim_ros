@@ -80,6 +80,7 @@ class LoadUrdf:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('load_urdf')
     load_urdf = LoadUrdf()

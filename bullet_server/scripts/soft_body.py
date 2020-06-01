@@ -123,6 +123,7 @@ class SoftBodyDemo:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('soft_body_demo')
     soft_body_demo = SoftBodyDemo()

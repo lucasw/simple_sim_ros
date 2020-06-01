@@ -85,6 +85,7 @@ class SoftVehicle:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('soft_vehicle')
     soft_vehicle = SoftVehicle()

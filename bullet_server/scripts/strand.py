@@ -105,6 +105,7 @@ class Strand:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('strand')
     strand = Strand()

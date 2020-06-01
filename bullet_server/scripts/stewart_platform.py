@@ -155,6 +155,7 @@ class StewartPlatform:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('stewart_platform')
     stewart_platform = StewartPlatform()

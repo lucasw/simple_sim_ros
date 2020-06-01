@@ -252,6 +252,7 @@ class TrackedVehicle:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('tracked_vehicle')
     tracked_vehicle = TrackedVehicle()

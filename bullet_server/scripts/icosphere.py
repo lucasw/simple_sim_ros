@@ -255,6 +255,7 @@ class Icosphere:
                              ])
         return (subfaces)
 
+
 if __name__ == '__main__':
     rospy.init_node('icosphere')
     icosphere = Icosphere()

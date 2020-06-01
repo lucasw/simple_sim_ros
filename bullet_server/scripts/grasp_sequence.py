@@ -65,6 +65,7 @@ class GraspSequence:
             if rospy.is_shutdown():
                 sys.exit()
 
+
 if __name__ == '__main__':
     rospy.init_node('grasp_sequence')
     grasp_sequence = GraspSequence()

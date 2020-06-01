@@ -48,6 +48,7 @@ class GroundPlane:
         except rospy.service.ServiceException as e:
             rospy.logerr(e)
 
+
 if __name__ == '__main__':
     rospy.init_node('ground_plane')
     ground_plane = GroundPlane()

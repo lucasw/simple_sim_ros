@@ -58,7 +58,7 @@ jobs:
             sudo apt-get install -y ros-$ROS_DISTRO-std-msgs
             sudo apt-get install -y ros-$ROS_DISTRO-tf
             sudo apt-get install -y ros-$ROS_DISTRO-tf-conversions
-            # sudo apt-get install -y ros-$ROS_DISTRO-tf2-geometry-msgs
+            sudo apt-get install -y ros-$ROS_DISTRO-tf2-geometry-msgs
             # sudo apt-get install -y ros-$ROS_DISTRO-tf2-msgs
             # sudo apt-get install -y ros-$ROS_DISTRO-tf2-py
             sudo apt-get install -y ros-$ROS_DISTRO-tf2-ros

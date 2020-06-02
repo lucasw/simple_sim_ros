@@ -66,6 +66,7 @@ class SimClock():
             self.config.single_dt = False
         return self.config
 
+
 if __name__ == '__main__':
     rospy.init_node('sim_clock')
     sim_clock = SimClock()

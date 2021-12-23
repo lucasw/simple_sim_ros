@@ -5,15 +5,16 @@ project(bullet_server)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  # bullet
   cv_bridge
   dynamic_reconfigure
   geometry_msgs
+  message_generation
   roscpp
   roslint
   rospy
-  shape_msgs
   sensor_msgs
+  shape_msgs
+  std_msgs
   tf
   tf2_ros
   visualization_msgs
@@ -65,8 +66,8 @@ add_message_files(
   Body.msg
   Constraint.msg
   Face.msg
-  Impulse.msg
   Heightfield.msg
+  Impulse.msg
   Line.msg
   Link.msg
   Material.msg
@@ -83,8 +84,8 @@ add_service_files(
     AddBody.srv
     AddCompound.srv
     AddConstraint.srv
-    AddImpulse.srv
     AddHeightfield.srv
+    AddImpulse.srv
     AddLaserScan.srv
     AddRaycast.srv
     SetTransform.srv
@@ -101,11 +102,10 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  # bullet_server
-  std_msgs
-  shape_msgs
-  sensor_msgs
   geometry_msgs
+  sensor_msgs
+  shape_msgs
+  std_msgs
 )
 
 ################################################
@@ -139,7 +139,18 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES bullet_server
-   CATKIN_DEPENDS roscpp roslint rospy tf message_runtime
+   CATKIN_DEPENDS
+   dynamic_reconfigure
+   geometry_msgs
+   message_runtime
+   roscpp
+   roslint
+   rospy
+   sensor_msgs
+   shape_msgs
+   std_msgs
+   tf
+   visualization_msgs
 #  DEPENDS system_lib
 )
 
@@ -166,7 +177,7 @@ include_directories(
 # add_dependencies(bullet_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(bullet_server
+add_executable(${PROJECT_NAME}
   src/body.cpp
   src/bullet_server.cpp
   src/constraint.cpp
@@ -176,11 +187,11 @@ add_executable(bullet_server
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(bullet_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(bullet_server bullet_server_gencfg)
-add_dependencies(bullet_server bullet_server_gencpp)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(bullet_server
+target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${BULLET_LIBRARIES}
 )
@@ -189,7 +200,7 @@ target_link_libraries(bullet_server
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS src/bullet_server/utility.py
+catkin_install_python(PROGRAMS src/${PROJECT_NAME}/utility.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html

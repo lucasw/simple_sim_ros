@@ -91,3 +91,4 @@ jobs:
         run: |
           cd ~/catkin_ws
           catkin build $(catkin list --depends-on roslint -u) --no-deps --catkin-make-args roslint
+          catkin_lint -W2 --error unsorted_list --ignore uninstalled_script --error launch_depend --error description_meaningless work/simple_sim_ros

@@ -15,7 +15,12 @@ generate_dynamic_reconfigure_options(
   cfg/Clock.cfg
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+  dynamic_reconfigure
+  roscpp
+  rosgraph_msgs
+)
 
 add_executable(clock src/clock.cpp)
 add_dependencies(clock ${PROJECT_NAME}_gencfg)

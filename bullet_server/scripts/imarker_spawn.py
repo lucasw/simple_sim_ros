@@ -298,10 +298,9 @@ class InteractiveMarkerSpawn:
                         pt_in_map = self.tf_buffer.transform(feedback_pt, "map",
                                                              rospy.Duration(2.0), PointStamped)
                     except tf2_ros.TypeException as e:
-                        # rospy.logerr(e)
-                        print e
+                        rospy.logerr(e)
                         return
-                    print 'output', pt_in_map
+                    rospy.loginfo(f'output {pt_in_map}')
                 else:
                     quat = [trans.transform.rotation.x,
                             trans.transform.rotation.y,

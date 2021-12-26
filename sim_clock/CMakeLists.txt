@@ -29,3 +29,13 @@ target_link_libraries(clock ${catkin_LIBRARIES})
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(timer_test src/timer_test.cpp)
 target_link_libraries(timer_test ${catkin_LIBRARIES})
+
+install(TARGETS
+  clock
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+catkin_install_python(PROGRAMS
+  scripts/clock.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

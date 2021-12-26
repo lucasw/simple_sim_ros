@@ -200,8 +200,28 @@ target_link_libraries(${PROJECT_NAME}
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS src/${PROJECT_NAME}/utility.py
-                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+catkin_install_python(PROGRAMS
+  scripts/grasp.py
+  scripts/grasp_sequence.py
+  scripts/ground_plane.py
+  scripts/icosphere.py
+  scripts/imarker_spawn.py
+  scripts/kinematic.py
+  scripts/load_urdf.py
+  scripts/make_wall.py
+  scripts/mesh.py
+  scripts/random_body.py
+  scripts/raycast.py
+  scripts/soft_body.py
+  scripts/soft_tetra.py
+  scripts/soft_vehicle.py
+  scripts/stewart_platform.py
+  scripts/strand.py
+  scripts/terrain.py
+  scripts/test.py
+  scripts/tracks.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
@@ -213,11 +233,11 @@ catkin_install_python(PROGRAMS src/${PROJECT_NAME}/utility.py
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS bullet_server bullet_server_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
@@ -225,6 +245,10 @@ catkin_install_python(PROGRAMS src/${PROJECT_NAME}/utility.py
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
 # )
+
+install(DIRECTORY config/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
+install(DIRECTORY data/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data)
+install(DIRECTORY launch/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

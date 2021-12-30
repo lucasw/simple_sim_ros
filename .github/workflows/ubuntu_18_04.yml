@@ -66,10 +66,10 @@ jobs:
           source /opt/ros/$ROS_DISTRO/setup.bash
           mkdir -p catkin_ws/src
           cd catkin_ws
-          catkin build
+          catkin build --no-status
           source devel/setup.bash
 
       - name: lint
         run: |
           cd catkin_ws
-          catkin build $(catkin list --depends-on roslint -u) --no-deps --catkin-make-args roslint
+          catkin build $(catkin list --depends-on roslint -u) --no-status --no-deps --catkin-make-args roslint

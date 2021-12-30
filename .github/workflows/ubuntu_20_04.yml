@@ -69,11 +69,11 @@ jobs:
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
           cd catkin_ws
-          catkin build
+          catkin build --no-status
           source devel/setup.bash
 
       - name: lint
         run: |
           cd catkin_ws
-          catkin build $(catkin list --depends-on roslint -u) --no-deps --catkin-make-args roslint
+          catkin build $(catkin list --depends-on roslint -u) --no-status --no-deps --catkin-make-args roslint
           catkin_lint src -W2 --error unsorted_list --ignore uninstalled_script --error launch_depend --error description_meaningless

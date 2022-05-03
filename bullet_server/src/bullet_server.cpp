@@ -188,7 +188,7 @@ int BulletServer::init()
     reconfigure_server_.reset(
         new ReconfigureServer(dr_mutex_, nh_));
     dynamic_reconfigure::Server<bullet_server::BulletServerConfig>::CallbackType bsc =
-      boost::bind(&BulletServer::reconfigureCallback, this, _1, _2);
+      boost::bind(&BulletServer::reconfigureCallback, this, boost::placeholders::_1, boost::placeholders::_2);
     reconfigure_server_->setCallback(bsc);
   }
 

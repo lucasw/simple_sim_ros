@@ -111,7 +111,7 @@ Constraint::Constraint(
     if (enable_motor_sub_)
       subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
                                                            boost::bind(&Constraint::commandCallback,
-                                                                       this, _1, motor_name));
+                                                                       this, boost::placeholders::_1, motor_name));
 
 
     constraint_ = hinge;
@@ -140,7 +140,7 @@ Constraint::Constraint(
     if (enable_motor_sub_)
       subs_[motor_name] = nh_.subscribe<std_msgs::Float64>(motor_name, 1,
                                                            boost::bind(&Constraint::commandCallback,
-                                                                       this, _1, motor_name));
+                                                                       this, boost::placeholders::_1, motor_name));
 
     // TODO(lucasw) make these controllable via service (or topic?)
     slider->setLowerAngLimit(lower_ang_lim);
